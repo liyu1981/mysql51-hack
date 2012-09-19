@@ -612,10 +612,12 @@ xdes_calc_descriptor_page(
 				/* out: descriptor page offset */
 	ulint	offset)		/* in: page offset */
 {
+/*
 //#if UNIV_PAGE_SIZE <= XDES_ARR_OFFSET \
 //		+ (XDES_DESCRIBED_PER_PAGE / FSP_EXTENT_SIZE) * XDES_SIZE
 //# error
 //#endif
+*/
 	ut_a(UNIV_PAGE_SIZE > XDES_ARR_OFFSET + (UNIV_PAGE_SIZE / FSP_EXTENT_SIZE) * XDES_SIZE);
 
 	return(ut_2pow_round(offset, XDES_DESCRIBED_PER_PAGE));

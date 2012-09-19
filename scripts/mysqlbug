@@ -23,9 +23,9 @@ VERSION="5.1.54"
 COMPILATION_COMMENT="Source distribution"
 BUGmysql="mysql@lists.mysql.com"
 # This is set by configure
-COMP_CALL_INFO="CC='ccache /opt/studio12/SUNWspro/bin/cc'  CFLAGS='-g'  CXX='ccache /opt/studio12/SUNWspro/bin/CC'  CXXFLAGS=''  LDFLAGS=''  ASFLAGS=''"
-COMP_RUN_INFO="CC='ccache /opt/studio12/SUNWspro/bin/cc'  CFLAGS=' -g   -DHAVE_RWLOCK_T -DUNIV_SOLARIS -DUNIV_SOLARIS'  CXX='ccache /opt/studio12/SUNWspro/bin/CC'  CXXFLAGS='-O1    -DHAVE_RWLOCK_T'  LDFLAGS=' '  ASFLAGS=''"
-CONFIGURE_LINE="./configure  '--with-embedded-server' '--with-ndbcluster' 'CC=ccache /opt/studio12/SUNWspro/bin/cc' 'CXX=ccache /opt/studio12/SUNWspro/bin/CC'"
+COMP_CALL_INFO="CC='gcc'  CFLAGS='-g -O2'  CXX=''  CXXFLAGS=''  LDFLAGS=''  ASFLAGS=''"
+COMP_RUN_INFO="CC='gcc'  CFLAGS='-g -DSAFE_MUTEX -DSAFEMALLOC -g -O2   -DUNIV_LINUX -DUNIV_LINUX'  CXX='g++'  CXXFLAGS='-g -DSAFE_MUTEX -DSAFEMALLOC    -fno-implicit-templates -fno-exceptions -fno-rtti'  LDFLAGS=' -rdynamic '  ASFLAGS=''"
+CONFIGURE_LINE="./configure  '--with-debug=full' '--prefix=/data1/mysql-debug-yuli/base'"
 
 LIBC_INFO=""
 for pat in /lib/libc.* /lib/libc-* /usr/lib/libc.* /usr/lib/libc-*
@@ -253,8 +253,8 @@ ${ORGANIZATION- $ORGANIZATION_C}
 >Class:		$CLASS_C
 >Release:	mysql-${VERSION} ($COMPILATION_COMMENT)
 `test -n "$MYSQL_SERVER" && echo ">Server: $MYSQL_SERVER"`
->C compiler:    
->C++ compiler:  CC: Sun C++ 5.9 SunOS_sparc Patch 124863-26 2010/10/14
+>C compiler:    gcc (GCC) 4.1.2 20070115 (prerelease) (SUSE Linux)
+>C++ compiler:  g++ (GCC) 4.1.2 20070115 (prerelease) (SUSE Linux)
 >Environment:
 	$ENVIRONMENT_C
 `test -n "$SYSTEM"  && echo "System: $SYSTEM"`

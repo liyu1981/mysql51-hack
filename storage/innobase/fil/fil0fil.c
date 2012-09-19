@@ -603,7 +603,7 @@ fil_node_open_file(
 			ut_a(0);
 		}
 
-		if (size_bytes >= FSP_EXTENT_SIZE * UNIV_PAGE_SIZE) {
+		if ((unsigned)size_bytes >= FSP_EXTENT_SIZE * UNIV_PAGE_SIZE) {
 			node->size = (ulint)
 				((size_bytes / (1024 * 1024))
 				 * ((1024 * 1024) / UNIV_PAGE_SIZE));
