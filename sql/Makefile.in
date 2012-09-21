@@ -15,22 +15,28 @@
 @SET_MAKE@
 
 # Copyright (C) 2000-2006 MySQL AB
-# 
+#
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; version 2 of the License.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 #called from the top level Makefile
 
+#yuli: tencent sources and objects start
+tencent_HEADERS=tfc_binlog.h tfc_cache_access.h tfc_cache_chunk_alloc.h tfc_cache_hash_map.h
+tencent_SOURCES=tfc_binlog.cpp tfc_cache_access.cpp tfc_cache_chunk_alloc.cpp tfc_cache_hash_map.cpp
+tencent_OBJECTS=tfc_binlog.$(OBJEXT) tfc_cache_access.$(OBJEXT) tfc_cache_chunk_alloc.$(OBJEXT) tfc_cache_hash_map.$(OBJEXT)
+tencent_CXXFLAGS=-fimplicit-templates
+#yuli: tencent sources and objects end
 
 
 VPATH = @srcdir@
@@ -155,6 +161,7 @@ am_mysqld_OBJECTS = sql_lex.$(OBJEXT) sql_handler.$(OBJEXT) \
 	sql_builtin.$(OBJEXT) sql_tablespace.$(OBJEXT) \
 	partition_info.$(OBJEXT) sql_servers.$(OBJEXT) \
 	event_parse_data.$(OBJEXT)
+
 nodist_mysqld_OBJECTS = mini_client_errors.$(OBJEXT) pack.$(OBJEXT) \
 	client.$(OBJEXT) my_time.$(OBJEXT) my_user.$(OBJEXT)
 mysqld_OBJECTS = $(am_mysqld_OBJECTS) $(nodist_mysqld_OBJECTS)
@@ -619,7 +626,7 @@ mysqld_SOURCES = sql_lex.cc sql_handler.cc sql_partition.cc \
 			sql_builtin.cc sql_tablespace.cc partition_info.cc \
 			sql_servers.cc event_parse_data.cc
 
-nodist_mysqld_SOURCES = mini_client_errors.c pack.c client.c my_time.c my_user.c 
+nodist_mysqld_SOURCES = mini_client_errors.c pack.c client.c my_time.c my_user.c
 libndb_la_CPPFLAGS = @ndbcluster_includes@
 libndb_la_SOURCES = ha_ndbcluster.cc \
 			ha_ndbcluster_binlog.cc \
@@ -648,7 +655,8 @@ all: $(BUILT_SOURCES)
 	$(MAKE) $(AM_MAKEFLAGS) all-recursive
 
 .SUFFIXES:
-.SUFFIXES: .c .cc .lo .o .obj .yy
+#yuli: add cpp suffix for tencent sources
+.SUFFIXES: .c .cc .lo .o .obj .yy .cpp
 $(srcdir)/Makefile.in:  $(srcdir)/Makefile.am  $(am__configure_deps)
 	@for dep in $?; do \
 	  case '$(am__configure_deps)' in \
@@ -689,9 +697,9 @@ clean-noinstLTLIBRARIES:
 	  echo "rm -f \"$${dir}/so_locations\""; \
 	  rm -f "$${dir}/so_locations"; \
 	done
-libndb.la: $(libndb_la_OBJECTS) $(libndb_la_DEPENDENCIES) 
+libndb.la: $(libndb_la_OBJECTS) $(libndb_la_DEPENDENCIES)
 	$(CXXLINK)  $(libndb_la_OBJECTS) $(libndb_la_LIBADD) $(LIBS)
-udf_example.la: $(udf_example_la_OBJECTS) $(udf_example_la_DEPENDENCIES) 
+udf_example.la: $(udf_example_la_OBJECTS) $(udf_example_la_DEPENDENCIES)
 	$(udf_example_la_LINK)  $(udf_example_la_OBJECTS) $(udf_example_la_LIBADD) $(LIBS)
 install-binPROGRAMS: $(bin_PROGRAMS)
 	@$(NORMAL_INSTALL)
@@ -749,10 +757,10 @@ clean-libexecPROGRAMS:
 	  echo " rm -f $$p $$f"; \
 	  rm -f $$p $$f ; \
 	done
-gen_lex_hash$(EXEEXT): $(gen_lex_hash_OBJECTS) $(gen_lex_hash_DEPENDENCIES) 
+gen_lex_hash$(EXEEXT): $(gen_lex_hash_OBJECTS) $(gen_lex_hash_DEPENDENCIES)
 	@rm -f gen_lex_hash$(EXEEXT)
 	$(gen_lex_hash_LINK) $(gen_lex_hash_OBJECTS) $(gen_lex_hash_LDADD) $(LIBS)
-mysql_tzinfo_to_sql$(EXEEXT): $(mysql_tzinfo_to_sql_OBJECTS) $(mysql_tzinfo_to_sql_DEPENDENCIES) 
+mysql_tzinfo_to_sql$(EXEEXT): $(mysql_tzinfo_to_sql_OBJECTS) $(mysql_tzinfo_to_sql_DEPENDENCIES)
 	@rm -f mysql_tzinfo_to_sql$(EXEEXT)
 	$(mysql_tzinfo_to_sql_LINK) $(mysql_tzinfo_to_sql_OBJECTS) $(mysql_tzinfo_to_sql_LDADD) $(LIBS)
 sql_yacc.h: sql_yacc.cc
@@ -760,9 +768,9 @@ sql_yacc.h: sql_yacc.cc
 	  rm -f sql_yacc.cc; \
 	  $(MAKE) $(AM_MAKEFLAGS) sql_yacc.cc; \
 	else :; fi
-mysqld$(EXEEXT): $(mysqld_OBJECTS) $(mysqld_DEPENDENCIES) 
+mysqld$(EXEEXT): $(mysqld_OBJECTS) $(mysqld_DEPENDENCIES) $(tencent_OBJECTS)
 	@rm -f mysqld$(EXEEXT)
-	$(CXXLINK) $(mysqld_OBJECTS) $(mysqld_LDADD) $(LIBS)
+	$(CXXLINK) $(mysqld_OBJECTS) $(mysqld_LDADD) $(LIBS) $(tencent_OBJECTS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -931,6 +939,15 @@ distclean-compile:
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(CXXCOMPILE) -c -o $@ $<
+
+#yuli: tencent cpp rule begin
+.cpp.o:
+@am__fastdepCXX_TRUE@	$(CXXCOMPILE) $(tencent_CXXFLAGS) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
+@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXXCOMPILE) -c -o $@ $<
+#yuli: tencent cpp rule end
 
 .cc.obj:
 @am__fastdepCXX_TRUE@	$(CXXCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ `$(CYGPATH_W) '$<'`
