@@ -31,13 +31,8 @@
 
 #called from the top level Makefile
 
-#yuli: tencent sources and objects start
-tencent_HEADERS=tfc_binlog.h tfc_cache_access.h tfc_cache_chunk_alloc.h tfc_cache_hash_map.h
-tencent_SOURCES=tfc_binlog.cpp tfc_cache_access.cpp tfc_cache_chunk_alloc.cpp tfc_cache_hash_map.cpp
-tencent_OBJECTS=tfc_binlog.$(OBJEXT) tfc_cache_access.$(OBJEXT) tfc_cache_chunk_alloc.$(OBJEXT) tfc_cache_hash_map.$(OBJEXT)
-tencent_CXXFLAGS=-fimplicit-templates
-#yuli: tencent sources and objects end
-
+#yuli: load cdb sources and objects first
+include cdb.mk
 
 VPATH = @srcdir@
 pkgdatadir = $(datadir)/@PACKAGE@
@@ -655,7 +650,7 @@ all: $(BUILT_SOURCES)
 	$(MAKE) $(AM_MAKEFLAGS) all-recursive
 
 .SUFFIXES:
-#yuli: add cpp suffix for tencent sources
+#yuli: add cpp suffix for cdb sources
 .SUFFIXES: .c .cc .lo .o .obj .yy .cpp
 $(srcdir)/Makefile.in:  $(srcdir)/Makefile.am  $(am__configure_deps)
 	@for dep in $?; do \
@@ -768,9 +763,9 @@ sql_yacc.h: sql_yacc.cc
 	  rm -f sql_yacc.cc; \
 	  $(MAKE) $(AM_MAKEFLAGS) sql_yacc.cc; \
 	else :; fi
-mysqld$(EXEEXT): $(mysqld_OBJECTS) $(mysqld_DEPENDENCIES) $(tencent_OBJECTS)
+mysqld$(EXEEXT): $(mysqld_OBJECTS) $(mysqld_DEPENDENCIES) $(cdb_OBJECTS)
 	@rm -f mysqld$(EXEEXT)
-	$(CXXLINK) $(mysqld_OBJECTS) $(mysqld_LDADD) $(LIBS) $(tencent_OBJECTS)
+	$(CXXLINK) $(mysqld_OBJECTS) $(mysqld_LDADD) $(LIBS) $(cdb_OBJECTS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -940,14 +935,14 @@ distclean-compile:
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(CXXCOMPILE) -c -o $@ $<
 
-#yuli: tencent cpp rule begin
+#yuli: cdb cpp rule begin
 .cpp.o:
-@am__fastdepCXX_TRUE@	$(CXXCOMPILE) $(tencent_CXXFLAGS) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
+@am__fastdepCXX_TRUE@	$(CXXCOMPILE) $(cdb_CXXFLAGS) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
 @am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Po
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(CXXCOMPILE) -c -o $@ $<
-#yuli: tencent cpp rule end
+#yuli: cdb cpp rule end
 
 .cc.obj:
 @am__fastdepCXX_TRUE@	$(CXXCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ `$(CYGPATH_W) '$<'`
