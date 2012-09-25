@@ -12,7 +12,7 @@ dnl
 dnl When changing the major version number please also check the switch
 dnl statement in mysqlbinlog::check_master_version().  You may also need
 dnl to update version.c in ndb.
-AC_INIT([MySQL Server], [5.1.54], [], [mysql])
+AC_INIT([MYSQL Server], [5.1.54], [], [mysql])
 
 AC_CONFIG_SRCDIR([sql/mysqld.cc])
 AC_CANONICAL_SYSTEM
@@ -64,7 +64,7 @@ MYSQL_PREVIOUS_BASE_VERSION=5.0
 MYSQL_TCP_PORT_DEFAULT=3306
 MYSQL_UNIX_ADDR_DEFAULT="/tmp/mysql.sock"
 
-dnl Include m4 
+dnl Include m4
 sinclude(config/ac-macros/maintainer.m4)
 sinclude(config/ac-macros/alloca.m4)
 sinclude(config/ac-macros/check_cpu.m4)
@@ -302,12 +302,12 @@ AC_MSG_RESULT($mysql_cv_sys_os)
 
 # This should be rewritten to use $target_os
 case "$target_os" in
-  sco3.2v5*) 
+  sco3.2v5*)
      CFLAGS="$CFLAGS -DSCO"
      CXXFLAGS="$CXXFLAGS -DSCO"
      LD='$(CC) $(CFLAGS)'
      case "$CFLAGS" in
-       *-belf*) 
+       *-belf*)
          AC_SYS_COMPILER_FLAG(-belf,sco_belf_option,CFLAGS,[],[
          case "$LDFLAGS" in
            *-belf*) ;;
@@ -330,7 +330,7 @@ case "$target_os" in
        ;;
      esac
   ;;
-  sysv5UnixWare* | sysv5OpenUNIX8*) 
+  sysv5UnixWare* | sysv5OpenUNIX8*)
     if test "$GCC" != "yes"; then
       # Use the built-in alloca()
       CFLAGS="$CFLAGS -Kalloca"
@@ -459,7 +459,7 @@ AC_SUBST(ABI_CHECK)
 # Look for PS usage.  We use double dollar-signs in FIND_PROC because this
 # value is written to a makefile, which interprets away one level of
 # dollar-signs.  So, interpretation stages are  m4 and then shell in autoconf,
-# then Make, then shell.  The autoconf substitution uses single quotes, so 
+# then Make, then shell.  The autoconf substitution uses single quotes, so
 # no unprotected single quotes should appear in the expression.
 AC_PATH_PROG(PS, ps, ps)
 AC_MSG_CHECKING("how to check if pid exists")
@@ -542,10 +542,10 @@ static_nss=""
 STATIC_NSS_FLAGS=""
 OTHER_LIBC_LIB=""
 AC_ARG_WITH(other-libc,
- [  --with-other-libc=DIR   Link against libc and other standard libraries 
-                          installed in the specified non-standard location 
+ [  --with-other-libc=DIR   Link against libc and other standard libraries
+                          installed in the specified non-standard location
                           overriding default. Originally added to be able to
-                          link against glibc 2.2 without making the user 
+                          link against glibc 2.2 without making the user
                           upgrade the standard libc installation.],
  [
    other_libc_include="$withval/include"
@@ -579,7 +579,7 @@ AC_ARG_WITH(other-libc,
      # has sensible libraries in the regular location
      LDFLAGS="$LDFLAGS -static -L$other_libc_lib "
    fi
-   
+
    # When linking against custom libc installed separately, we want to force
    # all binary builds to be static, including the build done by configure
    # itself to test for system features.
@@ -599,7 +599,7 @@ AC_SUBST(NOINST_LDFLAGS)
 # Check if we are using Linux and a glibc compiled with static nss
 # (this is true on the MySQL build machines to avoid NSS problems)
 #
-AC_CHECK_TOOL([NM], [nm]) 
+AC_CHECK_TOOL([NM], [nm])
 
 if test "$TARGET_LINUX" = "true" -a "$static_nss" = ""
 then
@@ -615,7 +615,7 @@ fi
 AC_MSG_CHECKING(whether features provided by the user community should be included.)
 AC_ARG_ENABLE(community-features,
     AC_HELP_STRING(
-        [--disable-community-features], 
+        [--disable-community-features],
         [Disable additional features provided by the user community.]),
     [ ENABLE_COMMUNITY_FEATURES=$enableval ],
     [ ENABLE_COMMUNITY_FEATURES=yes ]
@@ -647,7 +647,7 @@ AC_ARG_WITH(pthread,
 # Force use of thread libs LIBS
 AC_ARG_WITH(named-thread-libs,
     [  --with-named-thread-libs=ARG
-                          Use specified thread libraries instead of 
+                          Use specified thread libraries instead of
                           those automatically found by configure.],
     [ with_named_thread=$withval ],
     [ with_named_thread=no ]
@@ -656,7 +656,7 @@ AC_ARG_WITH(named-thread-libs,
 # Force use of a curses libs
 AC_ARG_WITH(named-curses-libs,
     [  --with-named-curses-libs=ARG
-                          Use specified curses libraries instead of 
+                          Use specified curses libraries instead of
                           those automatically found by configure.],
     [ with_named_curses=$withval ],
     [ with_named_curses=no ]
@@ -664,7 +664,7 @@ AC_ARG_WITH(named-curses-libs,
 
 # Make thread safe client
 AC_ARG_ENABLE(thread-safe-client,
-    [  --disable-thread-safe-client   
+    [  --disable-thread-safe-client
                           Compile the client without threads.],
     [ THREAD_SAFE_CLIENT=$enableval ],
     [ THREAD_SAFE_CLIENT=yes ]
@@ -672,7 +672,7 @@ AC_ARG_ENABLE(thread-safe-client,
 
 # compile with strings functions in assembler
 AC_ARG_ENABLE(assembler,
-    [  --enable-assembler      Use assembler versions of some string 
+    [  --enable-assembler      Use assembler versions of some string
                           functions if available.],
     [ ENABLE_ASSEMBLER=$enableval ],
     [ ENABLE_ASSEMBLER=no ]
@@ -705,7 +705,7 @@ then
   then
     AC_DEFINE([ENABLED_PROFILING], [1],
               [If SHOW PROFILE should be enabled])
-    AC_MSG_RESULT([yes]) 
+    AC_MSG_RESULT([yes])
   else
     ENABLED_PROFILING="no"
     AC_MSG_RESULT([no, overridden by community-features disabled])
@@ -717,7 +717,7 @@ fi
 # Use this to set the place used for unix socket used to local communication.
 AC_ARG_WITH(unix-socket-path,
     [  --with-unix-socket-path=SOCKET
-                          Where to put the unix-domain socket.  SOCKET must be 
+                          Where to put the unix-domain socket.  SOCKET must be
                           an absolute file name.],
     [ MYSQL_UNIX_ADDR=$withval ],
     [ MYSQL_UNIX_ADDR=$MYSQL_UNIX_ADDR_DEFAULT ]
@@ -763,7 +763,7 @@ AC_SUBST(MYSQL_TCP_PORT_DEFAULT)
 
 # Use this to set the place used for unix socket used to local communication.
 AC_ARG_WITH(mysqld-user,
-    [  --with-mysqld-user=username   
+    [  --with-mysqld-user=username
                           What user the mysqld daemon shall be run as.],
     [ MYSQLD_USER=$withval ],
     [ MYSQLD_USER=mysql ]
@@ -846,7 +846,7 @@ AC_SEARCH_LIBS(crypt, crypt, AC_DEFINE(HAVE_CRYPT, 1, [crypt]))
 AC_SEARCH_LIBS(inet_aton, [socket nsl resolv])
 
 # For the sched_yield() function on Solaris
-AC_SEARCH_LIBS(sched_yield, posix4, 
+AC_SEARCH_LIBS(sched_yield, posix4,
   AC_DEFINE(HAVE_SCHED_YIELD, 1, [sched_yield]))
 
 MYSQL_CHECK_ZLIB_WITH_COMPRESS
@@ -855,8 +855,8 @@ MYSQL_CHECK_ZLIB_WITH_COMPRESS
 if test "$TARGET_LINUX" = "true"
 then
   # For SHM_HUGETLB on Linux
-  AC_CHECK_DECLS(SHM_HUGETLB, 
-      AC_DEFINE([HAVE_LARGE_PAGES], [1], 
+  AC_CHECK_DECLS(SHM_HUGETLB,
+      AC_DEFINE([HAVE_LARGE_PAGES], [1],
                 [Define if you have large pages support])
       AC_DEFINE([HUGETLB_USE_PROC_MEMINFO], [1],
                 [Define if /proc/meminfo shows the huge page size (Linux only)])
@@ -990,7 +990,7 @@ case $SYSTEM_TYPE in
     CFLAGS="$CFLAGS -DHAVE_BROKEN_SNPRINTF -DSIGNALS_DONT_BREAK_READ -DDO_NOT_REMOVE_THREAD_WRAPPERS -DHPUX10 -DSIGNAL_WITH_VIO_CLOSE -DHAVE_BROKEN_PTHREAD_COND_TIMEDWAIT -DHAVE_POSIX1003_4a_MUTEX"
     CXXFLAGS="$CXXFLAGS -DHAVE_BROKEN_SNPRINTF -D_INCLUDE_LONGLONG -DSIGNALS_DONT_BREAK_READ -DDO_NOT_REMOVE_THREAD_WRAPPERS -DHPUX10 -DSIGNAL_WITH_VIO_CLOSE -DHAVE_BROKEN_PTHREAD_COND_TIMEDWAIT -DHAVE_POSIX1003_4a_MUTEX"
     if test "$with_named_thread" = "no"
-    then 
+    then
       AC_MSG_WARN([Using --with-named-thread=-lpthread])
       with_named_thread="-lcma"
     fi
@@ -1000,7 +1000,7 @@ case $SYSTEM_TYPE in
     CFLAGS="$CFLAGS -DHPUX11  -DSNPRINTF_RETURN_TRUNC -DHAVE_BROKEN_PREAD -DHAVE_BROKEN_GETPASS -DNO_FCNTL_NONBLOCK -DDO_NOT_REMOVE_THREAD_WRAPPERS -DHAVE_BROKEN_PTHREAD_COND_TIMEDWAIT"
     CXXFLAGS="$CXXFLAGS -DHPUX11  -DSNPRINTF_RETURN_TRUNC -DHAVE_BROKEN_PREAD -D_INCLUDE_LONGLONG -DNO_FCNTL_NONBLOCK -DDO_NOT_REMOVE_THREAD_WRAPPERS -DHAVE_BROKEN_PTHREAD_COND_TIMEDWAIT"
     if test "$with_named_thread" = "no"
-    then 
+    then
       AC_MSG_WARN([Using --with-named-thread=-lpthread])
       with_named_thread="-lpthread"
     fi
@@ -1082,7 +1082,7 @@ case $SYSTEM_TYPE in
     ;;
    *sgi-irix6*)
     if test "$with_named_thread" = "no"
-    then 
+    then
       AC_MSG_WARN([Using --with-named-thread=-lpthread])
       with_named_thread="-lpthread"
     fi
@@ -1114,7 +1114,7 @@ dnl Is this the right match for DEC OSF on alpha?
 
     # No thread library - in LibC
     with_named_thread=""
-    
+
     #
     # Edit Makefile.in files.
     #
@@ -1226,7 +1226,7 @@ then
                 ;;
         LINUXTHREADS* )
                 AC_MSG_RESULT("Linuxthreads")
-                AC_DEFINE([HAVE_LINUXTHREADS], [1], 
+                AC_DEFINE([HAVE_LINUXTHREADS], [1],
                       [Whether we are using Xavier Leroy's LinuxThreads])
                 with_named_thread="-lpthread"
                 ;;
@@ -1254,14 +1254,14 @@ then
           else
             AC_MSG_RESULT("Not found")
             # If this is a linux machine we should barf
-            AC_MSG_ERROR([This is a Linux system without a working getconf, 
-and Linuxthreads was not found. Please install it (or a new glibc) and try again.  
+            AC_MSG_ERROR([This is a Linux system without a working getconf,
+and Linuxthreads was not found. Please install it (or a new glibc) and try again.
 See the Installation chapter in the Reference Manual for more information.])
           fi
         else
             AC_MSG_RESULT("no need to check headers")
         fi
-        
+
         AC_MSG_CHECKING("for pthread_create in -lpthread")
         ac_save_LIBS="$LIBS"
         LIBS="$LIBS -lpthread"
@@ -1270,14 +1270,14 @@ See the Installation chapter in the Reference Manual for more information.])
               AC_MSG_RESULT("yes"),
               [ AC_MSG_RESULT("no")
                 AC_MSG_ERROR([
-This is a Linux system claiming to support threads, either Linuxthreads or NPTL, but linking a test program failed.  
-Please install one of these (or a new glibc) and try again.  
+This is a Linux system claiming to support threads, either Linuxthreads or NPTL, but linking a test program failed.
+Please install one of these (or a new glibc) and try again.
 See the Installation chapter in the Reference Manual for more information.]) ]
               )
         LIBS="$ac_save_LIBS"
     else
         AC_MSG_RESULT("no")
-    fi  # "$TARGET_LINUX" 
+    fi  # "$TARGET_LINUX"
 fi  # "$with_named_thread" = "no" -a "$with_mit_threads" = "no"
 
 
@@ -1374,7 +1374,7 @@ then
 	    CXX="$CXX -Kthread -DUNIXWARE_7 -DHAVE_BROKEN_RWLOCK"
           fi
         else
-          AC_MSG_ERROR([configure: error: Can't find thread libs on SCO UnixWare7. See the Installation chapter in the Reference Manual.]) 
+          AC_MSG_ERROR([configure: error: Can't find thread libs on SCO UnixWare7. See the Installation chapter in the Reference Manual.])
         fi
       else
         AC_MSG_RESULT("no")
@@ -1416,7 +1416,7 @@ then
       fi
       AC_MSG_RESULT(yes)
     else
-      AC_MSG_ERROR([configure: error: Can't find thread library on SCO/Caldera system. See the Installation chapter in the Reference Manual.]) 
+      AC_MSG_ERROR([configure: error: Can't find thread library on SCO/Caldera system. See the Installation chapter in the Reference Manual.])
     fi
   else
     AC_MSG_RESULT(no)
@@ -1451,7 +1451,7 @@ fi
 
 # Hack for Solaris >= 2.5
 # We want both the new and the old interface
- 
+
 if test "$with_named_thread" = "no"
 then
   AC_MSG_CHECKING("Solaris threads")
@@ -1589,7 +1589,7 @@ then
 else
   DEBUG_CFLAGS="-g"
   DEBUG_OPTIMIZE_CC=""
-  case $SYSTEM_TYPE in                               
+  case $SYSTEM_TYPE in
     *solaris*)
       OPTIMIZE_CFLAGS="-O1"
       ;;
@@ -1683,7 +1683,7 @@ if test "$enable_debug_sync" != "no"
 then
   AC_DEFINE([ENABLED_DEBUG_SYNC], [1],
             [If Debug Sync Facility should be enabled])
-  AC_MSG_RESULT([yes]) 
+  AC_MSG_RESULT([yes])
 else
   AC_MSG_RESULT([no])
 fi
@@ -1704,7 +1704,7 @@ then
 fi
 
 AC_ARG_WITH([fast-mutexes],
-	    AC_HELP_STRING([--with-fast-mutexes], 
+	    AC_HELP_STRING([--with-fast-mutexes],
 	    [Compile with fast mutexes (default is disabled)]),
 	    [with_fast_mutexes=$withval], [with_fast_mutexes=no])
 
@@ -1714,7 +1714,7 @@ then
   then
     AC_MSG_WARN(['--with-fast-mutexes' ignored when '--with-debug' is given])
   else
-    AC_DEFINE([MY_PTHREAD_FASTMUTEX], [1], 
+    AC_DEFINE([MY_PTHREAD_FASTMUTEX], [1],
 	      [Define to 1 if you want to use fast mutexes])
   fi
 fi
@@ -1782,16 +1782,16 @@ AC_ARG_WITH(lib-ccflags,
     [LIB_EXTRA_CCFLAGS=])
 AC_SUBST(LIB_EXTRA_CCFLAGS)
 
-# Avoid stupid bug on some OS 
+# Avoid stupid bug on some OS
 AC_ARG_WITH(low-memory,
-    [  --with-low-memory       Try to use less memory to compile to avoid 
+    [  --with-low-memory       Try to use less memory to compile to avoid
                           memory limitations.],
     [with_lowmem=$withval],
     [with_lowmem=no])
 if test "$with_lowmem" = "yes"
 then
-  if test "$ac_cv_prog_gcc" = "yes" 
-  then 
+  if test "$ac_cv_prog_gcc" = "yes"
+  then
     LM_CFLAGS="-fno-inline"
   else
     LM_CFLAGS="-O0"
@@ -2101,7 +2101,7 @@ case "$mysql_cv_sys_os" in
     ;;
 esac
 
-# Check that isinf() is available in math.h and can be used in both C and C++ 
+# Check that isinf() is available in math.h and can be used in both C and C++
 # code
 AC_MSG_CHECKING(for isinf in <math.h>)
 AC_TRY_LINK([#include <math.h>], [float f = 0.0; int r = isinf(f); return r],
@@ -2136,7 +2136,7 @@ int main()
     AC_MSG_RESULT(no))
   AC_LANG_RESTORE,
   AC_MSG_RESULT(no))
- 
+
 CFLAGS="$ORG_CFLAGS"
 
 # Sanity check: We chould not have any fseeko symbol unless
@@ -2271,7 +2271,7 @@ AC_TRY_COMPILE(
 [#if !defined(SCO) && !defined(__osf__) && !defined(_REENTRANT)
 #define _REENTRANT
 #endif
-#define _POSIX_PTHREAD_SEMANTICS 
+#define _POSIX_PTHREAD_SEMANTICS
 #include <pthread.h> ],
 [ void *pthread_getspecific(pthread_key_t key);
 pthread_getspecific((pthread_key_t) NULL); ],
@@ -2288,9 +2288,9 @@ mysql_cv_getspecific_args=POSIX, mysql_cv_getspecific_args=other))
 [#if !defined(SCO) && !defined(__osf__)
 #define _REENTRANT
 #endif
-#define _POSIX_PTHREAD_SEMANTICS 
+#define _POSIX_PTHREAD_SEMANTICS
 #include <pthread.h> ],
-[ 
+[
   pthread_mutexattr_t attr;
   pthread_mutex_t mp;
   pthread_mutex_init(&mp,&attr); ],
@@ -2309,7 +2309,7 @@ AC_TRY_LINK(
 [#if !defined(SCO) && !defined(__osf__)
 #define _REENTRANT
 #endif
-#define _POSIX_PTHREAD_SEMANTICS 
+#define _POSIX_PTHREAD_SEMANTICS
 #include <pthread.h>
 #include <dirent.h>],
 [ int readdir_r(DIR *dirp, struct dirent *entry, struct dirent **result);
@@ -2326,7 +2326,7 @@ AC_TRY_LINK(
 [#if !defined(SCO) && !defined(__osf__)
 #define _REENTRANT
 #endif
-#define _POSIX_PTHREAD_SEMANTICS 
+#define _POSIX_PTHREAD_SEMANTICS
 #include <pthread.h>
 #include <signal.h>],
 [#ifndef _AIX
@@ -2349,7 +2349,7 @@ AC_TRY_LINK(
 [#if !defined(SCO) && !defined(__osf__)
 #define _REENTRANT
 #endif
-#define _POSIX_PTHREAD_SEMANTICS 
+#define _POSIX_PTHREAD_SEMANTICS
 #include <pthread.h>
 #include <signal.h>],
 [sigset_t set;
@@ -2369,7 +2369,7 @@ AC_TRY_LINK(
 [#if !defined(SCO) && !defined(__osf__)
 #define _REENTRANT
 #endif
-#define _POSIX_PTHREAD_SEMANTICS 
+#define _POSIX_PTHREAD_SEMANTICS
 #include <pthread.h>],
 [pthread_attr_t thr_attr;
 pthread_attr_setscope(&thr_attr,0);],
@@ -2566,7 +2566,7 @@ AC_ARG_WITH(readline,
     [ with_readline=$withval ],
     [ with_readline=undefined ]
     )
-    
+
 AC_ARG_WITH(libedit,
     [  --without-libedit       Use system libedit instead of bundled copy.],
     [ with_libedit=$withval ],
@@ -2591,7 +2591,7 @@ fi
 #                | from mysql     | according to results of m4 tests
 # ---------------+ sources (if it +      +----------------------------------
 #    undefined   | is presented)  |      | use libedit from mysql sources
-                   
+
 
 compile_readline="no"
 compile_libedit="no"

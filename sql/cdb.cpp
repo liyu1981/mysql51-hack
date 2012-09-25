@@ -59,3 +59,53 @@ init_cdb_shm_mgr(const char* mysqld_data_path)
     return true;
 }
 
+double
+cdb_calc_time_diff(CDBInsDmlOpJunk& op_junk)
+{
+    double b = op_junk._begin_tval.tv_sec*1.0+op_junk._begin_tval.tv_usec*0.000001;
+    double e = op_junk._end_tval.tv_sec*1.0+op_junk._end_tval.tv_usec*0.000001;
+    return e-b;
+}
+
+void
+cdb_ins_dml_begin(CDBInsDmlOp& op, CDBInsDmlOpJunk& op_junk)
+{
+    gettimeofday(&op_junk._begin_tval, NULL);
+}
+
+void
+cdb_ins_dml_end(CDBInsDmlOp& op, CDBInsDmlOpJunk& op_junk)
+{
+    gettimeofday(&op_junk._end_tval, NULL);
+    double op_diff = cdb_calc_time_diff(op_junk);
+
+    CDBShm& s = CDBShmMgr::getInstance().get("cdb_ins_dml");
+    TfcShmMap<CDBInsDmlOpKey, CDBInsDmlOp, TfcShmMapNoLock> m;
+    m._ca = s._ca;
+
+    int rv = m.find(op._key);
+    if (rv > 0) {
+        // not found
+        op._total = 1;
+        op._time_sum = op_diff;
+        op._time_min = op_diff;
+        op._time_max = op_diff;
+        m.insert(op._key, op);
+    }
+    else if (rv == 0) {
+        // found, so update
+        CDBInsDmlOp entry;
+        m.get(op._key, entry);
+        entry._total += 1;
+        entry._time_sum += op_diff;
+        if (op_diff < entry._time_min)
+            entry._time_min = op_diff;
+        if (op_diff > entry._time_max)
+            entry._time_max = op_diff;
+        m.insert(entry._key, entry);
+    }
+    else {
+        // TOFIX: sth wrong, may be shm map corrupted?
+    }
+}
+
