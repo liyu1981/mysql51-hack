@@ -207,7 +207,7 @@ struct TfcShmMapIterator
 	int cur_data_flag;
 };
 
-template<class KT, class VT, class LockPolicy = TfcShmMapLock>
+template<class KT, class VT, class LockPolicy = TfcShmMapNoLock>
 class TfcShmMap
 	: public TfcShmMapBase<VT, LockPolicy>
 {

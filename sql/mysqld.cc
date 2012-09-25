@@ -2805,6 +2805,9 @@ pthread_handler_t signal_hand(void *arg __attribute__((unused)))
       while ((error=my_sigwait(&set,&sig)) == EINTR) ;
     if (cleanup_done)
     {
+      //yuli: cdb final cleanup start
+      shutdown_cdb_shm_mgr();
+      //yuli: cdb final cleanup end
       DBUG_PRINT("quit",("signal_handler: calling my_thread_end()"));
       my_thread_end();
       signal_thread_in_use= 0;

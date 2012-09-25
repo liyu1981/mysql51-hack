@@ -1,6 +1,7 @@
 #include "../sql/cdb.h"
 #include "../sql/cdb_shm_mgr.h"
 #include "../sql/tfc_shm_map.h"
+#include "../sql/tfc_spin_lock.h"
 using namespace cdb;
 
 #include <string>
@@ -18,13 +19,16 @@ usage(const char* appname)
 void
 dump_ins_dml(const CDBShm& s)
 {
-    TfcShmMap<CDBInsDmlOpKey, CDBInsDmlOp, TfcShmMapNoLock> m;
+    TfcShmMap<CDBInsDmlOpKey, CDBInsDmlOp> m;
     m._ca = s._ca;
 
-    cout << "shm[" << s._name << "] addr " << hex << s._addr << " size " << s._size << endl;
+    cout << "shm[" << s._name << "] addr " << hex << s._addr
+         << " key " << s._key
+         << " size " << dec << s._size << endl;
     cout << "#type result total time_sum time_min time_max" << endl;
 
-    for (TfcShmMap<CDBInsDmlOpKey, CDBInsDmlOp, TfcShmMapNoLock>::iterator it = m.begin();
+    spin_lock(s._lock);
+    for (TfcShmMap<CDBInsDmlOpKey, CDBInsDmlOp>::iterator it = m.begin();
          it != m.end();
          it++) {
          CDBInsDmlOp entry;
@@ -32,13 +36,14 @@ dump_ins_dml(const CDBShm& s)
             cout << entry._key._type << " "
                  << entry._key._result << " "
                  << entry._total << " "
-                 << fixed << setprecision(6)
-                 << entry._time_sum << " "
-                 << entry._time_min << " "
-                 << entry._time_max << " "
+                 << fixed << setprecision(3)
+                 << entry._time_sum*1000 << " "
+                 << entry._time_min*1000 << " "
+                 << entry._time_max*1000 << " "
                  << endl;
          }
     }
+    spin_unlock(s._lock);
 }
 
 int
@@ -49,7 +54,7 @@ main(int argc, char* argv[])
         exit(1);
     }
 
-    if (!init_cdb_shm_mgr(argv[1])) {
+    if (!attach_cdb_shm_mgr(argv[1])) {
         cerr << "init_cdb_shm_mgr error: " << cdb_errno << "(" << cdb_2nd_errno << ")" << endl;
         exit(cdb_errno);
     }

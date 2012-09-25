@@ -2301,8 +2301,16 @@ mysql_execute_command(THD *thd)
 
     res= execute_sqlcom_select(thd, all_tables);
     //yuli: cdb modification start
-    op._key._result = res;
-    cdb_ins_dml_end(op, op_junk);
+    if (res) {
+        if (thd->main_da.is_error()) {
+            op._key._result = thd->main_da.sql_errno();
+            cdb_ins_dml_end(op, op_junk);
+        }
+        else {
+            op._key._result = thd->main_da.status();
+            cdb_ins_dml_end(op, op_junk);
+        }
+    }
     //yuli: cdb modification end
     break;
   case SQLCOM_PREPARE:

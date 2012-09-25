@@ -1,13 +1,16 @@
 #include "cdb_shm_mgr.h"
 #include "cdb_error.h"
 
+#include <sys/ipc.h>
+#include <sys/shm.h>
+
 namespace cdb {
 
 static const int C_DEFAULT_OPEN_FLAG = 0600;
 
 CDBShmMgr* CDBShmMgr::_instance = NULL;
 
-CDBShm wrong_shm = {"", 0, 0, 0, 0, false, 0};
+CDBShm wrong_shm = {"", 0, 0, 0, 0, false, 0, 0};
 
 CDBShmMgr::CDBShmMgr()
 {
@@ -20,6 +23,33 @@ CDBShmMgr::getInstance()
         _instance = new CDBShmMgr();
     }
     return *_instance;
+}
+
+int
+CDBShmMgr::init(const char* mysqld_data_path, int shm_conf_size, ofstream& shmid_of)
+{
+    size_t size = sizeof(spinlock_t)*shm_conf_size;
+    key_t key = ftok(mysqld_data_path, 0);
+    if (!reg(CDB_SHM_LOCKS_NAME, key, size)) {
+        return CDB_SHM_INIT_SHMLOCKS_ERROR;
+    }
+    CDBShm& sm = get(CDB_SHM_LOCKS_NAME);
+    if (!sm._new) {
+        return CDB_SHM_INIT_SHMLOCKS_STALE;
+    }
+    shmid_of << CDB_SHM_LOCKS_NAME << " " << key << endl;
+    return CDB_FINE;
+}
+
+int
+CDBShmMgr::attach(const char* mysqld_data_path, int shm_conf_size)
+{
+    size_t size = sizeof(spinlock_t)*shm_conf_size;
+    key_t key = ftok(mysqld_data_path, 0);
+    if (!reg(CDB_SHM_LOCKS_NAME, key, size)) {
+        return CDB_SHM_INIT_SHMLOCKS_ERROR;
+    }
+    return CDB_FINE;
 }
 
 CDBShm&

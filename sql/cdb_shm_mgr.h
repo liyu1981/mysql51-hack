@@ -3,12 +3,16 @@
 
 #include <string>
 #include <map>
+#include <fstream>
 #include <sys/shm.h>
 #include <unistd.h>
 
 #include "cdb_error.h"
 #include "tfc_shm_map.h"
 #include "tfc_cache_access.h"
+#include "tfc_spin_lock.h"
+
+#define CDB_SHM_LOCKS_NAME "cdb_shm_locks"
 
 namespace cdb {
 
@@ -25,12 +29,15 @@ struct CDBShm
     void*        _addr;
     bool         _new;
     CacheAccess* _ca;
+    spinlock_t*  _lock;
 };
 
 class CDBShmMgr
 {
 public:
     static CDBShmMgr& getInstance();
+    int init(const char* mysqld_data_path, int shm_conf_size, ofstream& shmid_of);
+    int attach(const char* mysqld_data_path, int shm_conf_size);
     CDBShm& get(const char* c);
     bool reg(const CDBShm& s);
 
@@ -56,17 +63,6 @@ private:
     CDBShmMgr(const CDBShmMgr&);
     CDBShmMgr& operator=(const CDBShmMgr&);
 };
-
-//template<typename KeyType, typename ValueType>
-//int
-//cdb_shm_map_insert(const string& name, KeyType& key, ValueType& value)
-//{
-//    CDBShmMgr& sm = CDBShmMgr::getInstance();
-//    CDBShm& s = sm.get(name);
-//    if (s._addr == 0) {
-//        return CDB_SHM_NOT_FOUND;
-//    }
-//}
 
 } // end of namespace cdb
 

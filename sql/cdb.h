@@ -21,7 +21,12 @@ extern int cdb_shm_conf_size;
 extern int cdb_errno;
 extern int cdb_2nd_errno;
 
+// for mysqld
 bool init_cdb_shm_mgr(const char* mysqld_data_path);
+bool shutdown_cdb_shm_mgr();
+
+// for cdb tools
+bool attach_cdb_shm_mgr(const char* mysqld_data_path);
 
 #define CDB_SELECT 1
 

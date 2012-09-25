@@ -1,4 +1,4 @@
-cdb_prefix=/data/yuli/mysql-dev/mysql-5.1.54/sql/
+cdb_prefix=$(shell readlink -f ..)/sql/
 OBJEXT=o
 include ../sql/cdb.mk
 
