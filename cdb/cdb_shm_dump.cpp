@@ -16,6 +16,11 @@ usage(const char* appname)
          << endl;
 }
 
+const char* type_names[] = {
+    "NOTNAME",
+    "SELECT"
+};
+
 void
 dump_ins_dml(const CDBShm& s)
 {
@@ -33,7 +38,7 @@ dump_ins_dml(const CDBShm& s)
          it++) {
          CDBInsDmlOp entry;
          if (it.extract(entry) == 0) {
-            cout << entry._key._type << " "
+            cout << type_names[entry._key._type] << " "
                  << entry._key._result << " "
                  << entry._total << " "
                  << fixed << setprecision(3)
