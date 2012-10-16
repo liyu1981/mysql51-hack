@@ -494,6 +494,7 @@ INCLUDES = -I$(top_builddir)/include -I$(top_srcdir)/include \
 			-I$(top_builddir)/sql -I$(top_srcdir)/sql \
 			-I$(top_srcdir)/sql/examples \
 			-I$(top_srcdir)/regex \
+			-I$(top_srcdir)/cdb \
 			$(openssl_includes) @ZLIB_INCLUDES@ \
 			@condition_dependent_plugin_includes@
 
@@ -553,6 +554,7 @@ INC_LIB = $(top_builddir)/regex/libregex.a \
 		$(top_builddir)/strings/libmystrings.a \
 		$(top_builddir)/dbug/libdbug.a \
 		$(top_builddir)/vio/libvio.a \
+		$(top_builddir)/cdb/libcdb.a \
                 @NDB_SCI_LIBS@ \
 		@mysql_plugin_libs@ \
 		$(yassl_inc_libs)

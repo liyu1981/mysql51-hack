@@ -20,12 +20,12 @@
 echo "Finding system information for a MySQL bug report"
 
 VERSION="5.1.54"
-COMPILATION_COMMENT="Source distribution"
+COMPILATION_COMMENT="MySQL Customize Server (GPL)"
 BUGmysql="mysql@lists.mysql.com"
 # This is set by configure
 COMP_CALL_INFO="CC='gcc'  CFLAGS='-g -O2'  CXX=''  CXXFLAGS=''  LDFLAGS=''  ASFLAGS=''"
-COMP_RUN_INFO="CC='gcc'  CFLAGS='-g -DSAFE_MUTEX -DSAFEMALLOC -g -O2   -DUNIV_LINUX -DUNIV_LINUX'  CXX='g++'  CXXFLAGS='-g -DSAFE_MUTEX -DSAFEMALLOC    -fno-implicit-templates -fno-exceptions -fno-rtti'  LDFLAGS=' -rdynamic '  ASFLAGS=''"
-CONFIGURE_LINE="./configure  '--with-debug=full' '--prefix=/data1/mysql-debug-yuli/base'"
+COMP_RUN_INFO="CC='gcc'  CFLAGS='-g -DSAFE_MUTEX -DSAFEMALLOC -g -O2   -DUNIV_LINUX -DUNIV_LINUX'  CXX='g++'  CXXFLAGS='-g -DSAFE_MUTEX -DSAFEMALLOC    -fno-exceptions -fno-rtti'  LDFLAGS=' -rdynamic '  ASFLAGS=''"
+CONFIGURE_LINE="./configure  '--with-debug=full' '--prefix=/usr/local/mysql_custom' '--localstatedir=/usr/local/mysql/data' '--sharedstatedir=/usr/local/mysql/data' '--libexecdir=/usr/local/mysql_custom/bin' '--with-comment=MySQL Customize Server (GPL)' '--with-server-suffix=' '--enable-thread-safe-client' '--enable-local-infile' '--with-pic' '--with-fast-mutexes' '--with-client-ldflags=-static' '--with-mysqld-ldflags=-static' '--with-zlib-dir=bundled' '--with-big-tables' '--with-ssl' '--with-readline' '--with-embedded-server' '--with-plugins=partition,innobase,innodb_plugin,blackhole,archive' '--with-extra-charsets=complex'"
 
 LIBC_INFO=""
 for pat in /lib/libc.* /lib/libc-* /usr/lib/libc.* /usr/lib/libc-*

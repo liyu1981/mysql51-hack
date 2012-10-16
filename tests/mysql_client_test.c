@@ -234,7 +234,7 @@ static void print_st_error(MYSQL_STMT *stmt, const char *msg)
 }
 
 /*
-  Enhanced version of mysql_client_init(), which may also set shared memory 
+  Enhanced version of mysql_client_init(), which may also set shared memory
   base on Windows.
 */
 static MYSQL *mysql_client_init(MYSQL* con)
@@ -296,13 +296,13 @@ mysql_simple_prepare(MYSQL *mysql_arg, const char *query)
 
 /**
    Connect to the server with options given by arguments to this application,
-   stored in global variables opt_host, opt_user, opt_password, opt_db, 
+   stored in global variables opt_host, opt_user, opt_password, opt_db,
    opt_port and opt_unix_socket.
 
    @param flag[in]           client_flag passed on to mysql_real_connect
    @param protocol[in]       MYSQL_PROTOCOL_* to use for this connection
    @param auto_reconnect[in] set to 1 for auto reconnect
-   
+
    @return pointer to initialized and connected MYSQL object
 */
 static MYSQL* client_connect(ulong flag, uint protocol, my_bool auto_reconnect)
@@ -783,7 +783,7 @@ static void do_verify_prepare_field(MYSQL_RES *result,
     if (table)
       fprintf(stdout, "\n    table    :`%s`\t(expected: `%s`)",
               field->table, table);
-    if (org_table)	      
+    if (org_table)
       fprintf(stdout, "\n    org_table:`%s`\t(expected: `%s`)",
               field->org_table, org_table);
     fprintf(stdout, "\n    database :`%s`\t(expected: `%s`)", field->db, db);
@@ -1415,7 +1415,7 @@ static void test_prepare_insert_update()
   const char **cur_query;
 
   myheader("test_prepare_insert_update");
-  
+
   for (cur_query= testcase; *cur_query; cur_query++)
   {
     char query[MAX_TEST_QUERY_LENGTH];
@@ -7855,7 +7855,7 @@ static void test_explain_bug()
   }
   else
   {
-    verify_prepare_field(result, 6, "key_len", "", MYSQL_TYPE_VAR_STRING, "", 
+    verify_prepare_field(result, 6, "key_len", "", MYSQL_TYPE_VAR_STRING, "",
                          "", "", NAME_CHAR_LEN*MAX_KEY, 0);
   }
 
@@ -11807,7 +11807,7 @@ static void test_bug5399()
     Ascii 97 is 'a', which gets mapped to Ascii 65 'A' unless internal
     statement id hash in the server uses binary collation.
   */
-#define NUM_OF_USED_STMT 97 
+#define NUM_OF_USED_STMT 97
   MYSQL_STMT *stmt_list[NUM_OF_USED_STMT];
   MYSQL_STMT **stmt;
   MYSQL_BIND my_bind[1];
@@ -12773,7 +12773,7 @@ static void test_rewind(void)
   while(!(rc= mysql_stmt_fetch(stmt)))
     if (!opt_silent)
       printf("fetched result after seek:%ld\n", Data);
-  
+
   DIE_UNLESS(rc == MYSQL_NO_DATA);
 
   stmt_text= "DROP TABLE t1";
@@ -13382,7 +13382,7 @@ static void test_bug8378()
   DIE_UNLESS(memcmp(out, TEST_BUG8378_OUT, len) == 0);
 
   sprintf(buf, "SELECT '%s'", out);
-  
+
   rc=mysql_real_query(lmysql, buf, strlen(buf));
   myquery(rc);
 
@@ -15633,7 +15633,7 @@ static void test_mysql_insert_id()
   DIE_UNLESS(res == 0);
   rc= mysql_query(mysql, "drop table t2");
   myquery(rc);
-  
+
   rc= mysql_query(mysql, "insert into t1 select null,'d'");
   myquery(rc);
   res= mysql_insert_id(mysql);
@@ -16735,7 +16735,7 @@ static void test_bug29687()
 
 
 /*
-  Bug #29692  	Single row inserts can incorrectly report a huge number of 
+  Bug #29692  	Single row inserts can incorrectly report a huge number of
   row insertions
 */
 
@@ -17794,7 +17794,7 @@ static void test_bug43560(void)
   const char*  values[] = {"eins", "zwei", "drei", "viele", NULL};
   const char   insert_str[] = "INSERT INTO t1 (c2) VALUES (?)";
   unsigned long length;
-  
+
   DBUG_ENTER("test_bug43560");
   myheader("test_bug43560");
 
@@ -17837,7 +17837,7 @@ static void test_bug43560(void)
   rc= mysql_stmt_execute(stmt);
   check_execute(stmt, rc);
 
-  /* 
+  /*
     Set up the server to close this session's server-side socket after
     next execution of prep statement.
   */
@@ -17850,7 +17850,7 @@ static void test_bug43560(void)
   rc= mysql_stmt_execute(stmt);
   DIE_UNLESS(rc && mysql_stmt_errno(stmt) == CR_SERVER_LOST);
 
-  /* 
+  /*
     Third execute; should fail (connection already closed), or SIGSEGV in
     case of a Bug#43560 type regression in which case the whole test fails.
   */
@@ -17948,7 +17948,7 @@ static void test_bug41078(void)
 
   rc= mysql_stmt_attr_set(stmt, STMT_ATTR_CURSOR_TYPE, &cursor_type);
   check_execute(stmt, rc);
-  
+
   bzero(&param, sizeof(param));
   param.buffer_type= MYSQL_TYPE_STRING;
   param.buffer= (void *) param_str;
@@ -17968,7 +17968,7 @@ static void test_bug41078(void)
   result.is_null= &is_null;
   result.length= &len;
   result.error=  &error;
-  
+
   rc= mysql_stmt_bind_result(stmt, &result);
   check_execute(stmt, rc);
 
@@ -18436,8 +18436,8 @@ static struct my_option client_test_long_options[] =
   {"silent", 's', "Be more silent", 0, 0, 0, GET_NO_ARG, NO_ARG, 0, 0, 0, 0, 0,
    0},
 #ifdef HAVE_SMEM
-  {"shared-memory-base-name", 'm', "Base name of shared memory.", 
-  &shared_memory_base_name, (uchar**)&shared_memory_base_name, 0, 
+  {"shared-memory-base-name", 'm', "Base name of shared memory.",
+  &shared_memory_base_name, (uchar**)&shared_memory_base_name, 0,
   GET_STR, REQUIRED_ARG, 0, 0, 0, 0, 0, 0},
 #endif
   {"socket", 'S', "Socket file to use for connection",
@@ -18780,7 +18780,7 @@ get_one_option(int optid, const struct my_option *opt __attribute__((unused)),
   case 'T':
     {
       struct my_tests_st *fptr;
-      
+
       printf("All possible test names:\n\n");
       for (fptr= my_tests; fptr->name; fptr++)
 	printf("%s\n", fptr->name);
@@ -18860,7 +18860,7 @@ int main(int argc, char **argv)
     if (!argc)
     {
       for (fptr= my_tests; fptr->name; fptr++)
-	(*fptr->function)();	
+	(*fptr->function)();
     }
     else
     {

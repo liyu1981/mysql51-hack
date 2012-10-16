@@ -14,22 +14,21 @@
 
 @SET_MAKE@
 
-# Copyright (C) 2000-2006 MySQL AB
+# Copyright (C) 2000-2003, 2005, 2006 MySQL AB
 #
-# This library is free software; you can redistribute it and/or
-# modify it under the terms of the GNU Library General Public
-# License as published by the Free Software Foundation; version 2
-# of the License.
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; version 2 of the License.
 #
-# This library is distributed in the hope that it will be useful,
+# This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-# Library General Public License for more details.
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
 #
-# You should have received a copy of the GNU Library General Public
-# License along with this library; if not, write to the Free
-# Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
-# MA 02111-1307, USA
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
 
 VPATH = @srcdir@
 pkgdatadir = $(datadir)/@PACKAGE@
@@ -50,11 +49,9 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 target_triplet = @target@
-bin_PROGRAMS = mysql_client_test$(EXEEXT)
-noinst_PROGRAMS = insert_test$(EXEEXT) select_test$(EXEEXT) \
-	thread_test$(EXEEXT) bug25714$(EXEEXT)
-subdir = tests
-DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in
+subdir = cdb
+DIST_COMMON = $(noinst_HEADERS) $(srcdir)/Makefile.am \
+	$(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/config/ac-macros/maintainer.m4 \
 	$(top_srcdir)/config/ac-macros/alloca.m4 \
@@ -74,29 +71,20 @@ am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 mkinstalldirs = $(install_sh) -d
 CONFIG_HEADER = $(top_builddir)/include/config.h
 CONFIG_CLEAN_FILES =
-am__installdirs = "$(DESTDIR)$(bindir)"
-binPROGRAMS_INSTALL = $(INSTALL_PROGRAM)
-PROGRAMS = $(bin_PROGRAMS) $(noinst_PROGRAMS)
-am_bug25714_OBJECTS = bug25714.$(OBJEXT)
-bug25714_OBJECTS = $(am_bug25714_OBJECTS)
-bug25714_LDADD = $(LDADD)
-am_insert_test_OBJECTS = insert_test.$(OBJEXT)
-insert_test_OBJECTS = $(am_insert_test_OBJECTS)
-insert_test_LDADD = $(LDADD)
-am_mysql_client_test_OBJECTS = mysql_client_test.$(OBJEXT) \
-	my_memmem.$(OBJEXT)
-mysql_client_test_OBJECTS = $(am_mysql_client_test_OBJECTS)
-am__DEPENDENCIES_1 = $(LIBMYSQLCLIENT_LA)
-am__DEPENDENCIES_2 =
-mysql_client_test_DEPENDENCIES = $(am__DEPENDENCIES_1) \
-	$(am__DEPENDENCIES_2)
-am_select_test_OBJECTS = select_test.$(OBJEXT)
-select_test_OBJECTS = $(am_select_test_OBJECTS)
-select_test_LDADD = $(LDADD)
-thread_test_SOURCES = thread_test.c
-thread_test_OBJECTS = thread_test.$(OBJEXT)
-thread_test_LDADD = $(LDADD)
-thread_test_DEPENDENCIES = $(LIBMYSQLCLIENT_LA)
+am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
+am__vpath_adj = case $$p in \
+    $(srcdir)/*) f=`echo "$$p" | sed "s|^$$srcdirstrip/||"`;; \
+    *) f=$$p;; \
+  esac;
+am__strip_dir = `echo $$p | sed -e 's|^.*/||'`;
+am__installdirs = "$(DESTDIR)$(pkglibdir)"
+pkglibLIBRARIES_INSTALL = $(INSTALL_DATA)
+LIBRARIES = $(pkglib_LIBRARIES)
+libcdb_a_AR = $(AR) $(ARFLAGS)
+libcdb_a_LIBADD =
+am_libcdb_a_OBJECTS = cdb.$(OBJEXT) cdb_shm_mgr.$(OBJEXT) tfc_binlog.$(OBJEXT) tfc_md5.$(OBJEXT)\
+	tfc_cache_access.$(OBJEXT) tfc_cache_chunk_alloc.$(OBJEXT) tfc_cache_hash_map.$(OBJEXT)
+libcdb_a_OBJECTS = $(am_libcdb_a_OBJECTS)
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)/include
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
@@ -109,12 +97,18 @@ CCLD = $(CC)
 LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 	--mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) \
 	$(LDFLAGS) -o $@
-SOURCES = $(bug25714_SOURCES) $(insert_test_SOURCES) \
-	$(mysql_client_test_SOURCES) $(select_test_SOURCES) \
-	thread_test.c
-DIST_SOURCES = $(bug25714_SOURCES) $(insert_test_SOURCES) \
-	$(mysql_client_test_SOURCES) $(select_test_SOURCES) \
-	thread_test.c
+CXXCOMPILE = $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
+	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
+LTCXXCOMPILE = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
+	--mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
+	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
+CXXLD = $(CXX)
+CXXLINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
+	--mode=link $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) $(AM_LDFLAGS) \
+	$(LDFLAGS) -o $@
+SOURCES = $(libcdb_a_SOURCES)
+DIST_SOURCES = $(libcdb_a_SOURCES)
+HEADERS = $(noinst_HEADERS)
 ETAGS = etags
 CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -158,9 +152,7 @@ CXXFLAGS = @CXXFLAGS@
 CXXLDFLAGS = @CXXLDFLAGS@
 CXX_VERSION = @CXX_VERSION@
 CYGPATH_W = @CYGPATH_W@
-
-# Fix for mit-threads
-DEFS = -DMYSQL_CLIENT_NO_THREADS
+DEFS = @DEFS@
 DEPDIR = @DEPDIR@
 DIFF = @DIFF@
 DOT_FRM_VERSION = @DOT_FRM_VERSION@
@@ -192,7 +184,7 @@ LD_VERSION_SCRIPT = @LD_VERSION_SCRIPT@
 LIBDL = @LIBDL@
 LIBEDIT_LOBJECTS = @LIBEDIT_LOBJECTS@
 LIBOBJS = @LIBOBJS@
-LIBS = @CLIENT_LIBS@
+LIBS = @LIBS@
 LIBTOOL = @LIBTOOL@
 LIB_EXTRA_CCFLAGS = @LIB_EXTRA_CCFLAGS@
 LIPO = @LIPO@
@@ -422,38 +414,21 @@ yassl_libs = @yassl_libs@
 yassl_taocrypt_extra_cxxflags = @yassl_taocrypt_extra_cxxflags@
 yassl_thread_cxxflags = @yassl_thread_cxxflags@
 zlib_dir = @zlib_dir@
-@THREAD_SAFE_CLIENT_FALSE@LIBMYSQLCLIENT_LA = $(top_builddir)/libmysql/libmysqlclient.la
-@THREAD_SAFE_CLIENT_TRUE@LIBMYSQLCLIENT_LA = $(top_builddir)/libmysql_r/libmysqlclient_r.la
-EXTRA_DIST = auto_increment.res auto_increment.tst \
-			function.res function.tst lock_test.pl lock_test.res \
-			export.pl big_record.pl \
-			fork2_test.pl fork_big.pl \
-			insert_and_repair.pl \
-			grant.pl grant.res test_delayed_insert.pl \
-			pmail.pl mail_to_db.pl table_types.pl \
-			myisam-big-rows.tst \
-			CMakeLists.txt
-
 INCLUDES = -I$(top_builddir)/include -I$(top_srcdir)/include \
 			$(openssl_includes)
 
-LDADD = @CLIENT_EXTRA_LDFLAGS@ \
-                        $(LIBMYSQLCLIENT_LA)
+LDADD = @CLIENT_EXTRA_LDFLAGS@ $(openssl_libs) $(yassl_libs)
+pkglib_LIBRARIES = libcdb.a
+noinst_HEADERS = cdb_error.h cdb_shm_mgr.h tfc_cache_access.h tfc_cache_hash_map.h tfc_shm_map.h\
+			cdb.h tfc_binlog.h tfc_cache_chunk_alloc.h tfc_md5.h tfc_spin_lock.h
+libcdb_a_SOURCES = cdb.cpp cdb_shm_mgr.cpp tfc_binlog.cpp tfc_cache_access.cpp tfc_cache_chunk_alloc.cpp \
+			tfc_cache_hash_map.cpp tfc_md5.cpp
 
-mysql_client_test_LDADD = $(LDADD) $(CXXLDFLAGS)
-mysql_client_test_SOURCES = mysql_client_test.c\
-			$(top_srcdir)/mysys/my_memmem.c
-
-insert_test_SOURCES = insert_test.c
-select_test_SOURCES = select_test.c
-insert_test_DEPENDENCIES = $(LIBRARIES) $(pkglib_LTLIBRARIES)
-select_test_DEPENDENCIES = $(LIBRARIES) $(pkglib_LTLIBRARIES)
-bug25714_SOURCES = bug25714.c
-bug25714_DEPENDENCIES = $(LIBRARIES) $(pkglib_LTLIBRARIES)
+EXTRA_DIST = CMakeLists.txt
 all: all-am
 
 .SUFFIXES:
-.SUFFIXES: .c .lo .o .obj
+.SUFFIXES: .c .lo .o .obj .cpp
 $(srcdir)/Makefile.in:  $(srcdir)/Makefile.am  $(am__configure_deps)
 	@for dep in $?; do \
 	  case '$(am__configure_deps)' in \
@@ -463,9 +438,9 @@ $(srcdir)/Makefile.in:  $(srcdir)/Makefile.am  $(am__configure_deps)
 	      exit 1;; \
 	  esac; \
 	done; \
-	echo ' cd $(top_srcdir) && $(AUTOMAKE) --gnu  tests/Makefile'; \
+	echo ' cd $(top_srcdir) && $(AUTOMAKE) --gnu  cdb/Makefile'; \
 	cd $(top_srcdir) && \
-	  $(AUTOMAKE) --gnu  tests/Makefile
+	  $(AUTOMAKE) --gnu  cdb/Makefile
 .PRECIOUS: Makefile
 Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 	@case '$?' in \
@@ -483,56 +458,39 @@ $(top_srcdir)/configure:  $(am__configure_deps)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
 $(ACLOCAL_M4):  $(am__aclocal_m4_deps)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
-install-binPROGRAMS: $(bin_PROGRAMS)
+install-pkglibLIBRARIES: $(pkglib_LIBRARIES)
 	@$(NORMAL_INSTALL)
-	test -z "$(bindir)" || $(MKDIR_P) "$(DESTDIR)$(bindir)"
-	@list='$(bin_PROGRAMS)'; for p in $$list; do \
-	  p1=`echo $$p|sed 's/$(EXEEXT)$$//'`; \
-	  if test -f $$p \
-	     || test -f $$p1 \
-	  ; then \
-	    f=`echo "$$p1" | sed 's,^.*/,,;$(transform);s/$$/$(EXEEXT)/'`; \
-	   echo " $(INSTALL_PROGRAM_ENV) $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=install $(binPROGRAMS_INSTALL) '$$p' '$(DESTDIR)$(bindir)/$$f'"; \
-	   $(INSTALL_PROGRAM_ENV) $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=install $(binPROGRAMS_INSTALL) "$$p" "$(DESTDIR)$(bindir)/$$f" || exit 1; \
+	test -z "$(pkglibdir)" || $(MKDIR_P) "$(DESTDIR)$(pkglibdir)"
+	@list='$(pkglib_LIBRARIES)'; for p in $$list; do \
+	  if test -f $$p; then \
+	    f=$(am__strip_dir) \
+	    echo " $(pkglibLIBRARIES_INSTALL) '$$p' '$(DESTDIR)$(pkglibdir)/$$f'"; \
+	    $(pkglibLIBRARIES_INSTALL) "$$p" "$(DESTDIR)$(pkglibdir)/$$f"; \
+	  else :; fi; \
+	done
+	@$(POST_INSTALL)
+	@list='$(pkglib_LIBRARIES)'; for p in $$list; do \
+	  if test -f $$p; then \
+	    p=$(am__strip_dir) \
+	    echo " $(RANLIB) '$(DESTDIR)$(pkglibdir)/$$p'"; \
+	    $(RANLIB) "$(DESTDIR)$(pkglibdir)/$$p"; \
 	  else :; fi; \
 	done
 
-uninstall-binPROGRAMS:
+uninstall-pkglibLIBRARIES:
 	@$(NORMAL_UNINSTALL)
-	@list='$(bin_PROGRAMS)'; for p in $$list; do \
-	  f=`echo "$$p" | sed 's,^.*/,,;s/$(EXEEXT)$$//;$(transform);s/$$/$(EXEEXT)/'`; \
-	  echo " rm -f '$(DESTDIR)$(bindir)/$$f'"; \
-	  rm -f "$(DESTDIR)$(bindir)/$$f"; \
+	@list='$(pkglib_LIBRARIES)'; for p in $$list; do \
+	  p=$(am__strip_dir) \
+	  echo " rm -f '$(DESTDIR)$(pkglibdir)/$$p'"; \
+	  rm -f "$(DESTDIR)$(pkglibdir)/$$p"; \
 	done
 
-clean-binPROGRAMS:
-	@list='$(bin_PROGRAMS)'; for p in $$list; do \
-	  f=`echo $$p|sed 's/$(EXEEXT)$$//'`; \
-	  echo " rm -f $$p $$f"; \
-	  rm -f $$p $$f ; \
-	done
-
-clean-noinstPROGRAMS:
-	@list='$(noinst_PROGRAMS)'; for p in $$list; do \
-	  f=`echo $$p|sed 's/$(EXEEXT)$$//'`; \
-	  echo " rm -f $$p $$f"; \
-	  rm -f $$p $$f ; \
-	done
-bug25714$(EXEEXT): $(bug25714_OBJECTS) $(bug25714_DEPENDENCIES)
-	@rm -f bug25714$(EXEEXT)
-	$(LINK) $(bug25714_OBJECTS) $(bug25714_LDADD) $(LIBS)
-insert_test$(EXEEXT): $(insert_test_OBJECTS) $(insert_test_DEPENDENCIES)
-	@rm -f insert_test$(EXEEXT)
-	$(LINK) $(insert_test_OBJECTS) $(insert_test_LDADD) $(LIBS)
-mysql_client_test$(EXEEXT): $(mysql_client_test_OBJECTS) $(mysql_client_test_DEPENDENCIES)
-	@rm -f mysql_client_test$(EXEEXT)
-	$(LINK) $(mysql_client_test_OBJECTS) $(mysql_client_test_LDADD) $(LIBS)
-select_test$(EXEEXT): $(select_test_OBJECTS) $(select_test_DEPENDENCIES)
-	@rm -f select_test$(EXEEXT)
-	$(LINK) $(select_test_OBJECTS) $(select_test_LDADD) $(LIBS)
-thread_test$(EXEEXT): $(thread_test_OBJECTS) $(thread_test_DEPENDENCIES)
-	@rm -f thread_test$(EXEEXT)
-	$(LINK) $(thread_test_OBJECTS) $(thread_test_LDADD) $(LIBS)
+clean-pkglibLIBRARIES:
+	-test -z "$(pkglib_LIBRARIES)" || rm -f $(pkglib_LIBRARIES)
+libcdb.a: $(libcdb_a_OBJECTS) $(libcdb_a_DEPENDENCIES) 
+	-rm -f libcdb.a
+	$(libcdb_a_AR) libcdb.a $(libcdb_a_OBJECTS) $(libcdb_a_LIBADD)
+	$(RANLIB) libcdb.a
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -540,12 +498,13 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/bug25714.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/insert_test.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/my_memmem.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mysql_client_test.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/select_test.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/thread_test.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cdb.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cdb_shm_mgr.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tfc_binlog.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tfc_cache_access.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tfc_cache_chunk_alloc.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tfc_cache_hash_map.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tfc_md5.Po@am__quote@
 
 .c.o:
 @am__fastdepCC_TRUE@	$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
@@ -568,19 +527,13 @@ distclean-compile:
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LTCOMPILE) -c -o $@ $<
 
-my_memmem.o: $(top_srcdir)/mysys/my_memmem.c
-@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT my_memmem.o -MD -MP -MF $(DEPDIR)/my_memmem.Tpo -c -o my_memmem.o `test -f '$(top_srcdir)/mysys/my_memmem.c' || echo '$(srcdir)/'`$(top_srcdir)/mysys/my_memmem.c
-@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/my_memmem.Tpo $(DEPDIR)/my_memmem.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(top_srcdir)/mysys/my_memmem.c' object='my_memmem.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o my_memmem.o `test -f '$(top_srcdir)/mysys/my_memmem.c' || echo '$(srcdir)/'`$(top_srcdir)/mysys/my_memmem.c
+.cpp.o:
+@am__fastdepCXX_TRUE@	$(CXXCOMPILE) $(cdb_CXXFLAGS) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
+@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXXCOMPILE) -c -o $@ $<
 
-my_memmem.obj: $(top_srcdir)/mysys/my_memmem.c
-@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT my_memmem.obj -MD -MP -MF $(DEPDIR)/my_memmem.Tpo -c -o my_memmem.obj `if test -f '$(top_srcdir)/mysys/my_memmem.c'; then $(CYGPATH_W) '$(top_srcdir)/mysys/my_memmem.c'; else $(CYGPATH_W) '$(srcdir)/$(top_srcdir)/mysys/my_memmem.c'; fi`
-@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/my_memmem.Tpo $(DEPDIR)/my_memmem.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(top_srcdir)/mysys/my_memmem.c' object='my_memmem.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o my_memmem.obj `if test -f '$(top_srcdir)/mysys/my_memmem.c'; then $(CYGPATH_W) '$(top_srcdir)/mysys/my_memmem.c'; else $(CYGPATH_W) '$(srcdir)/$(top_srcdir)/mysys/my_memmem.c'; fi`
 
 mostlyclean-libtool:
 	-rm -f *.lo
@@ -663,9 +616,9 @@ distdir: $(DISTFILES)
 	done
 check-am: all-am
 check: check-am
-all-am: Makefile $(PROGRAMS)
+all-am: Makefile $(LIBRARIES) $(HEADERS)
 installdirs:
-	for dir in "$(DESTDIR)$(bindir)"; do \
+	for dir in "$(DESTDIR)$(pkglibdir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
 install: install-am
@@ -685,7 +638,7 @@ install-strip:
 mostlyclean-generic:
 
 clean-generic:
-
+	-test -z "$(CLEANFILES)" || rm -f $(CLEANFILES)
 distclean-generic:
 	-test -z "$(CONFIG_CLEAN_FILES)" || rm -f $(CONFIG_CLEAN_FILES)
 
@@ -694,8 +647,8 @@ maintainer-clean-generic:
 	@echo "it deletes files that may require special tools to rebuild."
 clean: clean-am
 
-clean-am: clean-binPROGRAMS clean-generic clean-libtool \
-	clean-noinstPROGRAMS mostlyclean-am
+clean-am: clean-generic clean-libtool clean-pkglibLIBRARIES \
+	mostlyclean-am
 
 distclean: distclean-am
 	-rm -rf ./$(DEPDIR)
@@ -717,7 +670,7 @@ install-data-am:
 
 install-dvi: install-dvi-am
 
-install-exec-am: install-binPROGRAMS
+install-exec-am: install-pkglibLIBRARIES
 
 install-html: install-html-am
 
@@ -749,27 +702,24 @@ ps: ps-am
 
 ps-am:
 
-uninstall-am: uninstall-binPROGRAMS
+uninstall-am: uninstall-pkglibLIBRARIES
 
 .MAKE: install-am install-strip
 
-.PHONY: CTAGS GTAGS all all-am check check-am clean clean-binPROGRAMS \
-	clean-generic clean-libtool clean-noinstPROGRAMS ctags \
-	distclean distclean-compile distclean-generic \
-	distclean-libtool distclean-tags distdir dvi dvi-am html \
-	html-am info info-am install install-am install-binPROGRAMS \
-	install-data install-data-am install-dvi install-dvi-am \
-	install-exec install-exec-am install-html install-html-am \
-	install-info install-info-am install-man install-pdf \
-	install-pdf-am install-ps install-ps-am install-strip \
-	installcheck installcheck-am installdirs maintainer-clean \
-	maintainer-clean-generic mostlyclean mostlyclean-compile \
-	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
-	tags uninstall uninstall-am uninstall-binPROGRAMS
+.PHONY: CTAGS GTAGS all all-am check check-am clean clean-generic \
+	clean-libtool clean-pkglibLIBRARIES ctags distclean \
+	distclean-compile distclean-generic distclean-libtool \
+	distclean-tags distdir dvi dvi-am html html-am info info-am \
+	install install-am install-data install-data-am install-dvi \
+	install-dvi-am install-exec install-exec-am install-html \
+	install-html-am install-info install-info-am install-man \
+	install-pdf install-pdf-am install-pkglibLIBRARIES install-ps \
+	install-ps-am install-strip installcheck installcheck-am \
+	installdirs maintainer-clean maintainer-clean-generic \
+	mostlyclean mostlyclean-compile mostlyclean-generic \
+	mostlyclean-libtool pdf pdf-am ps ps-am tags uninstall \
+	uninstall-am uninstall-pkglibLIBRARIES
 
-
-thread_test.o:		thread_test.c
-			$(COMPILE) -c $(INCLUDES) $<
 
 # Don't update the files from bitkeeper
 %::SCCS/s.%

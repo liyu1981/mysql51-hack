@@ -111,6 +111,8 @@ attach_cdb_shm_mgr(const char* mysqld_data_path)
         }
 
         s._lock = (spinlock_t*)shm_locks._addr+i;
+        if(shm_locks._new)
+            spin_lock_init(s._lock);
     }
 
     return true;

@@ -18986,7 +18986,8 @@ then
   # We should use -Wno-invalid-offsetof flag to disable some warnings from gcc
   # regarding offset() usage in C++ which are done in a safe manner in the
   # server
-  CXXFLAGS="$CXXFLAGS -fno-implicit-templates -fno-exceptions -fno-rtti"
+  #CXXFLAGS="$CXXFLAGS -fno-implicit-templates -fno-exceptions -fno-rtti"
+  CXXFLAGS="$CXXFLAGS -fno-exceptions -fno-rtti"
 
 cat >>confdefs.h <<\_ACEOF
 #define HAVE_EXPLICIT_TEMPLATE_INSTANTIATION 1
@@ -49846,7 +49847,7 @@ if test -d "$srcdir/cmd-line-utils/readline" ; then
 
 fi
 
-ac_config_files="$ac_config_files Makefile extra/Makefile mysys/Makefile unittest/Makefile unittest/mytap/Makefile unittest/mytap/t/Makefile unittest/mysys/Makefile unittest/strings/Makefile unittest/examples/Makefile strings/Makefile regex/Makefile storage/Makefile man/Makefile BUILD/Makefile vio/Makefile libmysql/Makefile libmysql_r/Makefile client/Makefile sql/Makefile sql/share/Makefile sql/sql_builtin.cc sql-common/Makefile dbug/Makefile scripts/Makefile include/Makefile tests/Makefile Docs/Makefile support-files/Makefile support-files/MacOSX/Makefile support-files/RHEL4-SElinux/Makefile server-tools/Makefile server-tools/instance-manager/Makefile cmd-line-utils/Makefile cmd-line-utils/libedit/Makefile libmysqld/Makefile libmysqld/examples/Makefile mysql-test/Makefile mysql-test/lib/My/SafeProcess/Makefile netware/Makefile sql-bench/Makefile include/mysql_version.h plugin/Makefile win/Makefile"
+ac_config_files="$ac_config_files Makefile extra/Makefile mysys/Makefile unittest/Makefile unittest/mytap/Makefile unittest/mytap/t/Makefile unittest/mysys/Makefile unittest/strings/Makefile unittest/examples/Makefile strings/Makefile regex/Makefile storage/Makefile man/Makefile BUILD/Makefile vio/Makefile libmysql/Makefile libmysql_r/Makefile client/Makefile sql/Makefile sql/share/Makefile sql/sql_builtin.cc sql-common/Makefile dbug/Makefile scripts/Makefile include/Makefile tests/Makefile Docs/Makefile support-files/Makefile support-files/MacOSX/Makefile support-files/RHEL4-SElinux/Makefile server-tools/Makefile server-tools/instance-manager/Makefile cmd-line-utils/Makefile cmd-line-utils/libedit/Makefile libmysqld/Makefile libmysqld/examples/Makefile mysql-test/Makefile mysql-test/lib/My/SafeProcess/Makefile netware/Makefile sql-bench/Makefile include/mysql_version.h plugin/Makefile win/Makefile cdb/Makefile"
 
 
 ac_config_commands="$ac_config_commands default"
@@ -51033,6 +51034,7 @@ do
     "include/mysql_version.h") CONFIG_FILES="$CONFIG_FILES include/mysql_version.h" ;;
     "plugin/Makefile") CONFIG_FILES="$CONFIG_FILES plugin/Makefile" ;;
     "win/Makefile") CONFIG_FILES="$CONFIG_FILES win/Makefile" ;;
+    "cdb/Makefile") CONFIG_FILES="$CONFIG_FILES cdb/Makefile" ;;
     "default") CONFIG_COMMANDS="$CONFIG_COMMANDS default" ;;
 
   *) { { $as_echo "$as_me:$LINENO: error: invalid argument: $ac_config_target" >&5

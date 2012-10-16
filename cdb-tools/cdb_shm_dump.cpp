@@ -1,7 +1,7 @@
-#include "../sql/cdb.h"
-#include "../sql/cdb_shm_mgr.h"
-#include "../sql/tfc_shm_map.h"
-#include "../sql/tfc_spin_lock.h"
+#include "cdb.h"
+#include "cdb_shm_mgr.h"
+#include "tfc_shm_map.h"
+#include "tfc_spin_lock.h"
 using namespace cdb;
 
 #include <string>
@@ -75,6 +75,7 @@ main(int argc, char* argv[])
         dump_ins_dml(s);
 
     sm.detach_all();
+	shutdown_cdb_shm_mgr();
     return 0;
 }
 
