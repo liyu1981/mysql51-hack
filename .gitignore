@@ -753,3 +753,5 @@ start.sh
 tags
 tmp.txt
 zlib/.libs/
+
+scripts/mysqlbug
