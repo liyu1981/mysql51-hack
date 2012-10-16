@@ -419,8 +419,11 @@ INCLUDES = -I$(top_builddir)/include -I$(top_srcdir)/include \
 
 LDADD = @CLIENT_EXTRA_LDFLAGS@ $(openssl_libs) $(yassl_libs)
 pkglib_LIBRARIES = libcdb.a
+
+# cdb: headers
 noinst_HEADERS = cdb_error.h cdb_shm_mgr.h tfc_cache_access.h tfc_cache_hash_map.h tfc_shm_map.h\
 			cdb.h tfc_binlog.h tfc_cache_chunk_alloc.h tfc_md5.h tfc_spin_lock.h
+# cdb: sources
 libcdb_a_SOURCES = cdb.cpp cdb_shm_mgr.cpp tfc_binlog.cpp tfc_cache_access.cpp tfc_cache_chunk_alloc.cpp \
 			tfc_cache_hash_map.cpp tfc_md5.cpp
 
@@ -487,7 +490,7 @@ uninstall-pkglibLIBRARIES:
 
 clean-pkglibLIBRARIES:
 	-test -z "$(pkglib_LIBRARIES)" || rm -f $(pkglib_LIBRARIES)
-libcdb.a: $(libcdb_a_OBJECTS) $(libcdb_a_DEPENDENCIES) 
+libcdb.a: $(libcdb_a_OBJECTS) $(libcdb_a_DEPENDENCIES)
 	-rm -f libcdb.a
 	$(libcdb_a_AR) libcdb.a $(libcdb_a_OBJECTS) $(libcdb_a_LIBADD)
 	$(RANLIB) libcdb.a

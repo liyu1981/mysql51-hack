@@ -54,7 +54,7 @@ public:
 
     void detach_all();
 
- private:
+private:
     static CDBShmMgr* _instance;
     map<string, CDBShm*> _shm_map;
 
