@@ -1139,6 +1139,7 @@ with_extra_charsets
 with_uca
 with_experimental_collations
 with_debug
+with_cdb
 enable_mysql_maintainer_mode
 with_system_type
 with_machine_type
@@ -1887,6 +1888,7 @@ Optional Packages:
 
   --with-debug[=full]     Enable various amounts of debugging support (full
                           adds a slow memory checker).
+  --with-cdb     		  Enable cdb surpport.
   --with-system-type      Set the system type, like "sun-solaris10"
   --with-machine-type     Set the machine type, like "powerpc"
   --with-darwin-mwcc      Use Metrowerks CodeWarrior wrappers on OS X/Darwin
@@ -12862,6 +12864,18 @@ else
   with_debug=no
 fi
 
+# Check whether --with-cdb was given.
+if test "${with_cdb+set}" = set; then
+  with_cdb=yes
+else
+  with_cdb=no
+fi
+
+if test "$with_cdb" != "no"
+then
+  CFLAGS="-DWITH_CDB $CFLAGS"
+  CXXFLAGS="-DWITH_CDB $CXXFLAGS"
+fi
 
 # Whether the maintainer mode should be enabled.
 

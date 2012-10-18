@@ -172,3 +172,40 @@ cdb_ins_dml_end(CDBInsDmlOp& op, CDBInsDmlOpJunk& op_junk)
     spin_unlock(s._lock);
 }
 
+void cdb_ins_dml_end_v2(CDBInsDmlOp& op, unsigned long long int begin_time, unsigned long long int end_time)
+{
+    double op_diff = (end_time - begin_time) * 0.000001;
+
+    CDBShm& s = CDBShmMgr::getInstance().get("cdb_ins_dml");
+    TfcShmMap<CDBInsDmlOpKey, CDBInsDmlOp> m;
+    m._ca = s._ca;
+
+    spin_lock(s._lock);
+
+    int rv = m.find(op._key);
+    if (rv > 0) {
+        // not found
+        op._total = 1;
+        op._time_sum = op_diff;
+        op._time_min = op_diff;
+        op._time_max = op_diff;
+        m.insert(op._key, op);
+    }
+    else if (rv == 0) {
+        // found, so update
+        CDBInsDmlOp entry;
+        m.get(op._key, entry);
+        entry._total += 1;
+        entry._time_sum += op_diff;
+        if (op_diff < entry._time_min)
+            entry._time_min = op_diff;
+        if (op_diff > entry._time_max)
+            entry._time_max = op_diff;
+        m.insert(entry._key, entry);
+    }
+    else {
+        // TOFIX: sth wrong, may be shm map corrupted?
+    }
+
+    spin_unlock(s._lock);
+}

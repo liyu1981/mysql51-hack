@@ -110,6 +110,18 @@ AC_ARG_WITH([debug],
     [with_debug=$withval],
     [with_debug=no])
 
+# Check CDB should be enabled
+AC_ARG_WITH([cdb],
+    AS_HELP_STRING([--with-cdb], [Enable cdb support.]),
+    [with_cdb=$withval],
+    [with_cdb=no])
+	
+if test "$with_cdb" != "no"
+then
+  CFLAGS="-DWITH_CDB $CFLAGS"
+  CXXFLAGS="-DWITH_CDB $CXXFLAGS"
+fi
+
 # Whether the maintainer mode should be enabled.
 MY_MAINTAINER_MODE
 

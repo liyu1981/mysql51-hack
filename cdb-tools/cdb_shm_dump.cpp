@@ -18,8 +18,14 @@ usage(const char* appname)
 
 const char* type_names[] = {
     "NOTNAME",
-    "SELECT"
+    "SELECT",
+    "INSERT",
+    "UPDATE",
+    "REPLACE",
+    "DELETE"
 };
+
+const int dml_type_num = 6;
 
 void
 dump_ins_dml(const CDBShm& s)
@@ -38,7 +44,8 @@ dump_ins_dml(const CDBShm& s)
          it++) {
          CDBInsDmlOp entry;
          if (it.extract(entry) == 0) {
-            cout << type_names[entry._key._type] << " "
+            if( entry._key._type >= 0 && entry._key._type < dml_type_num ){
+                cout << type_names[entry._key._type] << " "
                  << entry._key._result << " "
                  << entry._total << " "
                  << fixed << setprecision(3)
@@ -46,6 +53,9 @@ dump_ins_dml(const CDBShm& s)
                  << entry._time_min*1000 << " "
                  << entry._time_max*1000 << " "
                  << endl;
+            }else{
+                cout << entry._key._type << " " << "invalid type" << endl;
+            }
          }
     }
     spin_unlock(s._lock);

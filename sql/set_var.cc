@@ -909,6 +909,10 @@ static sys_var_readonly         sys_myisam_mmap_size(&vars, "myisam_mmap_size",
                                                      SHOW_LONGLONG,
                                                      get_myisam_mmap_size);
 
+#ifdef WITH_CDB
+static sys_var_bool_ptr	sys_cdb_stat_instance(&vars, "cdb_stat_instance",
+					 &opt_cdb_stat_instance);
+#endif
 
 bool sys_var::check(THD *thd, set_var *var)
 {

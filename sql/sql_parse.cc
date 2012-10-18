@@ -1278,6 +1278,9 @@ bool dispatch_command(enum enum_server_command command, THD *thd,
 
       log_slow_statement(thd);
 
+#ifdef WITH_CDB
+      cdb_stat_instance_dml_func(thd);
+#endif
       /* Remove garbage at start of query */
       while (length > 0 && my_isspace(thd->charset(), *beginning_of_next_stmt))
       {
@@ -1678,6 +1681,10 @@ bool dispatch_command(enum enum_server_command command, THD *thd,
 
   log_slow_statement(thd);
 
+#ifdef WITH_CDB
+      cdb_stat_instance_dml_func(thd);
+#endif
+
   thd_proc_info(thd, "cleaning up");
   thd->set_query(NULL, 0);
   thd->command=COM_SLEEP;
@@ -1729,6 +1736,45 @@ void log_slow_statement(THD *thd)
   DBUG_VOID_RETURN;
 }
 
+#ifdef WITH_CDB
+void cdb_stat_instance_dml_func(THD *thd)
+{
+  DBUG_ENTER("cdb_stat_instance_dml_func");
+
+  if(likely(opt_cdb_stat_instance)) 
+  {
+    CDBInsDmlOp op; 
+
+    switch(thd->lex->sql_command) {
+    case SQLCOM_SELECT:
+      op._key._type = CDB_SELECT;
+      break;
+    case SQLCOM_INSERT:
+      op._key._type = CDB_INSERT;
+      break;
+    case SQLCOM_UPDATE:
+      op._key._type = CDB_UPDATE;
+      break;
+    case SQLCOM_REPLACE:
+      op._key._type = CDB_REPLACE;
+      break;
+    case SQLCOM_DELETE:
+      op._key._type = CDB_DELETE;
+      break;
+    default:
+      op._key._type = CDB_UNKOWN_TYPE;
+      break;
+    }
+
+    if(unlikely(thd->is_error())) 
+      op._key._result = thd->main_da.sql_errno();
+    else
+      op._key._result = 0;
+    cdb_ins_dml_end_v2(op, thd->start_utime, thd->current_utime());
+  }
+  DBUG_VOID_RETURN;
+}
+#endif
 
 /**
   Create a TABLE_LIST object for an INFORMATION_SCHEMA table.
@@ -2274,11 +2320,6 @@ mysql_execute_command(THD *thd)
   case SQLCOM_SHOW_STORAGE_ENGINES:
   case SQLCOM_SHOW_PROFILE:
   case SQLCOM_SELECT:
-    //yuli: cdb modification start
-    CDBInsDmlOp op; op._key._type = CDB_SELECT;
-    CDBInsDmlOpJunk op_junk;
-    cdb_ins_dml_begin(op, op_junk);
-    //yuli: cdb modification end
     thd->status_var.last_query_cost= 0.0;
     if (all_tables)
     {
@@ -2300,20 +2341,6 @@ mysql_execute_command(THD *thd)
       break;
 
     res= execute_sqlcom_select(thd, all_tables);
-    //yuli: cdb modification start
-    if (res == FALSE) {
-        if (thd->main_da.is_error()) {
-            op._key._result = thd->main_da.sql_errno();
-        }
-        else {
-            op._key._result = thd->main_da.status();
-        }
-    }
-    else { // res == TRUE
-        op._key._result = 0;
-    }
-    cdb_ins_dml_end(op, op_junk);
-    //yuli: cdb modification end
     break;
   case SQLCOM_PREPARE:
   {
@@ -6116,7 +6143,7 @@ void mysql_parse(THD *thd, char *rawbuf, uint length,
     /* There are no multi queries in the cache. */
     *found_semicolon= NULL;
   }
-
+  
   DBUG_VOID_RETURN;
 }
 
