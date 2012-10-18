@@ -4,6 +4,8 @@
 *.lo
 *.la
 autom4te.cache/
+.svn
+cscope.out
 
 # cdb related
 cdb/cdb_shm_dump
