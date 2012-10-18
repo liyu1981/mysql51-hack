@@ -4,6 +4,8 @@
 *.lo
 *.la
 autom4te.cache/
+.svn
+cscope.out
 
 # cdb related
 cdb/cdb_shm_dump
@@ -756,3 +758,37 @@ tmp.txt
 zlib/.libs/
 
 scripts/mysqlbug
+
+include/mysqld_ername.h
+include/mysqld_error.h
+include/sql_state.h
+netware/init_db.sql
+netware/libmysql.imp
+netware/test_db.sql
+scripts/mysql_fix_privilege_tables.sql
+scripts/mysql_fix_privilege_tables_sql.c
+sql/share/czech/errmsg.sys
+sql/share/danish/errmsg.sys
+sql/share/dutch/errmsg.sys
+sql/share/english/errmsg.sys
+sql/share/estonian/errmsg.sys
+sql/share/french/errmsg.sys
+sql/share/german/errmsg.sys
+sql/share/greek/errmsg.sys
+sql/share/hungarian/errmsg.sys
+sql/share/italian/errmsg.sys
+sql/share/japanese-sjis/errmsg.sys
+sql/share/japanese/errmsg.sys
+sql/share/korean/errmsg.sys
+sql/share/norwegian-ny/errmsg.sys
+sql/share/norwegian/errmsg.sys
+sql/share/polish/errmsg.sys
+sql/share/portuguese/errmsg.sys
+sql/share/romanian/errmsg.sys
+sql/share/russian/errmsg.sys
+sql/share/serbian/errmsg.sys
+sql/share/slovak/errmsg.sys
+sql/share/spanish/errmsg.sys
+sql/share/swedish/errmsg.sys
+sql/share/ukrainian/errmsg.sys
+sql/sql_builtin.cc
