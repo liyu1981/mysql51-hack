@@ -271,7 +271,7 @@ void cdb_ins_dml_end_v2(CDBInsDmlOp& op, unsigned long long int begin_time, unsi
 {
     double op_diff = (end_time - begin_time) * 0.000001;
 
-    CDBShm& s = CDBShmMgr::getInstance().get("cdb_ins_dml");
+    CDBShm& s = cdb_shm_pair_map["cdb_ins_dml"]->get_current();
     TfcShmMap<CDBInsDmlOpKey, CDBInsDmlOp> m;
     m._ca = s._ca;
 
