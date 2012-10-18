@@ -280,22 +280,14 @@ void cdb_ins_dml_end_v2(CDBInsDmlOp& op, unsigned long long int begin_time, unsi
     int rv = m.find(op._key);
     if (rv > 0) {
         // not found
-        op._total = 1;
-        op._time_sum = op_diff;
-        op._time_min = op_diff;
-        op._time_max = op_diff;
+        cdb_comm_stat_add(op._comm_stat, op_diff, true);
         m.insert(op._key, op);
     }
     else if (rv == 0) {
         // found, so update
         CDBInsDmlOp entry;
         m.get(op._key, entry);
-        entry._total += 1;
-        entry._time_sum += op_diff;
-        if (op_diff < entry._time_min)
-            entry._time_min = op_diff;
-        if (op_diff > entry._time_max)
-            entry._time_max = op_diff;
+        cdb_comm_stat_add(entry._comm_stat, op_diff);
         m.insert(entry._key, entry);
     }
     else {
