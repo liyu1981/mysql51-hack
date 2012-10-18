@@ -24,8 +24,13 @@ usage(const char* appname)
 
 const char* type_names[] = {
     "NOTNAME",
-    "SELECT"
+    "SELECT",
+    "INSERT",
+    "UPDATE",
+    "REPLACE",
+    "DELETE"
 };
+const int dml_type_num = 6;
 
 string
 parse_pair_map_file(const char* mysqld_data_path, const char* pair_name)
@@ -68,23 +73,26 @@ dump_ins_dml(const CDBShm& s)
          << " size " << dec << s._size << endl;
     cout << "#type result total time_sum time_min time_max >20ms >40ms >60ms >80ms >100ms >500ms >1s >2s >10s" << endl;
 
-    for (TfcShmMap<CDBInsDmlOpKey, CDBInsDmlOp>::iterator it = m.begin();
-         it != m.end();
-         it++) {
-         CDBInsDmlOp entry;
-         if (it.extract(entry) == 0) {
-            cout << type_names[entry._key._type] << " "
-                 << entry._key._result << " "
-                 << entry._comm_stat._total << " "
-                 << fixed << setprecision(3)
-                 << entry._comm_stat._time_sum*1000 << " "
-                 << entry._comm_stat._time_min*1000 << " "
-                 << entry._comm_stat._time_max*1000 << " ";
-            for (int i=0; i<CDB_TIME_BUCKET_SIZE; ++i) {
-                cout << entry._comm_stat._time_bucket[i] << " ";
+    for (TfcShmMap<CDBInsDmlOpKey, CDBInsDmlOp>::iterator it = m.begin(); it != m.end(); it++) {
+        CDBInsDmlOp entry;
+        if (it.extract(entry) == 0) {
+            if( entry._key._type >= 0 && entry._key._type < dml_type_num ) {
+                cout << type_names[entry._key._type] << " "
+                    << entry._key._result << " "
+                    << entry._comm_stat._total << " "
+                    << fixed << setprecision(3)
+                    << entry._comm_stat._time_sum*1000 << " "
+                    << entry._comm_stat._time_min*1000 << " "
+                    << entry._comm_stat._time_max*1000 << " ";
+                for (int i=0; i<CDB_TIME_BUCKET_SIZE; ++i) {
+                    cout << entry._comm_stat._time_bucket[i] << " ";
+                }
+                cout << endl;
             }
-            cout << endl;
-         }
+            else {
+                cout << entry._key._type << " " << "invalid type" << endl;
+            }
+        }
     }
 }
 

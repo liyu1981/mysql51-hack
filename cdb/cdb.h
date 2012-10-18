@@ -21,7 +21,13 @@ bool attach_cdb_shm_mgr(const char* mysqld_data_path);
 // section: instance level dml statistic
 
 #define CDB_TIME_BUCKET_SIZE 9
+
+#define CDB_UNKOWN_TYPE 0
 #define CDB_SELECT 1
+#define CDB_INSERT 2
+#define CDB_UPDATE 3
+#define CDB_REPLACE 4
+#define CDB_DELETE 5
 
 #pragma pack(push, 1)
 struct CDBCommStat
@@ -59,5 +65,6 @@ void cdb_ins_dml_end(CDBInsDmlOp& op, CDBInsDmlOpJunk& op_junk);
 
 ///////////////////////////////////////////////////////////////////////////////
 
+void cdb_ins_dml_end_v2(CDBInsDmlOp& op, unsigned long long int begin_time, unsigned long long int end_time);
 #endif
 

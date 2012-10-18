@@ -490,6 +490,9 @@ my_bool opt_show_slave_auth_info, opt_sql_bin_update = 0;
 my_bool opt_log_slave_updates= 0;
 bool slave_warning_issued = false;
 
+#ifdef WITH_CDB
+my_bool opt_cdb_stat_instance = 0;
+#endif
 /*
   Legacy global handlerton. These will be removed (please do not add more).
 */
@@ -3028,6 +3031,9 @@ pthread_handler_t handle_shutdown(void *arg)
 #endif
 
 const char *load_default_groups[]= {
+#ifdef WITH_CDB
+"cdb",
+#endif
 #ifdef WITH_NDBCLUSTER_STORAGE_ENGINE
 "mysql_cluster",
 #endif
@@ -5801,6 +5807,9 @@ enum options_mysqld
   OPT_IGNORE_BUILTIN_INNODB,
   OPT_BINLOG_DIRECT_NON_TRANS_UPDATE,
   OPT_DEFAULT_CHARACTER_SET_OLD
+#ifdef WITH_CDB
+  ,OPT_CDB_STAT_INSTANCE
+#endif
 };
 
 
@@ -7257,6 +7266,12 @@ thread is in the relay logs.",
    &global_system_variables.binlog_direct_non_trans_update,
    &max_system_variables.binlog_direct_non_trans_update,
    0, GET_BOOL, NO_ARG, 0, 0, 0, 0, 0, 0},
+#ifdef WITH_CDB
+  {"cdb_stat_instance", OPT_CDB_STAT_INSTANCE,
+   "cdb stat instance.", &opt_cdb_stat_instance,
+   &opt_cdb_stat_instance, 0, GET_BOOL,
+   REQUIRED_ARG, 0, 0, 0, 0, 0, 0},
+#endif
   {0, 0, 0, 0, 0, 0, GET_NO_ARG, NO_ARG, 0, 0, 0, 0, 0, 0}
 };
 
