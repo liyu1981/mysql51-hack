@@ -4,33 +4,35 @@
 #include <string.h>
 #include <sys/time.h>
 
-struct CDBShmConf
-{
-    const char* _name;
-    int _id;
-    size_t _size;
-    int _node_total;
-    int _bucket_size;
-    int _n_chunks;
-    int _chunk_size;
-};
-
-extern CDBShmConf cdb_shm_conf_array[];
-extern int cdb_shm_conf_size;
-
 extern int cdb_errno;
 extern int cdb_2nd_errno;
+
+///////////////////////////////////////////////////////////////////////////////
 
 // for mysqld
 bool init_cdb_shm_mgr(const char* mysqld_data_path);
 bool shutdown_cdb_shm_mgr();
+int cdb_flush_shm_pair_map();
 
 // for cdb tools
 bool attach_cdb_shm_mgr(const char* mysqld_data_path);
 
+///////////////////////////////////////////////////////////////////////////////
+// section: instance level dml statistic
+
+#define CDB_TIME_BUCKET_SIZE 9
 #define CDB_SELECT 1
 
 #pragma pack(push, 1)
+struct CDBCommStat
+{
+    int _total;
+    double _time_sum;
+    double _time_min;
+    double _time_max;
+    int _time_bucket[CDB_TIME_BUCKET_SIZE];
+};
+
 struct CDBInsDmlOpKey
 {
     int _type;
@@ -40,10 +42,7 @@ struct CDBInsDmlOpKey
 struct CDBInsDmlOp
 {
     CDBInsDmlOpKey _key;
-    int _total;
-    double _time_sum;
-    double _time_min;
-    double _time_max;
+    CDBCommStat _comm_stat;
 };
 
 struct CDBInsDmlOpJunk
@@ -53,8 +52,12 @@ struct CDBInsDmlOpJunk
 };
 #pragma pack(pop)
 
+void cdb_comm_stat_add(CDBCommStat& cs, double v, bool init = false);
+
 void cdb_ins_dml_begin(CDBInsDmlOp& op, CDBInsDmlOpJunk& op_junk);
 void cdb_ins_dml_end(CDBInsDmlOp& op, CDBInsDmlOpJunk& op_junk);
+
+///////////////////////////////////////////////////////////////////////////////
 
 #endif
 

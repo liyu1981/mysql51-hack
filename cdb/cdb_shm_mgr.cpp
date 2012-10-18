@@ -1,8 +1,10 @@
 #include "cdb_shm_mgr.h"
 #include "cdb_error.h"
+#include "tfc_spin_lock.h"
 
 #include <sys/ipc.h>
 #include <sys/shm.h>
+#include <sys/time.h>
 
 namespace cdb {
 
@@ -108,6 +110,56 @@ CDBShmMgr::detach_all()
     for (map<string, CDBShm*>::iterator it = _shm_map.begin(); it != _shm_map.end(); ++it) {
         shmdt(it->second->_addr);
     }
+}
+
+void
+CDBShmPair::switch_shm()
+{
+    spin_lock(_current->_lock);
+    spin_lock(_standby->_lock);
+
+    // switch
+    CDBShm* tmp = _current;
+    _current = _standby;
+    _standby = tmp;
+
+    // now clean the old data
+    memset(_current->_addr, 0, _current->_size);
+    delete _current->_ca;
+    _current->_ca = new CacheAccess();
+    int ret = _current->_ca->open((char*)_current->_addr, _current->_size, true,
+                                  _shm_conf->_node_total, _shm_conf->_bucket_size, _shm_conf->_n_chunks, _shm_conf->_chunk_size);
+    if (ret != 0) {
+        // TOFIX: Fatal error, must exit!
+    }
+
+    spin_unlock(_standby->_lock);
+    spin_unlock(_current->_lock);
+}
+
+CDBShm&
+CDBShmPair::get_current()
+{
+    return *_current;
+}
+
+int
+CDBShmPair::flush_map_file(const string& dir_path)
+{
+    string pair_map_file_path = dir_path + string("/") + string(_pair_conf->_map_file);
+    ofstream of;
+    of.open(pair_map_file_path.c_str(), std::ios::out | std::ios::trunc);
+    if (!of.is_open()) {
+        return CDB_SHM_PAIR_MAP_OPEN_FAILED;
+    }
+
+    of << "last_switch_time: " << _last_switch_time.tv_sec << " " << _last_switch_time.tv_usec << " "
+       << "current: " << _current->_name << " " << _current->_key << " "
+       << "standby: " << _standby->_name << " " << _standby->_key << " "
+       << endl;
+
+    of.close();
+    return CDB_FINE;
 }
 
 } // end of namespace cdb

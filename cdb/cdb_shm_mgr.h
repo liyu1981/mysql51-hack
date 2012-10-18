@@ -64,6 +64,39 @@ private:
     CDBShmMgr& operator=(const CDBShmMgr&);
 };
 
+struct CDBShmConf
+{
+    const char* _name;
+    int _id;
+    size_t _size;
+    int _node_total;
+    int _bucket_size;
+    int _n_chunks;
+    int _chunk_size;
+};
+
+struct CDBShmPairConf
+{
+    const char* _name;
+    const char* _shm_name1;
+    const char* _shm_name2;
+    int         _conf_index;
+    const char* _map_file;
+};
+
+struct CDBShmPair
+{
+    struct timeval        _last_switch_time;
+    struct CDBShm*        _current;
+    struct CDBShm*        _standby;
+    const CDBShmConf*     _shm_conf;
+    const CDBShmPairConf* _pair_conf;
+
+    CDBShm& get_current();
+    void switch_shm();
+    int flush_map_file(const string& dir_path);
+};
+
 } // end of namespace cdb
 
 #endif
