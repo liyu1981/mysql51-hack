@@ -414,14 +414,14 @@ yassl_libs = @yassl_libs@
 yassl_taocrypt_extra_cxxflags = @yassl_taocrypt_extra_cxxflags@
 yassl_thread_cxxflags = @yassl_thread_cxxflags@
 zlib_dir = @zlib_dir@
-INCLUDES = -I$(top_builddir)/include -I$(top_srcdir)/include \
+INCLUDES = -I$(top_builddir)/include -I$(top_srcdir)/include -I$(top_srcdir)/sql \
 			$(openssl_includes)
 
 LDADD = @CLIENT_EXTRA_LDFLAGS@ $(openssl_libs) $(yassl_libs)
 pkglib_LIBRARIES = libcdb.a
 
 # cdb: headers
-noinst_HEADERS = cdb_error.h cdb_shm_mgr.h tfc_cache_access.h tfc_cache_hash_map.h tfc_shm_map.h\
+noinst_HEADERS = cdb_error.h cdb_shm_mgr.h tfc_cache_access.h tfc_cache_hash_map.h tfc_shm_map.h \
 			cdb.h tfc_binlog.h tfc_cache_chunk_alloc.h tfc_md5.h tfc_spin_lock.h
 # cdb: sources
 libcdb_a_SOURCES = cdb.cpp cdb_shm_mgr.cpp tfc_binlog.cpp tfc_cache_access.cpp tfc_cache_chunk_alloc.cpp \

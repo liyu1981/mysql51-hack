@@ -1,12 +1,12 @@
-#include "cdb.h"
-
-#include "cdb_error.h"
-#include "cdb_shm_mgr.h"
-
 #include <climits>
 #include <fstream>
 #include <sys/ipc.h>
 #include <pthread.h>
+
+#include "mysql_priv.h"
+#include "cdb.h"
+#include "cdb_error.h"
+#include "cdb_shm_mgr.h"
 
 using namespace std;
 using namespace cdb;
@@ -105,6 +105,7 @@ init_cdb_shm_mgr(const char* mysqld_data_path)
         spin_lock_init(s._lock);
 
         shmid_of << s._name << " " << s._key << " (lock " << i << ")" << endl;
+        sql_print_information("=== shm_name: %s, shm_key: %x ===", s._name.c_str(), s._key);
     }
 
     shmid_of.close();
@@ -195,10 +196,10 @@ attach_cdb_shm_mgr(const char* mysqld_data_path)
 void
 cdb_comm_stat_add(CDBCommStat& cs, double v, bool init)
 {
-    const double DBL_MAX =(double)LLONG_MAX;
+    const double DOUBLE_MAX =(double)LLONG_MAX;
     const double time_bucket_threshold[CDB_TIME_BUCKET_SIZE+1] = {
         0.02, 0.04, 0.06, 0.08, 0.1, 0.5, 1, 2, 10,
-        DBL_MAX // placeholder
+        DOUBLE_MAX // placeholder
     };
 
     if (init) {

@@ -8,6 +8,8 @@
 
 #include "tfc_md5.h"
 
+namespace tfc { namespace md5 {
+
 #define S11 7
 #define S12 12
 #define S13 17
@@ -433,3 +435,6 @@ char* md5_file(char* filename)
 		sprintf(q,"%02x",p[i]);
 	return tmp;
 }
+
+} //end namspace md5
+} //end namspace tfc
