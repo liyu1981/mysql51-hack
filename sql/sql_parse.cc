@@ -1741,9 +1741,9 @@ void cdb_stat_instance_dml_func(THD *thd)
 {
   DBUG_ENTER("cdb_stat_instance_dml_func");
 
-  if(likely(opt_cdb_stat_instance)) 
+  if(likely(opt_cdb_stat_instance))
   {
-    CDBInsDmlOp op; 
+    CDBInsDmlOp op;
 
     switch(thd->lex->sql_command) {
     case SQLCOM_SELECT:
@@ -1766,11 +1766,12 @@ void cdb_stat_instance_dml_func(THD *thd)
       break;
     }
 
-    if(unlikely(thd->is_error())) 
+    if(unlikely(thd->is_error()))
       op._key._result = thd->main_da.sql_errno();
     else
       op._key._result = 0;
-    cdb_ins_dml_end_v2(op, thd->start_utime, thd->current_utime());
+
+    cdb_ins_dml_op_add(op, thd->start_utime, thd->current_utime());
   }
   DBUG_VOID_RETURN;
 }
@@ -6143,7 +6144,7 @@ void mysql_parse(THD *thd, char *rawbuf, uint length,
     /* There are no multi queries in the cache. */
     *found_semicolon= NULL;
   }
-  
+
   DBUG_VOID_RETURN;
 }
 

@@ -51,20 +51,12 @@ struct CDBInsDmlOp
     CDBCommStat _comm_stat;
 };
 
-struct CDBInsDmlOpJunk
-{
-    struct timeval _begin_tval;
-    struct timeval _end_tval;
-};
 #pragma pack(pop)
 
 void cdb_comm_stat_add(CDBCommStat& cs, double v, bool init = false);
-
-void cdb_ins_dml_begin(CDBInsDmlOp& op, CDBInsDmlOpJunk& op_junk);
-void cdb_ins_dml_end(CDBInsDmlOp& op, CDBInsDmlOpJunk& op_junk);
+void cdb_ins_dml_op_add(CDBInsDmlOp& op, unsigned long long int begin_time, unsigned long long int end_time);
 
 ///////////////////////////////////////////////////////////////////////////////
 
-void cdb_ins_dml_end_v2(CDBInsDmlOp& op, unsigned long long int begin_time, unsigned long long int end_time);
 #endif
 

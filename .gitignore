@@ -8,7 +8,7 @@ autom4te.cache/
 cscope.out
 
 # cdb related
-cdb/cdb_shm_dump
+cdb-tools/cdb_shm_dump
 cdb/.deps/
 
 # ignore list after first configure

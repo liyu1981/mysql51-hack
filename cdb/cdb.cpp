@@ -192,14 +192,6 @@ attach_cdb_shm_mgr(const char* mysqld_data_path)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-double
-cdb_calc_time_diff(CDBInsDmlOpJunk& op_junk)
-{
-    double b = op_junk._begin_tval.tv_sec*1.0+op_junk._begin_tval.tv_usec*0.000001;
-    double e = op_junk._end_tval.tv_sec*1.0+op_junk._end_tval.tv_usec*0.000001;
-    return e-b;
-}
-
 void
 cdb_comm_stat_add(CDBCommStat& cs, double v, bool init)
 {
@@ -229,45 +221,7 @@ cdb_comm_stat_add(CDBCommStat& cs, double v, bool init)
     }
 }
 
-void
-cdb_ins_dml_begin(CDBInsDmlOp& op, CDBInsDmlOpJunk& op_junk)
-{
-    gettimeofday(&op_junk._begin_tval, NULL);
-}
-
-void
-cdb_ins_dml_end(CDBInsDmlOp& op, CDBInsDmlOpJunk& op_junk)
-{
-    gettimeofday(&op_junk._end_tval, NULL);
-    double op_diff = cdb_calc_time_diff(op_junk);
-
-    CDBShm& s = cdb_shm_pair_map["cdb_ins_dml"]->get_current();
-    TfcShmMap<CDBInsDmlOpKey, CDBInsDmlOp> m;
-    m._ca = s._ca;
-
-    spin_lock(s._lock);
-
-    int rv = m.find(op._key);
-    if (rv > 0) {
-        // not found
-        cdb_comm_stat_add(op._comm_stat, op_diff, true);
-        m.insert(op._key, op);
-    }
-    else if (rv == 0) {
-        // found, so update
-        CDBInsDmlOp entry;
-        m.get(op._key, entry);
-        cdb_comm_stat_add(entry._comm_stat, op_diff);
-        m.insert(entry._key, entry);
-    }
-    else {
-        // TOFIX: sth wrong, may be shm map corrupted?
-    }
-
-    spin_unlock(s._lock);
-}
-
-void cdb_ins_dml_end_v2(CDBInsDmlOp& op, unsigned long long int begin_time, unsigned long long int end_time)
+void cdb_ins_dml_op_add(CDBInsDmlOp& op, unsigned long long int begin_time, unsigned long long int end_time)
 {
     double op_diff = (end_time - begin_time) * 0.000001;
 
@@ -281,14 +235,18 @@ void cdb_ins_dml_end_v2(CDBInsDmlOp& op, unsigned long long int begin_time, unsi
     if (rv > 0) {
         // not found
         cdb_comm_stat_add(op._comm_stat, op_diff, true);
-        m.insert(op._key, op);
+        if (m.insert(op._key, op)>0) {
+            // TOFIX: insert failed, then?
+        }
     }
     else if (rv == 0) {
         // found, so update
         CDBInsDmlOp entry;
         m.get(op._key, entry);
         cdb_comm_stat_add(entry._comm_stat, op_diff);
-        m.insert(entry._key, entry);
+        if (m.insert(entry._key, entry)>0) {
+            // TOFIX: insert failed, then?
+        }
     }
     else {
         // TOFIX: sth wrong, may be shm map corrupted?

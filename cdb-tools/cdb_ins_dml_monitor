@@ -1,5 +1,11 @@
 #!/bin/sh
 
+if [ $# != 1 ];
+then
+    echo "usage: " $0 "<mysql_data_path>"
+    exit 1
+fi
+
 dump_period=60
 
 while :
