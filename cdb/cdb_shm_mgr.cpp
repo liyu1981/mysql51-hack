@@ -115,24 +115,26 @@ CDBShmMgr::detach_all()
 void
 CDBShmPair::switch_shm()
 {
-    spin_lock(_current->_lock);
-    spin_lock(_standby->_lock);
-
-    // switch
-    CDBShm* tmp = _current;
-    _current = _standby;
-    _standby = tmp;
-
-    // now clean the old data
-    memset(_current->_addr, 0, _current->_size);
-    delete _current->_ca;
-    _current->_ca = new CacheAccess();
-    int ret = _current->_ca->open((char*)_current->_addr, _current->_size, true,
+    // 1st: reset standby. standby is readonly, no need to lock for reset
+    memset(_standby->_addr, 0, _standby->_size);
+    delete _standby->_ca;
+    _standby->_ca = new CacheAccess();
+    int ret = _standby->_ca->open((char*)_standby->_addr, _standby->_size, true,
                                   _shm_conf->_node_total, _shm_conf->_bucket_size, _shm_conf->_n_chunks, _shm_conf->_chunk_size);
     if (ret != 0) {
         // TOFIX: Fatal error, must exit!
     }
 
+    // 2nd: lock _current and _standby, wait for outstand write
+    spin_lock(_current->_lock);
+    spin_lock(_standby->_lock);
+
+    // 3rd: switch pointers
+    CDBShm* tmp = _current;
+    _current = _standby;
+    _standby = tmp;
+
+    // 4th: release locks
     spin_unlock(_standby->_lock);
     spin_unlock(_current->_lock);
 }
