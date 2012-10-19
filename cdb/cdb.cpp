@@ -196,8 +196,9 @@ void
 cdb_comm_stat_add(CDBCommStat& cs, double v, bool init)
 {
     const double DBL_MAX =(double)LLONG_MAX;
-    const double time_bucket_threshold[CDB_TIME_BUCKET_SIZE] = {
-        0.02, 0.04, 0.06, 0.08, 0.1, 0.5, 1, 2, 10
+    const double time_bucket_threshold[CDB_TIME_BUCKET_SIZE+1] = {
+        0.02, 0.04, 0.06, 0.08, 0.1, 0.5, 1, 2, 10,
+        DBL_MAX // placeholder
     };
 
     if (init) {
@@ -216,8 +217,10 @@ cdb_comm_stat_add(CDBCommStat& cs, double v, bool init)
     if (v > cs._time_max)
         cs._time_max = v;
     for (int i=0; i<CDB_TIME_BUCKET_SIZE; ++i) {
-        if (v>time_bucket_threshold[i])
+        if (v>time_bucket_threshold[i] && v<time_bucket_threshold[i+1]) {
             cs._time_bucket[i] += 1;
+            break;
+        }
     }
 }
 
