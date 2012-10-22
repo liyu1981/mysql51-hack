@@ -66,7 +66,7 @@ private:
 
 struct CDBShmConf
 {
-    const char* _name;
+    string _name;
     int _id;
     size_t _size;
     int _node_total;
@@ -77,11 +77,11 @@ struct CDBShmConf
 
 struct CDBShmPairConf
 {
-    const char* _name;
-    const char* _shm_name1;
-    const char* _shm_name2;
+    string _name;
+    string _shm_name1;
+    string _shm_name2;
     int         _conf_index;
-    const char* _map_file;
+    string _map_file;
 };
 
 struct CDBShmPair
