@@ -38,7 +38,7 @@ parse_pair_map_file(const char* mysqld_data_path, const char* pair_name)
     int found = -1;
     for (int i=0; i<shm_pair_conf_size; ++i) {
         CDBShmPairConf& c = shm_pair_conf_array[i];
-        if (strcmp(c._name, pair_name) == 0) {
+        if (strcmp(c._name.c_str(), pair_name) == 0) {
             found = i;
             break;
         }
