@@ -62,6 +62,15 @@ parse_pair_map_file(const char* mysqld_data_path, const char* pair_name)
     return ret;
 }
 
+bool
+check_standby(const CDBShm& s)
+{
+    char* p = (char*)s._meta_addr;
+    p = p + sizeof(struct timeval);
+    cdb_errno = *p;
+    return *p==1;
+}
+
 void
 dump_ins_dml(const CDBShm& s)
 {
@@ -124,8 +133,12 @@ main(int argc, char* argv[])
         exit(2);
     }
 
-    if (strcmp(argv[2], "cdb_ins_dml") == 0)
+    if (strcmp(argv[2], "cdb_ins_dml") == 0) {
+        if(!check_standby(s)) {
+            cerr << "check standby error: flag is " << cdb_errno << endl;
+        }
         dump_ins_dml(s);
+    }
 
     sm.detach_all();
 	shutdown_cdb_shm_mgr();

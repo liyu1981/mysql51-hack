@@ -322,13 +322,13 @@ std::string MD5Output(char md5[16])
 {
     char tmp[100];
     memset(tmp, 0, 100);
-    sprintf(tmp, "%u %u %u %u", 
+    sprintf(tmp, "%u %u %u %u",
         *(unsigned *)(md5),
         *(unsigned *)(md5+4),
         *(unsigned *)(md5+8),
         *(unsigned *)(md5+12)
     );
-    
+
     return std::string(tmp);
 }
 
@@ -405,7 +405,7 @@ char* md5_file(char* filename)
 	struct stat st;
     MD5_CTX md5;
 
-	
+
 	if( ( fd = open(filename,O_RDONLY)) == -1)
 	{
 		return NULL;
@@ -436,5 +436,5 @@ char* md5_file(char* filename)
 	return tmp;
 }
 
-} //end namspace md5
-} //end namspace tfc
+} /* namespace tfc */ } /* namespace md5 */
+

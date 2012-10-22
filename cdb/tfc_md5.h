@@ -35,6 +35,6 @@ char* md5_file(char* filename);
 }
 #endif
 
-} //end namspace md5
-} //end namspace tfc
+} /* namespace tfc */ } /* namespace md5 */
+
 #endif

@@ -11,6 +11,8 @@
 #include "cdb_error.h"
 #include "cdb_shm_mgr.h"
 
+#include "../sql/mysql_priv.h" // must be included after system headers such as pthread.h, otherwise conflict with mysys
+
 using namespace std;
 using namespace cdb;
 using namespace tfc::base;
@@ -54,9 +56,10 @@ cdb_shm_pair_switch_function(void* p)
         for (map<string, CDBShmPair*>::iterator it = cdb_shm_pair_map.begin(); it != cdb_shm_pair_map.end(); ++it) {
             CDBShmPair& pair = *it->second;
             pair.switch_shm();
-            ret = pair.flush_map_file(cdb_mysqld_data_path);
+            ret = pair.flush_pair_info(cdb_mysqld_data_path);
             if (ret != 0) {
                 // TOFIX: Fatal Error, then?
+                sql_print_error("CDB: flush_pair_info %s failed %d\n", it->first.c_str(), ret);
             }
         }
     }
@@ -134,7 +137,7 @@ init_cdb_shm_mgr(const char* mysqld_data_path)
 
     ret = cdb_init_config_file(cdb_mysqld_data_path + "/cdb.conf");
     if(ret == false)
-      return false;
+        return false;
 
     // init shm mgr & lock section
     string shmid_file_path = cdb_mysqld_data_path + string("/cdb_shm_id.txt");
@@ -164,14 +167,14 @@ init_cdb_shm_mgr(const char* mysqld_data_path)
 
         CDBShm& s = sm.get(c._name);
         s._ca = new CacheAccess();
-        ret = s._ca->open((char*)s._addr, s._size, s._new, c._node_total, c._bucket_size, c._n_chunks, c._chunk_size);
+        ret = s._ca->open((char*)s._data_addr, s._data_size, s._new, c._node_total, c._bucket_size, c._n_chunks, c._chunk_size);
         if (ret != 0) {
             cdb_errno = CDB_SHM_INIT_CA_OPEN_ERROR;
             cdb_2nd_errno = ret;
             return false;
         }
 
-        s._lock = (spinlock_t*)shm_locks._addr+i;
+        s._lock = (spinlock_t*)shm_locks._data_addr+i;
         spin_lock_init(s._lock);
 
         shmid_of << s._name << " " << s._key << " (lock " << i << ")" << endl;
@@ -192,7 +195,7 @@ init_cdb_shm_mgr(const char* mysqld_data_path)
         nsp->_standby = &sm.get(c._shm_name2);
         cdb_shm_pair_map[c._name] = nsp;
 
-        ret = nsp->flush_map_file(cdb_mysqld_data_path);
+        ret = nsp->flush_pair_info(cdb_mysqld_data_path);
         if (ret != 0) {
             cdb_errno = ret;
             return false;
@@ -215,7 +218,7 @@ shutdown_cdb_shm_mgr()
 {
     CDBShmMgr& sm = CDBShmMgr::getInstance();
     CDBShm& shm_locks = sm.get(CDB_SHM_LOCKS_NAME);
-    if (shm_locks._addr == 0)
+    if (shm_locks._data_addr == 0)
         return false;
     else
         return shmctl(shm_locks._id, IPC_RMID, NULL) == 0;
@@ -247,14 +250,14 @@ attach_cdb_shm_mgr(const char* mysqld_data_path)
 
         CDBShm& s = sm.get(c._name);
         s._ca = new CacheAccess();
-        ret = s._ca->open((char*)s._addr, s._size, s._new, c._node_total, c._bucket_size, c._n_chunks, c._chunk_size);
+        ret = s._ca->open((char*)s._data_addr, s._data_size, s._new, c._node_total, c._bucket_size, c._n_chunks, c._chunk_size);
         if (ret != 0) {
             cdb_errno = CDB_SHM_INIT_CA_OPEN_ERROR;
             cdb_2nd_errno = ret;
             return false;
         }
 
-        s._lock = (spinlock_t*)shm_locks._addr+i;
+        s._lock = (spinlock_t*)shm_locks._data_addr+i;
         if(shm_locks._new)
             spin_lock_init(s._lock);
     }
@@ -267,16 +270,15 @@ attach_cdb_shm_mgr(const char* mysqld_data_path)
 void
 cdb_comm_stat_add(CDBCommStat& cs, double v, bool init)
 {
-    const double DOUBLE_MAX =(double)LLONG_MAX;
     const double time_bucket_threshold[CDB_TIME_BUCKET_SIZE+1] = {
         0.02, 0.04, 0.06, 0.08, 0.1, 0.5, 1, 2, 10,
-        DOUBLE_MAX // placeholder
+        DBL_MAX // placeholder
     };
 
     if (init) {
         cs._total = 0;
         cs._time_sum = 0;
-        cs._time_min = DOUBLE_MAX;
+        cs._time_min = DBL_MAX;
         cs._time_max = 0;
         for (int i=0; i<CDB_TIME_BUCKET_SIZE; ++i)
             cs._time_bucket[i] = 0;
@@ -310,8 +312,10 @@ void cdb_ins_dml_op_add(CDBInsDmlOp& op, unsigned long long int begin_time, unsi
     if (rv > 0) {
         // not found
         cdb_comm_stat_add(op._comm_stat, op_diff, true);
-        if (m.insert(op._key, op)>0) {
+        int r = m.insert(op._key, op);
+        if (r>0) {
             // TOFIX: insert failed, then?
+            sql_print_error("CDB: cdb_ins_dml_op_add insert new item failed %d\n", r);
         }
     }
     else if (rv == 0) {
@@ -319,13 +323,17 @@ void cdb_ins_dml_op_add(CDBInsDmlOp& op, unsigned long long int begin_time, unsi
         CDBInsDmlOp entry;
         m.get(op._key, entry);
         cdb_comm_stat_add(entry._comm_stat, op_diff);
-        if (m.insert(entry._key, entry)>0) {
+        int r = m.insert(entry._key, entry);
+        if (r>0) {
             // TOFIX: insert failed, then?
+            sql_print_error("CDB: cdb_ins_dml_op_add update item failed %d\n", r);
         }
     }
     else {
         // TOFIX: sth wrong, may be shm map corrupted?
+        sql_print_error("CDB: cdb_ins_dml_op_add find key failed %d\n", rv);
     }
 
     spin_unlock(s._lock);
 }
+
