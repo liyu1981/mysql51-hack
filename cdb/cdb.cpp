@@ -105,7 +105,8 @@ init_cdb_shm_mgr(const char* mysqld_data_path)
         spin_lock_init(s._lock);
 
         shmid_of << s._name << " " << s._key << " (lock " << i << ")" << endl;
-        sql_print_information("=== shm_name: %s, shm_key: %x ===", s._name.c_str(), s._key);
+        fprintf(stderr, "=== shm_name: %s, shm_key: %#x ===\n", s._name.c_str(), s._key);
+        fflush(stderr);
     }
 
     shmid_of.close();
