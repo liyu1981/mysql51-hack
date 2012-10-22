@@ -49,7 +49,7 @@ cdb_shm_pair_switch_function(void* p)
         for (map<string, CDBShmPair*>::iterator it = cdb_shm_pair_map.begin(); it != cdb_shm_pair_map.end(); ++it) {
             CDBShmPair& pair = *it->second;
             pair.switch_shm();
-            ret = pair.flush_map_file(cdb_mysqld_data_path);
+            ret = pair.flush_pair_info(cdb_mysqld_data_path);
             if (ret != 0) {
                 // TOFIX: Fatal Error, then?
             }
@@ -94,14 +94,14 @@ init_cdb_shm_mgr(const char* mysqld_data_path)
 
         CDBShm& s = sm.get(c._name);
         s._ca = new CacheAccess();
-        ret = s._ca->open((char*)s._addr, s._size, s._new, c._node_total, c._bucket_size, c._n_chunks, c._chunk_size);
+        ret = s._ca->open((char*)s._data_addr, s._data_size, s._new, c._node_total, c._bucket_size, c._n_chunks, c._chunk_size);
         if (ret != 0) {
             cdb_errno = CDB_SHM_INIT_CA_OPEN_ERROR;
             cdb_2nd_errno = ret;
             return false;
         }
 
-        s._lock = (spinlock_t*)shm_locks._addr+i;
+        s._lock = (spinlock_t*)shm_locks._data_addr+i;
         spin_lock_init(s._lock);
 
         shmid_of << s._name << " " << s._key << " (lock " << i << ")" << endl;
@@ -120,7 +120,7 @@ init_cdb_shm_mgr(const char* mysqld_data_path)
         nsp->_standby = &sm.get(c._shm_name2);
         cdb_shm_pair_map[c._name] = nsp;
 
-        ret = nsp->flush_map_file(cdb_mysqld_data_path);
+        ret = nsp->flush_pair_info(cdb_mysqld_data_path);
         if (ret != 0) {
             cdb_errno = ret;
             return false;
@@ -143,7 +143,7 @@ shutdown_cdb_shm_mgr()
 {
     CDBShmMgr& sm = CDBShmMgr::getInstance();
     CDBShm& shm_locks = sm.get(CDB_SHM_LOCKS_NAME);
-    if (shm_locks._addr == 0)
+    if (shm_locks._data_addr == 0)
         return false;
     else
         return shmctl(shm_locks._id, IPC_RMID, NULL) == 0;
@@ -175,14 +175,14 @@ attach_cdb_shm_mgr(const char* mysqld_data_path)
 
         CDBShm& s = sm.get(c._name);
         s._ca = new CacheAccess();
-        ret = s._ca->open((char*)s._addr, s._size, s._new, c._node_total, c._bucket_size, c._n_chunks, c._chunk_size);
+        ret = s._ca->open((char*)s._data_addr, s._data_size, s._new, c._node_total, c._bucket_size, c._n_chunks, c._chunk_size);
         if (ret != 0) {
             cdb_errno = CDB_SHM_INIT_CA_OPEN_ERROR;
             cdb_2nd_errno = ret;
             return false;
         }
 
-        s._lock = (spinlock_t*)shm_locks._addr+i;
+        s._lock = (spinlock_t*)shm_locks._data_addr+i;
         if(shm_locks._new)
             spin_lock_init(s._lock);
     }
