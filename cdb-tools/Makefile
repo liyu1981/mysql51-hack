@@ -14,8 +14,8 @@ install:
 	install -m 0755 -t $(prefix) $(all_exe)
 	install -m 0755 -t $(prefix) $(all_script)
 
-cdb_shm_dump: cdb_shm_dump.o
-	g++ $(LDFLAG) -o $@ $< $(LIBCDB_A)
+cdb_shm_dump: cdb_shm_dump.o cdb_tool_comm.o
+	g++ $(LDFLAG) -o $@ $^ $(LIBCDB_A)
 
 .cpp.o:
 	g++ -c -g $(CXXFLAG) -I$(LIBCDB_INC) -o $@ $<
