@@ -9,6 +9,8 @@ using namespace cdb;
 #include <iostream>
 using namespace std;
 
+#include "cdb_tool_comm.h"
+
 CDBShmPairConf shm_pair_conf_array[] = {
     //name, shm_name1, shm_name2, conf_index, map_file
     {"cdb_ins_dml", "cdb_ins_dml_1", "cdb_ins_dml_2", 0, "cdb_ins_dml_map.txt"}

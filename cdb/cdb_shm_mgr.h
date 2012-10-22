@@ -111,7 +111,7 @@ struct CDBShmPairConf
     string _name;
     string _shm_name1;
     string _shm_name2;
-    int         _conf_index;
+    int    _conf_index;
     string _map_file;
 };
 

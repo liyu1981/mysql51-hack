@@ -65,65 +65,67 @@ cdb_shm_pair_switch_function(void* p)
     }
 }
 
-static bool cdb_init_config_file(const string &config_file)
+bool
+cdb_init_config_file(const string& config_file)
 {
-  CFileConfig cfc;
+    CFileConfig cfc;
 
-  try{
-    cfc.Init(config_file);
-  }catch (conf_load_error ex){
-    fprintf(stderr, "[cdb_init_config_file] CFileConfig::Init failed: %s, Use default config.\n", ex.what());
-    /*return true, use default config*/
-    return true;
-  }
-
-  int shm_num = from_str<int>(cfc["root\\shm\\shm_num"]);
-  if(cdb_shm_conf_size != shm_num) {
-    fprintf(stderr, "[cdb_init_config_file] shm_num is invalid.\n");
-    return false;
-  }
-
-  int pair_num = from_str<int>(cfc["root\\shm_pair\\pair_num"]);
-  if(cdb_shm_pair_conf_size != pair_num) {
-    fprintf(stderr, "[cdb_init_config_file] pair_num is invalid.\n");
-    return false;
-  }
-
-  for(int i = 0; i < cdb_shm_conf_size; ++i) {
-    ostringstream ss;
-    ss << "root\\shm\\shm" << (i+1) << "\\";
-    string prefix = ss.str();
-    CDBShmConf& c = cdb_shm_conf_array[i];
-    c._name = cfc[prefix + "name"];
-    c._id = from_str<int>(cfc[prefix + "id"]);
-    c._size = from_str<unsigned>(cfc[prefix + "size"]);
-    c._node_total = from_str<int>(cfc[prefix + "node_total"]);
-    c._bucket_size = from_str<int>(cfc[prefix + "bucket_size"]);
-    c._n_chunks = from_str<int>(cfc[prefix + "n_chunks"]);
-    c._chunk_size = from_str<int>(cfc[prefix + "chunk_size"]);
-    cdb_shm_names.insert(c._name);
-  }
-
-  for(int i = 0; i < cdb_shm_pair_conf_size; ++i) {
-    ostringstream ss;
-    ss << "root\\shm_pair\\pair" << (i+1) << "\\";
-    string prefix = ss.str();
-    CDBShmPairConf& c = cdb_shm_pair_conf_array[i];
-    c._name = cfc[prefix + "name"];
-    c._shm_name1 = cfc[prefix + "shm_name1"];
-    c._shm_name2 = cfc[prefix + "shm_name2"];
-
-    if((cdb_shm_names.find(c._shm_name1) == cdb_shm_names.end()) ||
-       (cdb_shm_names.find(c._shm_name2) == cdb_shm_names.end()) ) {
-      fprintf(stderr, "shm_name: %s or %s is not exsit.\n", c._shm_name1.c_str(), c._shm_name2.c_str());
-      return false;
+    try{
+        cfc.Init(config_file);
+    }
+    catch (conf_load_error ex) {
+        fprintf(stderr, "[cdb_init_config_file] CFileConfig::Init failed: %s, Use default config.\n", ex.what());
+        /*return true, use default config*/
+        return true;
     }
 
-    c._conf_index = from_str<int>(cfc[prefix + "conf_index"]);
-    c._map_file = cfc[prefix + "map_file"];
-  }
+    int shm_num = from_str<int>(cfc["root\\shm\\shm_num"]);
+    if(cdb_shm_conf_size != shm_num) {
+        fprintf(stderr, "[cdb_init_config_file] shm_num is invalid.\n");
+        return false;
+    }
 
-  return true;
+    int pair_num = from_str<int>(cfc["root\\shm_pair\\pair_num"]);
+    if(cdb_shm_pair_conf_size != pair_num) {
+        fprintf(stderr, "[cdb_init_config_file] pair_num is invalid.\n");
+        return false;
+    }
+
+    for(int i = 0; i < cdb_shm_conf_size; ++i) {
+        ostringstream ss;
+        ss << "root\\shm\\shm" << (i+1) << "\\";
+        string prefix = ss.str();
+        CDBShmConf& c = cdb_shm_conf_array[i];
+        c._name = cfc[prefix + "name"];
+        c._id = from_str<int>(cfc[prefix + "id"]);
+        c._size = from_str<unsigned>(cfc[prefix + "size"]);
+        c._node_total = from_str<int>(cfc[prefix + "node_total"]);
+        c._bucket_size = from_str<int>(cfc[prefix + "bucket_size"]);
+        c._n_chunks = from_str<int>(cfc[prefix + "n_chunks"]);
+        c._chunk_size = from_str<int>(cfc[prefix + "chunk_size"]);
+        cdb_shm_names.insert(c._name);
+    }
+
+    for(int i = 0; i < cdb_shm_pair_conf_size; ++i) {
+        ostringstream ss;
+        ss << "root\\shm_pair\\pair" << (i+1) << "\\";
+        string prefix = ss.str();
+        CDBShmPairConf& c = cdb_shm_pair_conf_array[i];
+        c._name = cfc[prefix + "name"];
+        c._shm_name1 = cfc[prefix + "shm_name1"];
+        c._shm_name2 = cfc[prefix + "shm_name2"];
+
+        if((cdb_shm_names.find(c._shm_name1) == cdb_shm_names.end()) ||
+                (cdb_shm_names.find(c._shm_name2) == cdb_shm_names.end()) ) {
+            fprintf(stderr, "shm_name: %s or %s is not exsit.\n", c._shm_name1.c_str(), c._shm_name2.c_str());
+            return false;
+        }
+
+        c._conf_index = from_str<int>(cfc[prefix + "conf_index"]);
+        c._map_file = cfc[prefix + "map_file"];
+    }
+
+    return true;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
