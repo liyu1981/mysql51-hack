@@ -70,7 +70,7 @@ check_standby(const CDBShm& s)
     char* p = (char*)s._meta_addr;
     p = p + sizeof(struct timeval);
     cdb_errno = *p;
-    return *p==1;
+    return *p==0;
 }
 
 void
