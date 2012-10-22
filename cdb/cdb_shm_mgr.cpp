@@ -6,6 +6,8 @@
 #include <sys/shm.h>
 #include <sys/time.h>
 
+#include "../sql/mysql_priv.h" // must be included after system headers such as pthread.h, otherwise conflict with mysys
+
 namespace cdb {
 
 static const int C_DEFAULT_OPEN_FLAG = 0600;
@@ -141,6 +143,7 @@ CDBShmPair::switch_shm()
                                   _shm_conf->_node_total, _shm_conf->_bucket_size, _shm_conf->_n_chunks, _shm_conf->_chunk_size);
     if (ret != 0) {
         // TOFIX: Fatal error, must exit!
+        sql_print_error("CDB: CDBShmPair::switch_shm failed with %d", ret);
     }
 
     // 2nd: lock _current and _standby, wait for outstand write
@@ -244,5 +247,4 @@ CDBShmPair::flush_pair_map_file(const string& dir_path)
 }
 
 } // end of namespace cdb
-
 

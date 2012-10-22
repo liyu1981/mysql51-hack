@@ -6,6 +6,8 @@
 
 #include <string>
 
+namespace tfc { namespace md5 {
+
 #ifdef __cplusplus
 extern "C"
 {
@@ -32,5 +34,7 @@ char* md5_file(char* filename);
 #ifdef __cplusplus
 }
 #endif
+
+} /* namespace tfc */ } /* namespace md5 */
 
 #endif

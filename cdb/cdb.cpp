@@ -8,6 +8,8 @@
 #include <sys/ipc.h>
 #include <pthread.h>
 
+#include "../sql/mysql_priv.h" // must be included after system headers such as pthread.h, otherwise conflict with mysys
+
 using namespace std;
 using namespace cdb;
 
@@ -52,6 +54,7 @@ cdb_shm_pair_switch_function(void* p)
             ret = pair.flush_pair_info(cdb_mysqld_data_path);
             if (ret != 0) {
                 // TOFIX: Fatal Error, then?
+                sql_print_error("CDB: flush_pair_info %s failed %d\n", it->first.c_str(), ret);
             }
         }
     }
@@ -195,7 +198,6 @@ attach_cdb_shm_mgr(const char* mysqld_data_path)
 void
 cdb_comm_stat_add(CDBCommStat& cs, double v, bool init)
 {
-    const double DBL_MAX =(double)LLONG_MAX;
     const double time_bucket_threshold[CDB_TIME_BUCKET_SIZE+1] = {
         0.02, 0.04, 0.06, 0.08, 0.1, 0.5, 1, 2, 10,
         DBL_MAX // placeholder
@@ -238,8 +240,10 @@ void cdb_ins_dml_op_add(CDBInsDmlOp& op, unsigned long long int begin_time, unsi
     if (rv > 0) {
         // not found
         cdb_comm_stat_add(op._comm_stat, op_diff, true);
-        if (m.insert(op._key, op)>0) {
+        int r = m.insert(op._key, op);
+        if (r>0) {
             // TOFIX: insert failed, then?
+            sql_print_error("CDB: cdb_ins_dml_op_add insert new item failed %d\n", r);
         }
     }
     else if (rv == 0) {
@@ -247,12 +251,15 @@ void cdb_ins_dml_op_add(CDBInsDmlOp& op, unsigned long long int begin_time, unsi
         CDBInsDmlOp entry;
         m.get(op._key, entry);
         cdb_comm_stat_add(entry._comm_stat, op_diff);
-        if (m.insert(entry._key, entry)>0) {
+        int r = m.insert(entry._key, entry);
+        if (r>0) {
             // TOFIX: insert failed, then?
+            sql_print_error("CDB: cdb_ins_dml_op_add update item failed %d\n", r);
         }
     }
     else {
         // TOFIX: sth wrong, may be shm map corrupted?
+        sql_print_error("CDB: cdb_ins_dml_op_add find key failed %d\n", rv);
     }
 
     spin_unlock(s._lock);

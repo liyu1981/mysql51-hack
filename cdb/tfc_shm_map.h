@@ -11,6 +11,7 @@ namespace tfc {
 
 using namespace std;
 using namespace tfc::cache;
+using namespace tfc::md5;
 
 struct TfcShmMapLock
 {
