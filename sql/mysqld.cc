@@ -8889,9 +8889,11 @@ static void set_server_version(void)
   if (opt_log || opt_update_log || opt_slow_log || opt_bin_log)
     strmov(end, "-log");                        // This may slow down system
 
+#ifdef WITH_CDB
   //yuli: add CDB suffix start, remember that server_version currently can be 60bytes max.
   strmov(end, "-CDB");
   //yuli: add CDB suffix end
+#endif
 }
 
 
