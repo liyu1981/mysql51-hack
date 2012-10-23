@@ -5092,6 +5092,11 @@ pthread_handler_t handle_connections_sockets(void *arg __attribute__((unused)))
   struct sockaddr_in cAddr;
   int ip_flags=0,socket_flags=0,flags;
   st_vio *vio_tmp;
+#ifdef WITH_CDB
+  ulonglong start_utime;
+  int cdb_client_ip;
+#endif
+
   DBUG_ENTER("handle_connections_sockets");
 
   LINT_INIT(new_sock);
@@ -5139,6 +5144,10 @@ pthread_handler_t handle_connections_sockets(void *arg __attribute__((unused)))
       break;
     }
 
+#ifdef WITH_CDB
+    start_utime = my_micro_time();
+#endif
+
     /* Is this a new connection request ? */
 #ifdef HAVE_SYS_UN_H
     if (FD_ISSET(unix_sock,&readFDs))
@@ -5152,6 +5161,12 @@ pthread_handler_t handle_connections_sockets(void *arg __attribute__((unused)))
       sock = ip_sock;
       flags= ip_flags;
     }
+
+#ifdef WITH_CDB
+    if (sock == unix_sock) {
+        cdb_client_ip = 0; // use 0 for unix sock
+    }
+#endif
 
 #if !defined(NO_FCNTL_NONBLOCK)
     if (!(test_flags & TEST_BLOCKING))
@@ -5187,6 +5202,11 @@ pthread_handler_t handle_connections_sockets(void *arg __attribute__((unused)))
       }
 #endif
     }
+
+#ifdef WITH_CDB
+    cdb_client_ip = cAddr.sin_addr.s_addr;
+#endif
+
 #if !defined(NO_FCNTL_NONBLOCK)
     if (!(test_flags & TEST_BLOCKING))
       fcntl(sock, F_SETFL, flags);
@@ -5194,10 +5214,15 @@ pthread_handler_t handle_connections_sockets(void *arg __attribute__((unused)))
     if (new_sock == INVALID_SOCKET)
     {
       if ((error_count++ & 255) == 0)		// This can happen often
-	sql_perror("Error in accept");
+        sql_perror("Error in accept");
       MAYBE_BROKEN_SYSCALL;
+
+#ifdef WITH_CDB
+      cdb_ins_conn_add(cdb_client_ip, CDB_INS_CONN_ERROR_ACCEPT, start_utime, my_micro_time());
+#endif
+
       if (socket_errno == SOCKET_ENFILE || socket_errno == SOCKET_EMFILE)
-	sleep(1);				// Give other threads some time
+        sleep(1);				// Give other threads some time
       continue;
     }
 
@@ -5245,6 +5270,9 @@ pthread_handler_t handle_connections_sockets(void *arg __attribute__((unused)))
 	sql_perror("Error on new connection socket");
 	(void) shutdown(new_sock, SHUT_RDWR);
 	(void) closesocket(new_sock);
+#ifdef WITH_CDB
+      cdb_ins_conn_add(cdb_client_ip, CDB_INS_CONN_ERROR_NEW_SOCK, start_utime, my_micro_time());
+#endif
 	continue;
       }
     }
@@ -5257,6 +5285,9 @@ pthread_handler_t handle_connections_sockets(void *arg __attribute__((unused)))
     {
       (void) shutdown(new_sock, SHUT_RDWR);
       VOID(closesocket(new_sock));
+#ifdef WITH_CDB
+      cdb_ins_conn_add(cdb_client_ip, CDB_INS_CONN_ERROR_NEW_THD, start_utime, my_micro_time());
+#endif
       continue;
     }
     if (!(vio_tmp=vio_new(new_sock,
@@ -5278,12 +5309,24 @@ pthread_handler_t handle_connections_sockets(void *arg __attribute__((unused)))
 	(void) closesocket(new_sock);
       }
       delete thd;
+#ifdef WITH_CDB
+      cdb_ins_conn_add(cdb_client_ip, CDB_INS_CONN_ERROR_NEW_VIO, start_utime, my_micro_time());
+#endif
       continue;
     }
     if (sock == unix_sock)
       thd->security_ctx->host=(char*) my_localhost;
 
     create_new_thread(thd);
+#ifdef WITH_CDB
+    // TOFIX:
+    /* create_new_thread could reject client because of too many connections.
+       however when that happens, create_new_thread deletes thd before return
+       (see create_new_thread for details). So currently there is difficulty in
+       seperate them from normal conns.
+     */
+    cdb_ins_conn_add(cdb_client_ip, 0, start_utime, my_micro_time());
+#endif
   }
   DBUG_LEAVE;
   decrement_handler_count();

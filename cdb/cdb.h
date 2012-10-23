@@ -78,6 +78,19 @@ struct CDBInsConn
 
 void cdb_ins_conn_add(CDBInsConn& conn, unsigned long long int begin_time, unsigned long long end_time);
 
+inline void cdb_ins_conn_add(int ip, int result, unsigned long long int begin_time, unsigned long long end_time)
+{
+    CDBInsConn c;
+    c._key._ip = ip;
+    c._key._result = result;
+    cdb_ins_conn_add(c, begin_time, end_time);
+}
+
+#define CDB_INS_CONN_ERROR_ACCEPT      (int)10001
+#define CDB_INS_CONN_ERROR_NEW_SOCK    (int)10002
+#define CDB_INS_CONN_ERROR_NEW_THD     (int)10003
+#define CDB_INS_CONN_ERROR_NEW_VIO     (int)10004
+
 ///////////////////////////////////////////////////////////////////////////////
 
 #endif
