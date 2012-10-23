@@ -1278,9 +1278,6 @@ bool dispatch_command(enum enum_server_command command, THD *thd,
 
       log_slow_statement(thd);
 
-#ifdef WITH_CDB
-      cdb_stat_instance_dml_func(thd);
-#endif
       /* Remove garbage at start of query */
       while (length > 0 && my_isspace(thd->charset(), *beginning_of_next_stmt))
       {
@@ -1680,10 +1677,6 @@ bool dispatch_command(enum enum_server_command command, THD *thd,
   close_thread_tables(thd);
 
   log_slow_statement(thd);
-
-#ifdef WITH_CDB
-      cdb_stat_instance_dml_func(thd);
-#endif
 
   thd_proc_info(thd, "cleaning up");
   thd->set_query(NULL, 0);
@@ -5105,6 +5098,9 @@ create_sp_error:
   }
   thd_proc_info(thd, "query end");
 
+#ifdef WITH_CDB
+  cdb_stat_instance_dml_func(thd);
+#endif
   /*
     Binlog-related cleanup:
     Reset system variables temporarily modified by SET ONE SHOT.
