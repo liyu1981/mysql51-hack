@@ -39,9 +39,10 @@ CDBShmConf cdb_shm_conf_array[] = {
 int cdb_shm_conf_size = sizeof(cdb_shm_conf_array)/sizeof(cdb_shm_conf_array[0]);
 
 CDBShmPairConf cdb_shm_pair_conf_array[] = {
+    // conf_index must match the offset of item with name = shm_name1 in cdb_shm_conf_array
     //name, shm_name1, shm_name2, conf_index, map_file
-    {"cdb_ins_dml", "cdb_ins_dml_1", "cdb_ins_dml_2", 0, "cdb_ins_dml_map.txt"}
-    {"cdb_ins_conn", "cdb_ins_conn_1", "cdb_ins_conn_2", 0, "cdb_ins_conn_map.txt"}
+    {"cdb_ins_dml", "cdb_ins_dml_1", "cdb_ins_dml_2", 0, "cdb_ins_dml_map.txt"},
+    {"cdb_ins_conn", "cdb_ins_conn_1", "cdb_ins_conn_2", 2, "cdb_ins_conn_map.txt"}
 };
 int cdb_shm_pair_conf_size = sizeof(cdb_shm_pair_conf_array)/sizeof(cdb_shm_pair_conf_array[0]);
 
