@@ -1853,7 +1853,8 @@ extern int creating_table;    // How many mysql_create_table() are running
 */
 /* for cdb */
 #ifdef WITH_CDB
-extern my_bool opt_cdb_stat_instance;
+extern my_bool opt_cdb_stat_ins_dml;
+extern my_bool opt_cdb_stat_ins_conn;
 void cdb_stat_instance_dml_func(THD *thd);
 #endif
 

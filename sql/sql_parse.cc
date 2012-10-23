@@ -1734,7 +1734,7 @@ void cdb_stat_instance_dml_func(THD *thd)
 {
   DBUG_ENTER("cdb_stat_instance_dml_func");
 
-  if(likely(opt_cdb_stat_instance))
+  if(likely(opt_cdb_stat_ins_dml))
   {
     CDBInsDmlOp op;
 
