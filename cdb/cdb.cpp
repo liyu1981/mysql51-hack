@@ -32,13 +32,16 @@ string cdb_mysqld_data_path;
 CDBShmConf cdb_shm_conf_array[] = {
     //name, id, size, node_total, bucket_size, n_chunks, chunk_size
     {"cdb_ins_dml_1", 1, 8*MB, 1024, 1024, 1024, 512},
-    {"cdb_ins_dml_2", 2, 8*MB, 1024, 1024, 1024, 512}
+    {"cdb_ins_dml_2", 2, 8*MB, 1024, 1024, 1024, 512},
+    {"cdb_ins_conn_1", 3, 8*MB, 4096, 4096, 4096, 128},
+    {"cdb_ins_conn_2", 4, 8*MB, 4096, 4096, 4096, 128}
 };
 int cdb_shm_conf_size = sizeof(cdb_shm_conf_array)/sizeof(cdb_shm_conf_array[0]);
 
 CDBShmPairConf cdb_shm_pair_conf_array[] = {
     //name, shm_name1, shm_name2, conf_index, map_file
     {"cdb_ins_dml", "cdb_ins_dml_1", "cdb_ins_dml_2", 0, "cdb_ins_dml_map.txt"}
+    {"cdb_ins_conn", "cdb_ins_conn_1", "cdb_ins_conn_2", 0, "cdb_ins_conn_map.txt"}
 };
 int cdb_shm_pair_conf_size = sizeof(cdb_shm_pair_conf_array)/sizeof(cdb_shm_pair_conf_array[0]);
 
@@ -335,6 +338,48 @@ void cdb_ins_dml_op_add(CDBInsDmlOp& op, unsigned long long int begin_time, unsi
     else {
         // TOFIX: sth wrong, may be shm map corrupted?
         sql_print_error("CDB: cdb_ins_dml_op_add find key failed %d\n", rv);
+    }
+
+    spin_unlock(s._lock);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+void
+cdb_ins_conn_add(CDBInsConn& conn, unsigned long long int begin_time, unsigned long long end_time)
+{
+    double time_diff = (end_time - begin_time) * 0.000001;
+
+    CDBShm& s = cdb_shm_pair_map["cdb_ins_conn"]->get_current();
+    TfcShmMap<CDBInsConnKey, CDBInsConn> m;
+    m._ca = s._ca;
+
+    spin_lock(s._lock);
+
+    int rv = m.find(conn._key);
+    if (rv > 0) {
+        // not found
+        cdb_comm_stat_add(conn._comm_stat, time_diff, true);
+        int r = m.insert(conn._key, conn);
+        if (r>0) {
+            // TOFIX: insert failed, then?
+            sql_print_error("CDB: cdb_ins_conn_add insert new item failed %d\n", r);
+        }
+    }
+    else if (rv == 0) {
+        // found, so update
+        CDBInsConn entry;
+        m.get(conn._key, entry);
+        cdb_comm_stat_add(entry._comm_stat, time_diff);
+        int r = m.insert(entry._key, entry);
+        if (r>0) {
+            // TOFIX: insert failed, then?
+            sql_print_error("CDB: cdb_ins_conn_add update item failed %d\n", r);
+        }
+    }
+    else {
+        // TOFIX: sth wrong, may be shm map corrupted?
+        sql_print_error("CDB: cdb_ins_conn_add find key failed %d\n", rv);
     }
 
     spin_unlock(s._lock);

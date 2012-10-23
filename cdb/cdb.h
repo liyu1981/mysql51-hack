@@ -59,5 +59,26 @@ void cdb_ins_dml_op_add(CDBInsDmlOp& op, unsigned long long int begin_time, unsi
 
 ///////////////////////////////////////////////////////////////////////////////
 
+///////////////////////////////////////////////////////////////////////////////
+// section: instance level connection statistic
+
+#pragma pack(push, 1)
+struct CDBInsConnKey
+{
+    int _ip;
+    int _result;
+};
+
+struct CDBInsConn
+{
+    CDBInsConnKey _key;
+    CDBCommStat _comm_stat;
+};
+#pragma pack(pop)
+
+void cdb_ins_conn_add(CDBInsConn& conn, unsigned long long int begin_time, unsigned long long end_time);
+
+///////////////////////////////////////////////////////////////////////////////
+
 #endif
 
