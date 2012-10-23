@@ -1,3 +1,4 @@
+/* vim: set ts=4 sw=4 tw=0: */
 #include "cdb_shm_mgr.h"
 #include "cdb_error.h"
 #include "tfc_spin_lock.h"

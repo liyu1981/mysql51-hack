@@ -1,3 +1,4 @@
+/* vim: set ts=4 sw=4 tw=0: */
 #ifndef _CDB_SHM_MGR_H_
 #define _CDB_SHM_MGR_H_
 

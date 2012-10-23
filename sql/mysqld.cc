@@ -2809,7 +2809,7 @@ pthread_handler_t signal_hand(void *arg __attribute__((unused)))
     if (cleanup_done)
     {
       //yuli: cdb final cleanup start
-      shutdown_cdb_shm_mgr();
+      cdb_shutdown_shm_mgr();
       //yuli: cdb final cleanup end
       DBUG_PRINT("quit",("signal_handler: calling my_thread_end()"));
       my_thread_end();
@@ -4200,7 +4200,7 @@ a file name for --log-bin-index option", opt_binlog_index_name);
 
   // yuli: cdb modifications start
   {
-    if (!init_cdb_shm_mgr(mysql_real_data_home)) {
+    if (!cdb_init_shm_mgr(mysql_real_data_home)) {
       sql_print_error("cdb: init_cdb_shm_mgr failed with code %d (2nd code %d).\n", cdb_errno, cdb_2nd_errno);
       unireg_abort(1);
     }

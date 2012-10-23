@@ -1,3 +1,4 @@
+/* vim: set ts=4 sw=4 tw=0: */
 #ifndef _CDB_H
 #define _CDB_H
 
@@ -10,12 +11,12 @@ extern int cdb_2nd_errno;
 ///////////////////////////////////////////////////////////////////////////////
 
 // for mysqld
-bool init_cdb_shm_mgr(const char* mysqld_data_path);
-bool shutdown_cdb_shm_mgr();
+bool cdb_init_shm_mgr(const char* mysqld_data_path);
+bool cdb_shutdown_shm_mgr();
 int cdb_flush_shm_pair_map();
 
 // for cdb tools
-bool attach_cdb_shm_mgr(const char* mysqld_data_path);
+bool cdb_attach_shm_mgr(const char* mysqld_data_path);
 
 ///////////////////////////////////////////////////////////////////////////////
 // section: instance level dml statistic

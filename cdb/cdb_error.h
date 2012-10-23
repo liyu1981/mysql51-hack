@@ -1,3 +1,4 @@
+/* vim: set ts=4 sw=4 tw=0: */
 #ifndef _CDB_ERROR_H
 #define _CDB_ERROR_H
 

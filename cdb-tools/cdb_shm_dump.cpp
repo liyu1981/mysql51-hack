@@ -115,7 +115,7 @@ main(int argc, char* argv[])
         exit(1);
     }
 
-    if (!attach_cdb_shm_mgr(argv[1])) {
+    if (!cdb_attach_shm_mgr(argv[1])) {
         cerr << "attach_cdb_shm_mgr error: " << cdb_errno << "(" << cdb_2nd_errno << ")" << endl;
         exit(cdb_errno);
     }
@@ -143,7 +143,7 @@ main(int argc, char* argv[])
     }
 
     sm.detach_all();
-	shutdown_cdb_shm_mgr();
+	cdb_shutdown_shm_mgr();
     return 0;
 }
 

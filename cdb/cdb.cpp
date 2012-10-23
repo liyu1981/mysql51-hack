@@ -1,3 +1,4 @@
+/* vim: set ts=4 sw=4 tw=0: */
 #include <climits>
 #include <fstream>
 #include <sstream>
@@ -74,20 +75,20 @@ cdb_init_config_file(const string& config_file)
         cfc.Init(config_file);
     }
     catch (conf_load_error ex) {
-        fprintf(stderr, "[cdb_init_config_file] CFileConfig::Init failed: %s, Use default config.\n", ex.what());
+        sql_print_error("[cdb_init_config_file] CFileConfig::Init failed: %s, Use default config.\n", ex.what());
         /*return true, use default config*/
         return true;
     }
 
     int shm_num = from_str<int>(cfc["root\\shm\\shm_num"]);
     if(cdb_shm_conf_size != shm_num) {
-        fprintf(stderr, "[cdb_init_config_file] shm_num is invalid.\n");
+        sql_print_error("[cdb_init_config_file] shm_num is invalid.\n");
         return false;
     }
 
     int pair_num = from_str<int>(cfc["root\\shm_pair\\pair_num"]);
     if(cdb_shm_pair_conf_size != pair_num) {
-        fprintf(stderr, "[cdb_init_config_file] pair_num is invalid.\n");
+        sql_print_error("[cdb_init_config_file] pair_num is invalid.\n");
         return false;
     }
 
@@ -116,8 +117,8 @@ cdb_init_config_file(const string& config_file)
         c._shm_name2 = cfc[prefix + "shm_name2"];
 
         if((cdb_shm_names.find(c._shm_name1) == cdb_shm_names.end()) ||
-                (cdb_shm_names.find(c._shm_name2) == cdb_shm_names.end()) ) {
-            fprintf(stderr, "shm_name: %s or %s is not exsit.\n", c._shm_name1.c_str(), c._shm_name2.c_str());
+           (cdb_shm_names.find(c._shm_name2) == cdb_shm_names.end()) ) {
+            sql_print_error("shm_name: %s or %s is not exsit.\n", c._shm_name1.c_str(), c._shm_name2.c_str());
             return false;
         }
 
@@ -131,7 +132,7 @@ cdb_init_config_file(const string& config_file)
 ///////////////////////////////////////////////////////////////////////////////
 
 bool
-init_cdb_shm_mgr(const char* mysqld_data_path)
+cdb_init_shm_mgr(const char* mysqld_data_path)
 {
     int ret;
 
@@ -216,7 +217,7 @@ init_cdb_shm_mgr(const char* mysqld_data_path)
 }
 
 bool
-shutdown_cdb_shm_mgr()
+cdb_shutdown_shm_mgr()
 {
     CDBShmMgr& sm = CDBShmMgr::getInstance();
     CDBShm& shm_locks = sm.get(CDB_SHM_LOCKS_NAME);
@@ -231,7 +232,7 @@ shutdown_cdb_shm_mgr()
 }
 
 bool
-attach_cdb_shm_mgr(const char* mysqld_data_path)
+cdb_attach_shm_mgr(const char* mysqld_data_path)
 {
     int ret;
 
