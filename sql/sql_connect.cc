@@ -19,6 +19,9 @@
 */
 
 #include "mysql_priv.h"
+#ifdef WITH_CDB
+#include "cdb.h"
+#endif
 
 #ifdef HAVE_OPENSSL
 /*
@@ -1088,6 +1091,10 @@ pthread_handler_t handle_one_connection(void *arg)
 
   if (thread_scheduler.init_new_connection_thread())
   {
+#ifdef WITH_CDB
+    cdb_ins_conn_add(thd->net.vio->remote.sin_addr.s_addr, CDB_INS_CONN_ERROR_OUT_OF_RES, 
+					 thd->start_utime, my_micro_time());
+#endif
     close_connection(thd, ER_OUT_OF_RESOURCES, 1);
     statistic_increment(aborted_connects,&LOCK_status);
     thread_scheduler.end_thread(thd,0);
@@ -1126,7 +1133,20 @@ pthread_handler_t handle_one_connection(void *arg)
 
     lex_start(thd);
     if (login_connection(thd))
+	{
+#ifdef WITH_CDB
+	cdb_ins_conn_add(thd->net.vio->remote.sin_addr.s_addr, thd->main_da.sql_errno(), 
+					   thd->start_utime, my_micro_time());
+#endif
       goto end_thread;
+	}
+#ifdef WITH_CDB
+	else
+	{
+	  cdb_ins_conn_add(thd->net.vio->remote.sin_addr.s_addr, 0, 
+					   thd->start_utime, my_micro_time());
+	}
+#endif
 
     prepare_new_connection_state(thd);
 

@@ -5025,7 +5025,10 @@ static void create_new_thread(THD *thd)
   if (connection_count >= max_connections + 1 || abort_loop)
   {
     pthread_mutex_unlock(&LOCK_connection_count);
-
+#ifdef WITH_CDB
+    cdb_ins_conn_add(thd->net.vio->remote.sin_addr.s_addr, CDB_INS_CONN_ERROR_TOO_MANY_CONN, 
+					 thd->start_utime, my_micro_time());
+#endif
     DBUG_PRINT("error",("Too many connections"));
     close_connection(thd, ER_CON_COUNT_ERROR, 1);
     delete thd;
@@ -5317,16 +5320,10 @@ pthread_handler_t handle_connections_sockets(void *arg __attribute__((unused)))
     if (sock == unix_sock)
       thd->security_ctx->host=(char*) my_localhost;
 
-    create_new_thread(thd);
 #ifdef WITH_CDB
-    // TOFIX:
-    /* create_new_thread could reject client because of too many connections.
-       however when that happens, create_new_thread deletes thd before return
-       (see create_new_thread for details). So currently there is difficulty in
-       seperate them from normal conns.
-     */
-    cdb_ins_conn_add(cdb_client_ip, 0, start_utime, my_micro_time());
+	thd->set_time();
 #endif
+    create_new_thread(thd);
   }
   DBUG_LEAVE;
   decrement_handler_count();

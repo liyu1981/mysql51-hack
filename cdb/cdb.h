@@ -90,6 +90,8 @@ inline void cdb_ins_conn_add(int ip, int result, unsigned long long int begin_ti
 #define CDB_INS_CONN_ERROR_NEW_SOCK    (int)10002
 #define CDB_INS_CONN_ERROR_NEW_THD     (int)10003
 #define CDB_INS_CONN_ERROR_NEW_VIO     (int)10004
+#define CDB_INS_CONN_ERROR_TOO_MANY_CONN (int)10005
+#define CDB_INS_CONN_ERROR_OUT_OF_RES (int)10006
 
 ///////////////////////////////////////////////////////////////////////////////
 
