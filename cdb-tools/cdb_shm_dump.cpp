@@ -167,7 +167,7 @@ dump_ins_client_dml(const CDBShm& s)
 
                 cout << ipstr << " "
                      << dml_names[entry._key._type] << " "
-                     << entry._key._result << " "
+                     //<< entry._key._result << " "
                      << entry._comm_stat._total << " "
                      << fixed << setprecision(3)
                      << entry._comm_stat._time_sum*1000 << " "

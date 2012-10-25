@@ -493,6 +493,8 @@ bool slave_warning_issued = false;
 #ifdef WITH_CDB
 my_bool opt_cdb_stat_ins_dml = 0;
 my_bool opt_cdb_stat_ins_conn = 0;
+my_bool opt_cdb_stat_client_dml = 0;
+my_bool opt_cdb_stat_table_dml = 0;
 #endif
 /*
   Legacy global handlerton. These will be removed (please do not add more).
@@ -5857,7 +5859,9 @@ enum options_mysqld
   OPT_DEFAULT_CHARACTER_SET_OLD
 #ifdef WITH_CDB
   ,OPT_CDB_STAT_INS_DML,
-  OPT_CDB_STAT_INS_CONN
+  OPT_CDB_STAT_INS_CONN,
+  OPT_CDB_STAT_CLIENT_DML,
+  OPT_CDB_STAT_TABLE_DML
 #endif
 };
 
@@ -7323,6 +7327,14 @@ thread is in the relay logs.",
   {"cdb_stat_ins_conn", OPT_CDB_STAT_INS_CONN,
    "cdb stat instance connection.", &opt_cdb_stat_ins_conn,
    &opt_cdb_stat_ins_conn, 0, GET_BOOL,
+   REQUIRED_ARG, 0, 0, 0, 0, 0, 0},
+  {"cdb_stat_client_dml", OPT_CDB_STAT_CLIENT_DML,
+   "cdb stat client data manipulation statements.", &opt_cdb_stat_client_dml,
+   &opt_cdb_stat_client_dml, 0, GET_BOOL,
+   REQUIRED_ARG, 0, 0, 0, 0, 0, 0},
+  {"cdb_stat_table_dml", OPT_CDB_STAT_CLIENT_DML,
+   "cdb stat table data manipulation statements.", &opt_cdb_stat_table_dml,
+   &opt_cdb_stat_table_dml, 0, GET_BOOL,
    REQUIRED_ARG, 0, 0, 0, 0, 0, 0},
 #endif
   {0, 0, 0, 0, 0, 0, GET_NO_ARG, NO_ARG, 0, 0, 0, 0, 0, 0}

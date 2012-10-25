@@ -910,10 +910,14 @@ static sys_var_readonly         sys_myisam_mmap_size(&vars, "myisam_mmap_size",
                                                      get_myisam_mmap_size);
 
 #ifdef WITH_CDB
-static sys_var_bool_ptr	sys_cdb_stat_ins_dml(&vars, "cdb_stat_ins_dml",
-					 &opt_cdb_stat_ins_dml);
-static sys_var_bool_ptr	sys_cdb_stat_ins_conn(&vars, "cdb_stat_ins_conn",
-					 &opt_cdb_stat_ins_conn);
+static sys_var_bool_ptr sys_cdb_stat_ins_dml(&vars, "cdb_stat_ins_dml",
+                     &opt_cdb_stat_ins_dml);
+static sys_var_bool_ptr sys_cdb_stat_ins_conn(&vars, "cdb_stat_ins_conn",
+                     &opt_cdb_stat_ins_conn);
+static sys_var_bool_ptr sys_cdb_stat_client_dml(&vars, "cdb_stat_client_dml",
+                     &opt_cdb_stat_client_dml);
+static sys_var_bool_ptr sys_cdb_stat_table_dml(&vars, "cdb_stat_table_dml",
+                     &opt_cdb_stat_table_dml);
 #endif
 
 bool sys_var::check(THD *thd, set_var *var)

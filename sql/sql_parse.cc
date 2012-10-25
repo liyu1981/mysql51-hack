@@ -1734,38 +1734,54 @@ void cdb_stat_instance_dml_func(THD *thd)
 {
   DBUG_ENTER("cdb_stat_instance_dml_func");
 
+  int sql_type = 0;
+  ulonglong current_time = thd->current_utime();
+
+  switch(thd->lex->sql_command) {
+  case SQLCOM_SELECT:
+	sql_type = CDB_SELECT;
+	break;
+  case SQLCOM_INSERT:
+	sql_type = CDB_INSERT;
+	break;
+  case SQLCOM_UPDATE:
+	sql_type = CDB_UPDATE;
+	break;
+  case SQLCOM_REPLACE:
+	sql_type = CDB_REPLACE;
+	break;
+  case SQLCOM_DELETE:
+	sql_type = CDB_DELETE;
+	break;
+  default:
+	sql_type = CDB_OTHER_TYPE;
+	break;
+  }
+
   if(likely(opt_cdb_stat_ins_dml))
   {
     CDBInsDmlOp op;
-
-    switch(thd->lex->sql_command) {
-    case SQLCOM_SELECT:
-      op._key._type = CDB_SELECT;
-      break;
-    case SQLCOM_INSERT:
-      op._key._type = CDB_INSERT;
-      break;
-    case SQLCOM_UPDATE:
-      op._key._type = CDB_UPDATE;
-      break;
-    case SQLCOM_REPLACE:
-      op._key._type = CDB_REPLACE;
-      break;
-    case SQLCOM_DELETE:
-      op._key._type = CDB_DELETE;
-      break;
-    default:
-      op._key._type = CDB_UNKOWN_TYPE;
-      break;
-    }
-
+	op._key._type = sql_type;
     if(unlikely(thd->is_error()))
       op._key._result = thd->main_da.sql_errno();
     else
       op._key._result = 0;
 
-    cdb_ins_dml_op_add(op, thd->start_utime, thd->current_utime());
+    cdb_ins_dml_op_add(op, thd->start_utime, current_time);
   }
+
+  if(likely(opt_cdb_stat_client_dml)) 
+  {
+	CDBInsClientDml op;
+	if(thd->net.vio->localhost)
+	  op._key._ip = inet_addr("127.0.0.1");
+	else
+	  op._key._ip = thd->remote.sin_addr.s_addr;
+	op._key._type = sql_type;
+
+	cdb_ins_client_dml_add(op, thd->start_utime, current_time);
+  }
+
   DBUG_VOID_RETURN;
 }
 #endif

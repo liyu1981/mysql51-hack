@@ -23,7 +23,7 @@ bool cdb_attach_shm_mgr(const char* mysqld_data_path);
 
 #define CDB_TIME_BUCKET_SIZE 9
 
-#define CDB_UNKOWN_TYPE 0
+#define CDB_OTHER_TYPE 0
 #define CDB_SELECT 1
 #define CDB_INSERT 2
 #define CDB_UPDATE 3
