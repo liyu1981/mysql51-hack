@@ -102,7 +102,6 @@ struct CDBInsClientDmlKey
 {
     int _ip;
     int _type;
-    int _result;
 };
 
 struct CDBInsClientDml
