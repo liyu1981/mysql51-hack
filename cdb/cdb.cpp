@@ -34,7 +34,9 @@ CDBShmConf cdb_shm_conf_array[] = {
     {"cdb_ins_dml_1", 1, 8*MB, 1024, 1024, 1024, 512},
     {"cdb_ins_dml_2", 2, 8*MB, 1024, 1024, 1024, 512},
     {"cdb_ins_conn_1", 3, 8*MB, 4096, 4096, 4096, 128},
-    {"cdb_ins_conn_2", 4, 8*MB, 4096, 4096, 4096, 128}
+    {"cdb_ins_conn_2", 4, 8*MB, 4096, 4096, 4096, 128},
+    {"cdb_ins_client_dml_1", 5, 8*MB, 4096, 4096, 4096, 128},
+    {"cdb_ins_client_dml_2", 6, 8*MB, 4096, 4096, 4096, 128}
 };
 int cdb_shm_conf_size = sizeof(cdb_shm_conf_array)/sizeof(cdb_shm_conf_array[0]);
 
@@ -42,7 +44,8 @@ CDBShmPairConf cdb_shm_pair_conf_array[] = {
     // conf_index must match the offset of item with name = shm_name1 in cdb_shm_conf_array
     //name, shm_name1, shm_name2, conf_index, map_file
     {"cdb_ins_dml", "cdb_ins_dml_1", "cdb_ins_dml_2", 0, "cdb_ins_dml_map.txt"},
-    {"cdb_ins_conn", "cdb_ins_conn_1", "cdb_ins_conn_2", 2, "cdb_ins_conn_map.txt"}
+    {"cdb_ins_conn", "cdb_ins_conn_1", "cdb_ins_conn_2", 2, "cdb_ins_conn_map.txt"},
+    {"cdb_ins_client_dml", "cdb_ins_client_dml_1", "cdb_ins_client_dml_2", 4, "cdb_ins_client_dml_map.txt"}
 };
 int cdb_shm_pair_conf_size = sizeof(cdb_shm_pair_conf_array)/sizeof(cdb_shm_pair_conf_array[0]);
 
@@ -305,7 +308,8 @@ cdb_comm_stat_add(CDBCommStat& cs, double v, bool init)
     }
 }
 
-void cdb_ins_dml_op_add(CDBInsDmlOp& op, unsigned long long int begin_time, unsigned long long int end_time)
+void
+cdb_ins_dml_op_add(CDBInsDmlOp& op, unsigned long long int begin_time, unsigned long long int end_time)
 {
     double op_diff = (end_time - begin_time) * 0.000001;
 
@@ -381,6 +385,48 @@ cdb_ins_conn_add(CDBInsConn& conn, unsigned long long int begin_time, unsigned l
     else {
         // TOFIX: sth wrong, may be shm map corrupted?
         sql_print_error("CDB: cdb_ins_conn_add find key failed %d\n", rv);
+    }
+
+    spin_unlock(s._lock);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+void
+cdb_ins_client_dml_add(CDBInsClientDml& op, unsigned long long int begin_time, unsigned long long int end_time)
+{
+    double op_diff = (end_time - begin_time) * 0.000001;
+
+    CDBShm& s = cdb_shm_pair_map["cdb_ins_client_dml"]->get_current();
+    TfcShmMap<CDBInsClientDmlKey, CDBInsClientDml> m;
+    m._ca = s._ca;
+
+    spin_lock(s._lock);
+
+    int rv = m.find(op._key);
+    if (rv > 0) {
+        // not found
+        cdb_comm_stat_add(op._comm_stat, op_diff, true);
+        int r = m.insert(op._key, op);
+        if (r>0) {
+            // TOFIX: insert failed, then?
+            sql_print_error("CDB: cdb_ins_client_dml_add insert new item failed %d\n", r);
+        }
+    }
+    else if (rv == 0) {
+        // found, so update
+        CDBInsClientDml entry;
+        m.get(op._key, entry);
+        cdb_comm_stat_add(entry._comm_stat, op_diff);
+        int r = m.insert(entry._key, entry);
+        if (r>0) {
+            // TOFIX: insert failed, then?
+            sql_print_error("CDB: cdb_ins_client_dml_add update item failed %d\n", r);
+        }
+    }
+    else {
+        // TOFIX: sth wrong, may be shm map corrupted?
+        sql_print_error("CDB: cdb_ins_client_dml_add find key failed %d\n", rv);
     }
 
     spin_unlock(s._lock);

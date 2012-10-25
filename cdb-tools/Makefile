@@ -6,7 +6,7 @@ mysql_prefix=$(shell grep "^prefix = " ../Makefile | awk '{print $$3}')
 prefix=$(mysql_prefix)/bin/
 
 all_exe=cdb_shm_dump
-all_script=cdb_ins_dml_monitor cdb_ins_conn_monitor
+all_script=cdb_ins_dml_monitor cdb_ins_conn_monitor cdb_ins_client_dml_monitor
 
 all: $(all_exe)
 

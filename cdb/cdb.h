@@ -51,7 +51,6 @@ struct CDBInsDmlOp
     CDBInsDmlOpKey _key;
     CDBCommStat _comm_stat;
 };
-
 #pragma pack(pop)
 
 void cdb_comm_stat_add(CDBCommStat& cs, double v, bool init = false);
@@ -86,12 +85,34 @@ inline void cdb_ins_conn_add(int ip, int result, unsigned long long int begin_ti
     cdb_ins_conn_add(c, begin_time, end_time);
 }
 
-#define CDB_INS_CONN_ERROR_ACCEPT      (int)10001
-#define CDB_INS_CONN_ERROR_NEW_SOCK    (int)10002
-#define CDB_INS_CONN_ERROR_NEW_THD     (int)10003
-#define CDB_INS_CONN_ERROR_NEW_VIO     (int)10004
-#define CDB_INS_CONN_ERROR_TOO_MANY_CONN (int)10005
-#define CDB_INS_CONN_ERROR_OUT_OF_RES (int)10006
+#define CDB_INS_CONN_ERROR_ACCEPT                                    (int)10001
+#define CDB_INS_CONN_ERROR_NEW_SOCK                                  (int)10002
+#define CDB_INS_CONN_ERROR_NEW_THD                                   (int)10003
+#define CDB_INS_CONN_ERROR_NEW_VIO                                   (int)10004
+#define CDB_INS_CONN_ERROR_TOO_MANY_CONN                             (int)10005
+#define CDB_INS_CONN_ERROR_OUT_OF_RES                                (int)10006
+
+///////////////////////////////////////////////////////////////////////////////
+
+///////////////////////////////////////////////////////////////////////////////
+// section: instance level dml per client statistic
+
+#pragma pack(push, 1)
+struct CDBInsClientDmlKey
+{
+    int _ip;
+    int _type;
+    int _result;
+};
+
+struct CDBInsClientDml
+{
+    CDBInsClientDmlKey _key;
+    CDBCommStat _comm_stat;
+};
+#pragma pack(pop)
+
+void cdb_ins_client_dml_add(CDBInsClientDml& op, unsigned long long int begin_time, unsigned long long int end_time);
 
 ///////////////////////////////////////////////////////////////////////////////
 

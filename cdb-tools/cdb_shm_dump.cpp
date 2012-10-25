@@ -18,7 +18,8 @@ using namespace std;
 CDBShmPairConf shm_pair_conf_array[] = {
     //name, shm_name1, shm_name2, conf_index, map_file
     {"cdb_ins_dml", "cdb_ins_dml_1", "cdb_ins_dml_2", 0, "cdb_ins_dml_map.txt"},
-    {"cdb_ins_conn", "cdb_ins_conn_1", "cdb_ins_conn_2", 2, "cdb_ins_conn_map.txt"}
+    {"cdb_ins_conn", "cdb_ins_conn_1", "cdb_ins_conn_2", 2, "cdb_ins_conn_map.txt"},
+    {"cdb_ins_client_dml", "cdb_ins_client_dml_1", "cdb_ins_client_dml_2", 4, "cdb_ins_client_dml_map.txt"}
 };
 int shm_pair_conf_size = sizeof(shm_pair_conf_array)/sizeof(shm_pair_conf_array[0]);
 
@@ -145,6 +146,45 @@ dump_ins_conn(const CDBShm& s)
     }
 }
 
+void
+dump_ins_client_dml(const CDBShm& s)
+{
+    TfcShmMap<CDBInsClientDmlKey, CDBInsClientDml> m;
+    m._ca = s._ca;
+
+    cout << "shm[" << s._name << "] addr " << hex << s._addr
+         << " key " << dec << s._key
+         << " size " << dec << s._size << endl;
+    cout << "#ip type result total time_sum time_min time_max >20ms >40ms >60ms >80ms >100ms >500ms >1s >2s >10s" << endl;
+
+    for (TfcShmMap<CDBInsClientDmlKey, CDBInsClientDml>::iterator it = m.begin(); it != m.end(); it++) {
+        CDBInsClientDml entry;
+        if (it.extract(entry) == 0) {
+            if( entry._key._type >= 0 && entry._key._type < dml_names_num ) {
+                struct in_addr addr;
+                addr.s_addr = entry._key._ip;
+                string ipstr = string(inet_ntoa(addr));
+
+                cout << ipstr << " "
+                     << dml_names[entry._key._type] << " "
+                     << entry._key._result << " "
+                     << entry._comm_stat._total << " "
+                     << fixed << setprecision(3)
+                     << entry._comm_stat._time_sum*1000 << " "
+                     << entry._comm_stat._time_min*1000 << " "
+                     << entry._comm_stat._time_max*1000 << " ";
+                for (int i=0; i<CDB_TIME_BUCKET_SIZE; ++i) {
+                    cout << entry._comm_stat._time_bucket[i] << " ";
+                }
+                cout << endl;
+            }
+            else {
+                cout << entry._key._type << " " << "invalid type" << endl;
+            }
+        }
+    }
+}
+
 int
 main(int argc, char* argv[])
 {
@@ -184,6 +224,12 @@ main(int argc, char* argv[])
             cerr << "check standby error: flag is " << cdb_errno << endl;
         }
         dump_ins_conn(s);
+    }
+    else if (strcmp(argv[2], "cdb_ins_client_dml") == 0) {
+        if (!check_standby(s)) {
+            cerr << "check standby error: flag is " << cdb_errno << endl;
+        }
+        dump_ins_client_dml(s);
     }
 
     sm.detach_all();
