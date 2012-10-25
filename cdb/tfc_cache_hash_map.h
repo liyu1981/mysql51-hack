@@ -7,7 +7,7 @@
 //	author: sonicmao@tencent.com
 //	create: 2006-02
 //	mend: 2006-10
-//	
+//
 //
 //////////////////////////////////////////////////////////////////////////
 
@@ -20,9 +20,9 @@ namespace tfc{namespace cache
 	typedef enum tagENodeFlag
 	{
 		NODE_FLAG_UNCHG = 0x00,
-		NODE_FLAG_DIRTY = 0x01,	
+		NODE_FLAG_DIRTY = 0x01,
 	}ENodeFlag;
-	
+
 #pragma pack(1)
 	typedef struct tagTMBHashKey
 	{
@@ -41,86 +41,86 @@ namespace tfc{namespace cache
 			return *this;
 		}
 	}TMBHashKey;
-	
+
 	typedef struct tagTHashNode
 	{
-		TMBHashKey key_;				//Ë÷Òı
-		int chunk_len_;					//CHUNKÖĞµÄÊı¾İ³¤¶È
-		BC_MEM_HANDLER_L chunk_head_;		//CHUNK ¾ä±ú
-		BC_MEM_HANDLER_32 node_prev_;		//½ÚµãÁ´±íÇ°Ö¸Õë
-		BC_MEM_HANDLER_32 node_next_;		//½ÚµãÁ´±íºóÖ¸Õë
-		BC_MEM_HANDLER_32 add_prev_;		//¸½¼ÓÁ´±íÇ°Ö¸Õë
-		BC_MEM_HANDLER_32 add_next_;		//¸½¼ÓÁ´±íºóÖ¸Õë
-		long add_info_1_;				//×îºó·ÃÎÊÊ±¼ä
-		long add_info_2_;				//¹ıÆÚÊ±¼ä
-		int flag_;						//Ôà±ê¼Ç
+		TMBHashKey key_;				//ç´¢å¼•
+		int chunk_len_;					//CHUNKä¸­çš„æ•°æ®é•¿åº¦
+		BC_MEM_HANDLER_L chunk_head_;		//CHUNK å¥æŸ„
+		BC_MEM_HANDLER_32 node_prev_;		//èŠ‚ç‚¹é“¾è¡¨å‰æŒ‡é’ˆ
+		BC_MEM_HANDLER_32 node_next_;		//èŠ‚ç‚¹é“¾è¡¨åæŒ‡é’ˆ
+		BC_MEM_HANDLER_32 add_prev_;		//é™„åŠ é“¾è¡¨å‰æŒ‡é’ˆ
+		BC_MEM_HANDLER_32 add_next_;		//é™„åŠ é“¾è¡¨åæŒ‡é’ˆ
+		long add_info_1_;				//æœ€åè®¿é—®æ—¶é—´
+		long add_info_2_;				//è¿‡æœŸæ—¶é—´
+		int flag_;						//è„æ ‡è®°
 	}THashNode;
-	
+
 	typedef struct tagTHashMap
 	{
 #ifdef _CACHE_COMPLETE_CHECK
-		int complete_flag_;				//StartUpÏµÁĞ½Ó¿ÚÍêÕûĞÔ±ê¼Ç
+		int complete_flag_;				//StartUpç³»åˆ—æ¥å£å®Œæ•´æ€§æ ‡è®°
 #endif
-		int node_total_;				//½Úµã×ÜÊı
-		int bucket_size_;			   	//HASHÍ°µÄ´óĞ¡
-		int used_node_num_;			 	//Ê¹ÓÃµÄ½ÚµãÊı
-		int used_bucket_num_;		   	//HASHÍ°Ê¹ÓÃÊı
-		BC_MEM_HANDLER_32 add_head_;	 	//¸½¼ÓÁ´±íÍ·Ö¸Õë
-		BC_MEM_HANDLER_32 add_tail_;	 	//¸½¼ÓÁ´±íÎ²Ö¸Õë
-		BC_MEM_HANDLER_32 free_list_;		//¿Õ¼ä½ÚµãÁ´±íÍ·Ö¸Õë
-		BC_MEM_HANDLER_32 bucket[1];	 	//HASHÍ°
+		int node_total_;				//èŠ‚ç‚¹æ€»æ•°
+		int bucket_size_;			   	//HASHæ¡¶çš„å¤§å°
+		int used_node_num_;			 	//ä½¿ç”¨çš„èŠ‚ç‚¹æ•°
+		int used_bucket_num_;		   	//HASHæ¡¶ä½¿ç”¨æ•°
+		BC_MEM_HANDLER_32 add_head_;	 	//é™„åŠ é“¾è¡¨å¤´æŒ‡é’ˆ
+		BC_MEM_HANDLER_32 add_tail_;	 	//é™„åŠ é“¾è¡¨å°¾æŒ‡é’ˆ
+		BC_MEM_HANDLER_32 free_list_;		//ç©ºé—´èŠ‚ç‚¹é“¾è¡¨å¤´æŒ‡é’ˆ
+		BC_MEM_HANDLER_32 bucket[1];	 	//HASHæ¡¶
 	}THashMap;
-	
+
 #pragma pack()
-	
+
 	inline bool operator== (const TMBHashKey &lhs, const TMBHashKey &rhs)
 	{
 		return !memcmp(lhs._.md5_, rhs._.md5_, TMBHashKey::C_DATA_LEN);
 	}
-	
+
 	class CHashMap
 	{
 	public:
 		enum HASH_MAP_ERROR
 		{
-			HASH_MAP_ERROR_BASE = -1000,	
-			HASH_MAP_ERROR_INVALID_PARAM = HASH_MAP_ERROR_BASE -1,	//·Ç·¨²ÎÊı
-			HASH_MAP_ERROR_NODE_NOT_EXIST = HASH_MAP_ERROR_BASE -2,	//½Úµã²»´æÔÚ
-			HASH_MAP_ERROR_NODE_HAVE_EXIST = HASH_MAP_ERROR_BASE -3,	//½ÚµãÒÑ¾­´æÔÚ
-			HASH_MAP_ERROR_NO_FREE_NODE = HASH_MAP_ERROR_BASE -4,	//Ã»ÓĞ¿ÕÏĞ½Úµã
+			HASH_MAP_ERROR_BASE = -1000,
+			HASH_MAP_ERROR_INVALID_PARAM = HASH_MAP_ERROR_BASE -1,	//éæ³•å‚æ•°
+			HASH_MAP_ERROR_NODE_NOT_EXIST = HASH_MAP_ERROR_BASE -2,	//èŠ‚ç‚¹ä¸å­˜åœ¨
+			HASH_MAP_ERROR_NODE_HAVE_EXIST = HASH_MAP_ERROR_BASE -3,	//èŠ‚ç‚¹å·²ç»å­˜åœ¨
+			HASH_MAP_ERROR_NO_FREE_NODE = HASH_MAP_ERROR_BASE -4,	//æ²¡æœ‰ç©ºé—²èŠ‚ç‚¹
 		};
-		
+
 	public:
 		CHashMap();
-		~CHashMap();	
-		
-		//³õÊ¼»¯ HASH_MAP ÄÚ´æ¿é
+		~CHashMap();
+
+		//åˆå§‹åŒ– HASH_MAP å†…å­˜å—
 		int open(char* pool, bool init, int node_total, int bucket_size, int n_chunks, int chunk_size);
-		
-		// Ê¹ÓÃ <key> ½øĞĞ²éÑ¯.
-		THashNode* find_node(TMBHashKey &key);	
-		//²åÈë½Úµã, Èç¹û¾É½Úµã´æÔÚ, Ôò·µ»ØÊ§°Ü
+
+		// ä½¿ç”¨ <key> è¿›è¡ŒæŸ¥è¯¢.
+		THashNode* find_node(TMBHashKey &key);
+		//æ’å…¥èŠ‚ç‚¹, å¦‚æœæ—§èŠ‚ç‚¹å­˜åœ¨, åˆ™è¿”å›å¤±è´¥
 		THashNode* insert_node(TMBHashKey &key, void* new_data, int new_len);
-		//²åÈë½Úµã²¢¸½´ø³¬Ê±ĞÅÏ¢, Èç¹û¾É½Úµã´æÔÚ, Ôò·µ»ØÊ§°Ü
+		//æ’å…¥èŠ‚ç‚¹å¹¶é™„å¸¦è¶…æ—¶ä¿¡æ¯, å¦‚æœæ—§èŠ‚ç‚¹å­˜åœ¨, åˆ™è¿”å›å¤±è´¥
 		THashNode* insert_node_metadata(TMBHashKey &key, void* new_data, int new_len, long expiretime);
 
-		//ĞŞ¸Ä½Úµã
+		//ä¿®æ”¹èŠ‚ç‚¹
 		THashNode* update_node(THashNode* node, void* new_data, int new_len, char* old_data = NULL, int* old_len = NULL);
-		//ĞŞ¸Ä½Úµã²¢¸½´ø³¬Ê±ĞÅÏ¢
+		//ä¿®æ”¹èŠ‚ç‚¹å¹¶é™„å¸¦è¶…æ—¶ä¿¡æ¯
 		THashNode* update_node_metadata(THashNode* node, void* new_data, int new_len, long expiretime);
 
 		//insert or update
 		THashNode* replace_node(TMBHashKey &key, void* new_data, int new_len, char* old_data = NULL, int* old_len = NULL);
-		//É¾³ı½áµã. Í¬Ê±»á½«½Úµã´Ó¸½¼ÓÁ´±íÖĞÇå³ı
-		//·µ»ØÖµ = 0 ±íÊ¾³É¹¦, < 0 ±íÊ¾Ê§°Ü(Èç½Úµã²»´æÔÚ,Ò²·µ»ØÊ§°Ü)
+		//åˆ é™¤ç»“ç‚¹. åŒæ—¶ä¼šå°†èŠ‚ç‚¹ä»é™„åŠ é“¾è¡¨ä¸­æ¸…é™¤
+		//è¿”å›å€¼ = 0 è¡¨ç¤ºæˆåŠŸ, < 0 è¡¨ç¤ºå¤±è´¥(å¦‚èŠ‚ç‚¹ä¸å­˜åœ¨,ä¹Ÿè¿”å›å¤±è´¥)
 		int delete_node(THashNode* node, char* data = NULL, int* data_len = NULL);
-		
+
 		int merge_node_data(THashNode* node, char* data, int* data_len);
 
 		void set_expiretime(THashNode* node, long expiretime);
 		long get_expiretime(THashNode* node);
-		
-		// ·µ»Øµ±Ç°½ÚµãÊ¹ÓÃÊı
+
+		// è¿”å›å½“å‰èŠ‚ç‚¹ä½¿ç”¨æ•°
 		int used_node_num() { return hash_map_->used_node_num_; }
 		int free_node_num() { return hash_map_->node_total_ - hash_map_->used_node_num_; }
 		int get_node_total() { return hash_map_->node_total_; }
@@ -130,19 +130,19 @@ namespace tfc{namespace cache
 		int get_used_chunk_num() { return allocator_.get_used_chunk_num(); }
 		int get_chunk_total() { return allocator_.get_chunk_total(); }
 		int get_chunk_data_size() { return allocator_.get_chunk_data_size(); }
-		
+
 		CChunkAllocator* chunks() {return &allocator_; };
-		
-		// ¼ÆËãHASH_MAPËùĞèÇóµÄÄÚ´æ¿é³ß´ç
+
+		// è®¡ç®—HASH_MAPæ‰€éœ€æ±‚çš„å†…å­˜å—å°ºå¯¸
 		static int get_pool_size(int node_total, int bucket_size)
 		{
 			int head_size = sizeof(THashMap) - sizeof(BC_MEM_HANDLER_32[1]);
 			int bucket_total_size = bucket_size * sizeof(BC_MEM_HANDLER_32);
 			int node_total_size = node_total * sizeof(THashNode);
 			int pool_size = head_size + bucket_total_size + node_total_size;
-			return pool_size;		
+			return pool_size;
 		}
-		// È¡HASH_MAP ºÍCHUNKµÄÄÚ´æ¿é³ß´ç
+		// å–HASH_MAP å’ŒCHUNKçš„å†…å­˜å—å°ºå¯¸
 		static long get_total_pool_size(int node_total, int bucket_size, int n_chunks, int chunk_size)
 		{
 			return (long)(get_pool_size(node_total, bucket_size)) + (long)(CChunkAllocator::get_pool_size(n_chunks, chunk_size));
@@ -163,20 +163,20 @@ namespace tfc{namespace cache
 			return hash_map_->complete_flag_ ? true : false;
 		}
 #endif
-		
+
 		/*
-		//´òÓ¡¸½¼ÓÁ´±í, <num> Ö¸¶¨´òÓ¡µÄÊıÄ¿. <num> = 0, ´òÓ¡ËùÓĞ½Úµã.
+		//æ‰“å°é™„åŠ é“¾è¡¨, <num> æŒ‡å®šæ‰“å°çš„æ•°ç›®. <num> = 0, æ‰“å°æ‰€æœ‰èŠ‚ç‚¹.
 		void print_add_list(int num = 0);
-		//´òÓ¡»ù±¾µÄÍ³¼ÆĞÅÏ¢
+		//æ‰“å°åŸºæœ¬çš„ç»Ÿè®¡ä¿¡æ¯
 		void print_stat();
 		*/
 		//transform handler to address
 		THashNode *handler2ptr(BC_MEM_HANDLER_32 handler);
-		
+
 		//transform address to handler
 		BC_MEM_HANDLER_32 ptr2handler(THashNode* ptr);
-		
-		//¸½¼ÓÁ´±í²Ù×÷·½·¨
+
+		//é™„åŠ é“¾è¡¨æ“ä½œæ–¹æ³•
 		void insert_add_list_head(THashNode* node);
 		void insert_add_list_tail(THashNode* node);
 		void delete_from_add_list(THashNode* node);
@@ -184,47 +184,47 @@ namespace tfc{namespace cache
 		THashNode* get_add_list_next(THashNode* node);
 		THashNode* get_add_list_head();
 		THashNode* get_add_list_tail();
-		////////////////	
-		
+		////////////////
+
 		void set_node_flag(THashNode * node, ENodeFlag f){assert(node); node->flag_ = (int)f;}
 		ENodeFlag get_node_flag(THashNode *node){assert(node); return (ENodeFlag)node->flag_;}
 		THashNode* get_bucket_list_head(unsigned bucket_id);
 		THashNode* get_bucket_list_prev(THashNode* node);
 		THashNode* get_bucket_list_next(THashNode* node);
-		
+
 	protected:
-		
+
 		void init_pool_data(int node_total, int bucket_size);
 		int verify_pool_data(int node_total, int bucket_size);
-		
-		//¸ù¾İË÷Òı¼ÆËãHASHÍ°Öµ
+
+		//æ ¹æ®ç´¢å¼•è®¡ç®—HASHæ¡¶å€¼
 		int get_bucket_id(TMBHashKey &key);
-		int get_bucket_list_len(int bucket_id); //È¡HASHÍ°µÄÅö×²Êı
-		
-		//½«½Úµã²åÈëµ½¿ÕÏĞÁ´±í
+		int get_bucket_list_len(int bucket_id); //å–HASHæ¡¶çš„ç¢°æ’æ•°
+
+		//å°†èŠ‚ç‚¹æ’å…¥åˆ°ç©ºé—²é“¾è¡¨
 		void free_list_insert(THashNode *node);
-		//´Ó¿ÕÏĞÁ´±íÖĞÈ¡½Úµã
+		//ä»ç©ºé—²é“¾è¡¨ä¸­å–èŠ‚ç‚¹
 		THashNode *free_list_remove();
-		
-		//½ÚµãÁ´±í²Ù×÷·½·¨
+
+		//èŠ‚ç‚¹é“¾è¡¨æ“ä½œæ–¹æ³•
 		void insert_node_list(THashNode* node);
 		void delete_from_node_list(THashNode* node);
-		
-		//³õÊ¼»¯½Úµã
+
+		//åˆå§‹åŒ–èŠ‚ç‚¹
 		void init_node(THashNode* node);
-		//½«½ÚµãÖÃÎª¿ÕÏĞÄ£Ê½
+		//å°†èŠ‚ç‚¹ç½®ä¸ºç©ºé—²æ¨¡å¼
 		void free_node(THashNode *node);
-		//½«½ÚµãÖÃÎªÊ¹ÓÃÄ£Ê½
+		//å°†èŠ‚ç‚¹ç½®ä¸ºä½¿ç”¨æ¨¡å¼
 		void use_node(THashNode *node, TMBHashKey &key, int chunk_len, BC_MEM_HANDLER_L chunk_head);
-		
-		char *pool_;		//ÄÚ´æ¿éÆğÊ¼µØÖ·
-		char *pool_tail_;   //ÄÚ´æ¿é½áÊøµØÖ·
-		
-		THashMap* hash_map_;   //ÄÚ´æ¿éÖĞµÄHASHMAP ½á¹¹
-		THashNode* hash_node_; //ÄÚ´æ¿éÖĞµÄHASH½ÚµãÊı×é
-		CChunkAllocator allocator_; //CHUNK·ÖÅäÆ÷
+
+		char *pool_;		//å†…å­˜å—èµ·å§‹åœ°å€
+		char *pool_tail_;   //å†…å­˜å—ç»“æŸåœ°å€
+
+		THashMap* hash_map_;   //å†…å­˜å—ä¸­çš„HASHMAP ç»“æ„
+		THashNode* hash_node_; //å†…å­˜å—ä¸­çš„HASHèŠ‚ç‚¹æ•°ç»„
+		CChunkAllocator allocator_; //CHUNKåˆ†é…å™¨
 	private:
-		//Ô­À´ÔÚhash functionÀï¼ÆËã£¬ÏÖÔÚÔÚ³õÊ¼»¯Ê±¼ÆËãÒ»´Î¡£
+		//åŸæ¥åœ¨hash functioné‡Œè®¡ç®—ï¼Œç°åœ¨åœ¨åˆå§‹åŒ–æ—¶è®¡ç®—ä¸€æ¬¡ã€‚
 		//int right_rotate_;
 };
 
@@ -239,7 +239,7 @@ inline THashNode* CHashMap::handler2ptr(BC_MEM_HANDLER_32 handler)
 {
 	if (handler == INVALID_BC_MEM_HANDLER_32)
 		return NULL;
-	
+
 	return (THashNode*)(pool_ + handler);
 }
 
@@ -249,7 +249,7 @@ inline BC_MEM_HANDLER_32 CHashMap::ptr2handler(THashNode* ptr)
 	if((tmp_ptr < pool_) || (tmp_ptr >= pool_tail_))
 		return INVALID_BC_MEM_HANDLER_32;
 	else
-		return (BC_MEM_HANDLER_32)(tmp_ptr - pool_);	
+		return (BC_MEM_HANDLER_32)(tmp_ptr - pool_);
 }
 
 inline void CHashMap::free_list_insert(THashNode *node)
@@ -266,10 +266,10 @@ inline THashNode* CHashMap::free_list_remove()
 	if(hash_map_->free_list_ == INVALID_BC_MEM_HANDLER_32)
 		//ERROR_RETURN_NULL(HASH_MAP_ERROR_NO_FREE_NODE, "no free node");
 		return NULL;
-	
+
 	THashNode* head_node = handler2ptr(hash_map_->free_list_);
 	hash_map_->free_list_ = head_node->node_next_;
-	head_node->node_next_ = INVALID_BC_MEM_HANDLER_32;	
+	head_node->node_next_ = INVALID_BC_MEM_HANDLER_32;
 	return head_node;
 }
 
@@ -280,7 +280,7 @@ inline void CHashMap::init_node(THashNode* node)
 	node->add_info_1_ = 0;
 	node->add_info_2_ = 0;
 	node->flag_ = NODE_FLAG_UNCHG;
-	
+
 	node->chunk_head_ = INVALID_BC_MEM_HANDLER_L;
 	node->node_next_= INVALID_BC_MEM_HANDLER_32;
 	node->node_prev_= INVALID_BC_MEM_HANDLER_32;
@@ -292,7 +292,7 @@ inline THashNode*  CHashMap::get_bucket_list_head(unsigned bucket_id)
 {
 	assert(bucket_id < (unsigned)hash_map_->bucket_size_);
 	BC_MEM_HANDLER_32 node_hdr = hash_map_->bucket[bucket_id];
-	return node_hdr != INVALID_BC_MEM_HANDLER_32 ? handler2ptr(node_hdr) : NULL; 
+	return node_hdr != INVALID_BC_MEM_HANDLER_32 ? handler2ptr(node_hdr) : NULL;
 }
 
 inline THashNode*  CHashMap::get_bucket_list_prev(THashNode* node)

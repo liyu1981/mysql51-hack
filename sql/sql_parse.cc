@@ -1782,6 +1782,10 @@ void cdb_stat_instance_dml_func(THD *thd)
 	cdb_ins_client_dml_add(op, thd->start_utime, current_time);
   }
 
+  if(likely(opt_cdb_stat_table_dml)) 
+  {
+  }
+
   DBUG_VOID_RETURN;
 }
 #endif

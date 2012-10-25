@@ -6,7 +6,7 @@ using namespace tfc::cache;
 
 BC_MEM_HANDLER_L CChunkAllocator::malloc (int chunk_num)
 {
-    if (chunk_->free_total_ < chunk_num) 
+    if (chunk_->free_total_ < chunk_num)
     {
         //SET_ERROR(CHUNK_ALLOCATOR_ERROR_FREE_CHUNK_LACK, "no enough chunk");
         return INVALID_BC_MEM_HANDLER_L;
@@ -32,10 +32,10 @@ void CChunkAllocator::free(BC_MEM_HANDLER_L head_chunk_hdr)
     {
         TChunkNode* node = handler2ptr(chunk_hdr);
         BC_MEM_HANDLER_L next_chunk_hdr = node->next_;
-        
+
         free_list_insert(node);
         chunk_->free_total_ ++;
-        
+
         chunk_hdr = next_chunk_hdr;
     }
 }
@@ -44,7 +44,7 @@ void CChunkAllocator::init_pool_data(int n_chunks, int chunk_size)
 {
     chunk_->free_list_ = INVALID_BC_MEM_HANDLER_L;
 	long tmp_chunk_size = get_chunk_size(n_chunks, chunk_size);
-    
+
     TChunkNode* chunk_node = NULL;
     for(long i = 0; i < n_chunks; i++)
     {
@@ -53,7 +53,7 @@ void CChunkAllocator::init_pool_data(int n_chunks, int chunk_size)
         chunk_node->next_ = INVALID_BC_MEM_HANDLER_L;
         free_list_insert(chunk_node);
     }
-    
+
     chunk_->chunk_total_ = n_chunks;
     chunk_->chunk_size_ = chunk_size;
     chunk_->free_total_ = n_chunks;
@@ -61,23 +61,23 @@ void CChunkAllocator::init_pool_data(int n_chunks, int chunk_size)
 
 int CChunkAllocator::verify_pool_data(int n_chunks, int chunk_size)
 {
-    //¼ì²éÄÚ´æ¿éµÄÊý¾ÝµÄÓÐÐ§ÐÔ
-    if((chunk_->chunk_size_ != chunk_size) || 
+    //æ£€æŸ¥å†…å­˜å—çš„æ•°æ®çš„æœ‰æ•ˆæ€§
+    if((chunk_->chunk_size_ != chunk_size) ||
         (chunk_->chunk_total_ != n_chunks))
     {
         //ERROR_RETURN_2(CHUNK_ALLOCATOR_ERROR_DATA_VERIFY_FAIL, "data verify fail[total:%d, size:%d]", chunk_->chunk_total_, chunk_->chunk_size_);
 		return CHUNK_ALLOCATOR_ERROR_DATA_VERIFY_FAIL;
     }
-    
-    //¼ì²é¿ÕÏÐÁ´
+
+    //æ£€æŸ¥ç©ºé—²é“¾
     TChunkNode* free_node = handler2ptr(chunk_->free_list_);
     int free_total = 0;
-    while (free_node != NULL) 
+    while (free_node != NULL)
     {
         free_total ++;
         free_node = handler2ptr(free_node->next_);
     }
-    
+
     if (free_total != chunk_->free_total_)
     {
         //ERROR_RETURN_2(CHUNK_ALLOCATOR_ERROR_DATA_VERIFY_FAIL, "data verify fail[free_total:%d, free_list:%d]", chunk_->free_total_, free_total);
@@ -91,19 +91,19 @@ int CChunkAllocator::open(char *pool, bool init, int n_chunks, int chunk_size)
 {
     int ret = 0;
     long pool_size = get_pool_size(n_chunks, chunk_size);
-    
+
     pool_ = pool;
     pool_tail_ = pool + pool_size;
     chunk_ = (TChunk *)pool_;
-    
+
     if(init)
     {
-        //³õÊ¼»¯ÄÚ´æ¿é
+        //åˆå§‹åŒ–å†…å­˜å—
         init_pool_data(n_chunks, chunk_size);
     }
     else
     {
-        //¼ì²éÄÚ´æ¿é
+        //æ£€æŸ¥å†…å­˜å—
         if ((ret = verify_pool_data(n_chunks, chunk_size)) != 0)
         {
             return ret;
@@ -118,7 +118,7 @@ inline TChunkNode* CChunkAllocator::handler2ptr(BC_MEM_HANDLER_L handler)
     {
         return NULL;
     }
-    
+
     return (TChunkNode*)(pool_ + handler);
 }
 
@@ -134,32 +134,32 @@ inline BC_MEM_HANDLER_L CChunkAllocator::ptr2handler(TChunkNode* ptr)
 
 inline void CChunkAllocator::free_list_insert(TChunkNode *node)
 {
-    //²åÈëµ½¿ÕÏÐÁ´±íÍ·
+    //æ’å…¥åˆ°ç©ºé—²é“¾è¡¨å¤´
     node->next_ = chunk_->free_list_;
     BC_MEM_HANDLER_L node_hdr = ptr2handler(node);
     chunk_->free_list_ = node_hdr;
 }
-    
+
 inline TChunkNode* CChunkAllocator::free_list_remove()
 {
     if(chunk_->free_list_ == INVALID_BC_MEM_HANDLER_L)
     {
-        //Ã»ÓÐ¿ÕÏÐCHUNK
+        //æ²¡æœ‰ç©ºé—²CHUNK
         return NULL;
     }
-    //´Ó¿ÕÏÐÁ´±íÍ··ÖÅäCHUNK
+    //ä»Žç©ºé—²é“¾è¡¨å¤´åˆ†é…CHUNK
     TChunkNode* head_node = handler2ptr(chunk_->free_list_);
     chunk_->free_list_ = head_node->next_;
 
     head_node->next_ = INVALID_BC_MEM_HANDLER_L;
     return head_node;
 }
-    
+
 
 int CChunkAllocator::get_chunk_num(int data_len)
 {
 //	int num = data_len / chunk_->chunk_size_;
-//	if ((data_len % chunk_->chunk_size_) != 0) 
+//	if ((data_len % chunk_->chunk_size_) != 0)
 //	{
 //		num++;
 //	}
@@ -171,59 +171,59 @@ int CChunkAllocator::merge(BC_MEM_HANDLER_L chunk_node_hdr, int chunk_len, void*
 {
     if(*data_len < chunk_len)
     {
-        //ÊäÈëµÄ»º´æÇø¹ý¶Ì
+        //è¾“å…¥çš„ç¼“å­˜åŒºè¿‡çŸ­
         //ERROR_RETURN_2(CHUNK_ALLOCATOR_ERROR_INVALID_PARAM, "input date_len too short[%d < %d]", *data_len, chunk_len);
 		*data_len = chunk_len;
 		return CHUNK_ALLOCATOR_ERROR_INVALID_PARAM;
     }
-    
+
     int remain_len = chunk_len;
     char* write_pos = (char *)data_buf;
-    
+
     while(chunk_node_hdr != INVALID_BC_MEM_HANDLER_L)
     {
         TChunkNode* chunk_node = handler2ptr(chunk_node_hdr);
-        
-        if (remain_len < chunk_->chunk_size_) 
+
+        if (remain_len < chunk_->chunk_size_)
         {
             memcpy(write_pos, chunk_node->data_, remain_len);
             break;
         }
-        
+
         memcpy(write_pos, chunk_node->data_, chunk_->chunk_size_);
         write_pos += chunk_->chunk_size_;
         remain_len -= chunk_->chunk_size_;
-        
+
         chunk_node_hdr = chunk_node->next_;    //to next
     }
-    
+
     *data_len = chunk_len;
-    
+
     return 0;
 }
 
 void CChunkAllocator::split(BC_MEM_HANDLER_L head_hdr, const void* data_buf, int data_len)
-{    
+{
     TChunkNode* chunk_node = handler2ptr(head_hdr);
-    
+
     char* read_pos = (char*)data_buf;
     int remain_len = data_len;
-    while (chunk_node != NULL) 
+    while (chunk_node != NULL)
     {
-        if (remain_len < chunk_->chunk_size_) 
+        if (remain_len < chunk_->chunk_size_)
         {
             memcpy(chunk_node->data_, read_pos, remain_len);
             break;
         }
-        
+
         memcpy(chunk_node->data_, read_pos, chunk_->chunk_size_);
         read_pos += chunk_->chunk_size_;
         remain_len -= chunk_->chunk_size_;
-        
+
         //to next
         chunk_node = handler2ptr(chunk_node->next_);
     }
-    
+
 }
 /*
 void CChunkAllocator::print_stat()
