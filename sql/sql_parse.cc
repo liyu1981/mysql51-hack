@@ -13,6 +13,10 @@
    along with this program; if not, write to the Free Software
    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA */
 
+//yuli: cdb modification start
+#include "cdb.h"
+//yuli: cdb modification end
+
 #define MYSQL_LEX 1
 #include "mysql_priv.h"
 #include "sql_repl.h"
@@ -28,10 +32,6 @@
 #include "events.h"
 #include "sql_trigger.h"
 #include "debug_sync.h"
-
-//yuli: cdb modification start
-#include "cdb.h"
-//yuli: cdb modification end
 
 /**
   @defgroup Runtime_Environment Runtime Environment
@@ -1736,7 +1736,7 @@ void cdb_stat_instance_dml_func(THD *thd)
 
   if(likely(opt_cdb_stat_ins_dml))
   {
-    CDBInsDmlOp op;
+    CDBInsDml op;
 
     switch(thd->lex->sql_command) {
     case SQLCOM_SELECT:
@@ -1764,7 +1764,7 @@ void cdb_stat_instance_dml_func(THD *thd)
     else
       op._key._result = 0;
 
-    cdb_ins_dml_op_add(op, thd->start_utime, thd->current_utime());
+    cdb_ins_dml_add(op, thd->start_utime, thd->current_utime());
   }
   DBUG_VOID_RETURN;
 }
