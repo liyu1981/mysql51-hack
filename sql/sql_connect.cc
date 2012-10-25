@@ -1088,11 +1088,13 @@ pthread_handler_t handle_one_connection(void *arg)
   THD *thd= (THD*) arg;
 
   thd->thr_create_utime= my_micro_time();
-
+#ifdef WITH_CDB
+  struct  sockaddr_in remote = thd->remote;
+#endif
   if (thread_scheduler.init_new_connection_thread())
   {
 #ifdef WITH_CDB
-    cdb_ins_conn_add(thd->net.vio->remote.sin_addr.s_addr, CDB_INS_CONN_ERROR_OUT_OF_RES, 
+    cdb_ins_conn_add(remote.sin_addr.s_addr, CDB_INS_CONN_ERROR_OUT_OF_RES, 
 					 thd->start_utime, my_micro_time());
 #endif
     close_connection(thd, ER_OUT_OF_RESOURCES, 1);
@@ -1130,12 +1132,17 @@ pthread_handler_t handle_one_connection(void *arg)
   for (;;)
   {
     NET *net= &thd->net;
+#ifdef WITH_CDB
+	/* when this thread run second, start from here, so set value
+	   for remote again */
+    remote = thd->remote;
+#endif
 
     lex_start(thd);
     if (login_connection(thd))
 	{
 #ifdef WITH_CDB
-	cdb_ins_conn_add(thd->net.vio->remote.sin_addr.s_addr, thd->main_da.sql_errno(), 
+	cdb_ins_conn_add(remote.sin_addr.s_addr, thd->main_da.sql_errno(), 
 					   thd->start_utime, my_micro_time());
 #endif
       goto end_thread;
@@ -1143,7 +1150,7 @@ pthread_handler_t handle_one_connection(void *arg)
 #ifdef WITH_CDB
 	else
 	{
-	  cdb_ins_conn_add(thd->net.vio->remote.sin_addr.s_addr, 0, 
+	  cdb_ins_conn_add(remote.sin_addr.s_addr, 0, 
 					   thd->start_utime, my_micro_time());
 	}
 #endif

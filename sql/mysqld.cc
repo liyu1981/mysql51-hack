@@ -5026,7 +5026,7 @@ static void create_new_thread(THD *thd)
   {
     pthread_mutex_unlock(&LOCK_connection_count);
 #ifdef WITH_CDB
-    cdb_ins_conn_add(thd->net.vio->remote.sin_addr.s_addr, CDB_INS_CONN_ERROR_TOO_MANY_CONN, 
+    cdb_ins_conn_add(thd->remote.sin_addr.s_addr, CDB_INS_CONN_ERROR_TOO_MANY_CONN, 
 					 thd->start_utime, my_micro_time());
 #endif
     DBUG_PRINT("error",("Too many connections"));
@@ -5318,11 +5318,18 @@ pthread_handler_t handle_connections_sockets(void *arg __attribute__((unused)))
       continue;
     }
     if (sock == unix_sock)
+	{
       thd->security_ctx->host=(char*) my_localhost;
-
 #ifdef WITH_CDB
+	  thd->remote.sin_addr.s_addr = inet_addr("127.0.0.1");
+#endif
+	}
+#ifdef WITH_CDB
+	else
+	  thd->remote = cAddr;
 	thd->set_time();
 #endif
+
     create_new_thread(thd);
   }
   DBUG_LEAVE;
