@@ -5,6 +5,10 @@
 #include <string.h>
 #include <sys/time.h>
 
+#include <string>
+#include <vector>
+using namespace std;
+
 extern int cdb_errno;
 extern int cdb_2nd_errno;
 
@@ -23,6 +27,8 @@ bool cdb_attach_shm_mgr(const char* mysqld_data_path);
 
 #define CDB_TIME_BUCKET_SIZE 9
 
+#define CDB_OP_TYPE_SIZE 6
+
 #define CDB_OTHER_TYPE 0
 #define CDB_SELECT 1
 #define CDB_INSERT 2
@@ -40,21 +46,21 @@ struct CDBCommStat
     int _time_bucket[CDB_TIME_BUCKET_SIZE];
 };
 
-struct CDBInsDmlOpKey
+struct CDBInsDmlKey
 {
     int _type;
     int _result;
 };
 
-struct CDBInsDmlOp
+struct CDBInsDml
 {
-    CDBInsDmlOpKey _key;
+    CDBInsDmlKey _key;
     CDBCommStat _comm_stat;
 };
 #pragma pack(pop)
 
 void cdb_comm_stat_add(CDBCommStat& cs, double v, bool init = false);
-void cdb_ins_dml_op_add(CDBInsDmlOp& op, unsigned long long int begin_time, unsigned long long int end_time);
+void cdb_ins_dml_add(CDBInsDml& op, unsigned long long int begin_time, unsigned long long int end_time);
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -112,6 +118,38 @@ struct CDBInsClientDml
 #pragma pack(pop)
 
 void cdb_ins_client_dml_add(CDBInsClientDml& op, unsigned long long int begin_time, unsigned long long int end_time);
+
+///////////////////////////////////////////////////////////////////////////////
+
+///////////////////////////////////////////////////////////////////////////////
+// section: table level dml
+
+#pragma pack(push, 1)
+struct CDBTabName
+{
+    string _db;
+    string _table;
+};
+
+struct CDBTabDmlKey
+{
+    vector<CDBTabName> _names;
+    int _result;
+};
+
+struct CDBTabDml
+{
+    CDBTabDmlKey _key;
+    CDBCommStat _comm_stats[CDB_OP_TYPE_SIZE];
+
+    int marshal_size();
+    void marshal_key(char*& buf, int buf_size, char*& key_md5_buf);
+    void marshal_stats(char*& buf);
+    void de_marshal_stats(char*& buf);
+};
+#pragma pack(pop)
+
+void cdb_tab_dml_add(CDBTabDml& op, int type, unsigned long long int begin_time, unsigned long long int end_time);
 
 ///////////////////////////////////////////////////////////////////////////////
 
