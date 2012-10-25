@@ -13,6 +13,10 @@
    along with this program; if not, write to the Free Software
    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA */
 
+//yuli: cdb modification start
+#include "cdb.h"
+//yuli: cdb modification end
+
 #define MYSQL_LEX 1
 #include "mysql_priv.h"
 #include "sql_repl.h"
@@ -28,10 +32,6 @@
 #include "events.h"
 #include "sql_trigger.h"
 #include "debug_sync.h"
-
-//yuli: cdb modification start
-#include "cdb.h"
-//yuli: cdb modification end
 
 /**
   @defgroup Runtime_Environment Runtime Environment
@@ -1760,17 +1760,42 @@ void cdb_stat_instance_dml_func(THD *thd)
 
   if(likely(opt_cdb_stat_ins_dml))
   {
+<<<<<<< HEAD
     CDBInsDmlOp op;
 	op._key._type = sql_type;
+=======
+    CDBInsDml op;
+
+    switch(thd->lex->sql_command) {
+    case SQLCOM_SELECT:
+      op._key._type = CDB_SELECT;
+      break;
+    case SQLCOM_INSERT:
+      op._key._type = CDB_INSERT;
+      break;
+    case SQLCOM_UPDATE:
+      op._key._type = CDB_UPDATE;
+      break;
+    case SQLCOM_REPLACE:
+      op._key._type = CDB_REPLACE;
+      break;
+    case SQLCOM_DELETE:
+      op._key._type = CDB_DELETE;
+      break;
+    default:
+      op._key._type = CDB_UNKOWN_TYPE;
+      break;
+    }
+
     if(unlikely(thd->is_error()))
       op._key._result = thd->main_da.sql_errno();
     else
       op._key._result = 0;
 
-    cdb_ins_dml_op_add(op, thd->start_utime, current_time);
+    cdb_ins_dml_add(op, thd->start_utime, thd->current_utime());
   }
 
-  if(likely(opt_cdb_stat_client_dml)) 
+  if(likely(opt_cdb_stat_client_dml))
   {
 	CDBInsClientDml op;
 	if(thd->net.vio->localhost)

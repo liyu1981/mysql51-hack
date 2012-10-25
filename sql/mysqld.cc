@@ -13,6 +13,10 @@
    along with this program; if not, write to the Free Software
    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA */
 
+// yuli: cdb modifications start
+#include "cdb.h"
+// yuli: cdb modifications end
+
 #include "mysql_priv.h"
 #include <m_ctype.h>
 #include <my_dir.h>
@@ -270,10 +274,6 @@ extern "C" sig_handler handle_segfault(int sig);
 #else
 #define ENABLE_TEMP_POOL 0
 #endif
-
-// yuli: cdb modifications start
-#include "cdb.h"
-// yuli: cdb modifications end
 
 /* Constants */
 
@@ -5028,7 +5028,7 @@ static void create_new_thread(THD *thd)
   {
     pthread_mutex_unlock(&LOCK_connection_count);
 #ifdef WITH_CDB
-    cdb_ins_conn_add(thd->remote.sin_addr.s_addr, CDB_INS_CONN_ERROR_TOO_MANY_CONN, 
+    cdb_ins_conn_add(thd->remote.sin_addr.s_addr, CDB_INS_CONN_ERROR_TOO_MANY_CONN,
 					 thd->start_utime, my_micro_time());
 #endif
     DBUG_PRINT("error",("Too many connections"));

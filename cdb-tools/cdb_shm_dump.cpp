@@ -31,7 +31,7 @@ usage(const char* appname)
 }
 
 const char* dml_names[] = {
-    "NOTNAME",
+    "OTHER",
     "SELECT",
     "INSERT",
     "UPDATE",
@@ -155,7 +155,7 @@ dump_ins_client_dml(const CDBShm& s)
     cout << "shm[" << s._name << "] addr " << hex << s._addr
          << " key " << dec << s._key
          << " size " << dec << s._size << endl;
-    cout << "#ip type result total time_sum time_min time_max >20ms >40ms >60ms >80ms >100ms >500ms >1s >2s >10s" << endl;
+    cout << "#ip type total time_sum time_min time_max >20ms >40ms >60ms >80ms >100ms >500ms >1s >2s >10s" << endl;
 
     for (TfcShmMap<CDBInsClientDmlKey, CDBInsClientDml>::iterator it = m.begin(); it != m.end(); it++) {
         CDBInsClientDml entry;
@@ -167,7 +167,6 @@ dump_ins_client_dml(const CDBShm& s)
 
                 cout << ipstr << " "
                      << dml_names[entry._key._type] << " "
-                     //<< entry._key._result << " "
                      << entry._comm_stat._total << " "
                      << fixed << setprecision(3)
                      << entry._comm_stat._time_sum*1000 << " "

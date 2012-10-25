@@ -9,6 +9,7 @@ cscope.out
 
 # cdb related
 cdb-tools/cdb_shm_dump
+cdb-tools/cdb_shm_conf_calc
 cdb/.deps/
 
 # ignore list after first configure

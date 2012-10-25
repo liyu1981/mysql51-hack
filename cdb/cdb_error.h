@@ -12,6 +12,7 @@
 #define CDB_SHM_INIT_SHMLOCKS_STALE                                    (int)7005
 #define CDB_SHM_PAIR_MAP_OPEN_FAILED                                   (int)7006
 #define CDB_SHM_INIT_SWITCH_THREAD_FAIL                                (int)7007
+#define CDB_SHM_INIT_CONF_ERROR                                        (int)7008
 
 #endif
 
