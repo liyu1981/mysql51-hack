@@ -2,14 +2,14 @@
 #ifndef _CHUNK_ALLOC_HPP_
 #define _CHUNK_ALLOC_HPP_
 
-//Ô¤·ÖÅäÄÚ´æÇøµÄÊı¾İ´æ´¢·ÖÆ¬Àà
+//é¢„åˆ†é…å†…å­˜åŒºçš„æ•°æ®å­˜å‚¨åˆ†ç‰‡ç±»
 
 //#include "comm.hpp"
 
 namespace tfc{namespace cache{
-	
+
 #pragma pack(1)
-	
+
 	typedef long	BC_MEM_HANDLER_L;
 	typedef int		BC_MEM_HANDLER_32;
 
@@ -18,104 +18,104 @@ namespace tfc{namespace cache{
 #ifndef NULL
 #define NULL 0
 #endif
-	
+
 	typedef struct tagTChunkNode
 	{
-		BC_MEM_HANDLER_L next_;     //CHUNK·ÖÆ¬ºóÖ¸Õë
-		char data_[1];            //Êı¾İÇø
+		BC_MEM_HANDLER_L next_;     //CHUNKåˆ†ç‰‡åæŒ‡é’ˆ
+		char data_[1];            //æ•°æ®åŒº
 	}TChunkNode;
-	
+
 	typedef struct tagTChunk
 	{
-		int chunk_total_;           //CHUNK×Ü½ÚµãÊı
-		int chunk_size_;            //CHUNKÊı¾İÆ¬³ß´ç
-		int free_total_;            //¿ÕÏĞCHUNK×ÜÊı
-		BC_MEM_HANDLER_L free_list_;  //¿ÕÏĞCHUNKÁ´±íÍ·Ö¸Õë
-		TChunkNode chunk_nodes_[1]; //CHUNKÊı×é
+		int chunk_total_;           //CHUNKæ€»èŠ‚ç‚¹æ•°
+		int chunk_size_;            //CHUNKæ•°æ®ç‰‡å°ºå¯¸
+		int free_total_;            //ç©ºé—²CHUNKæ€»æ•°
+		BC_MEM_HANDLER_L free_list_;  //ç©ºé—²CHUNKé“¾è¡¨å¤´æŒ‡é’ˆ
+		TChunkNode chunk_nodes_[1]; //CHUNKæ•°ç»„
 	}TChunk;
-	
+
 #pragma pack()
-	
-	
-	class CChunkAllocator 
+
+
+	class CChunkAllocator
 	{
 	public:
 		enum CHUNK_ALLOCATOR_ERROR
 		{
-			CHUNK_ALLOCATOR_ERROR_BASE = -1,    
-			CHUNK_ALLOCATOR_ERROR_INVALID_PARAM = CHUNK_ALLOCATOR_ERROR_BASE -1,    //·Ç·¨²ÎÊı
-			CHUNK_ALLOCATOR_ERROR_FREE_CHUNK_LACK = CHUNK_ALLOCATOR_ERROR_BASE -2,    //¿ÕÏĞÄÚ´æ¿é²»×ã
-			CHUNK_ALLOCATOR_ERROR_DATA_VERIFY_FAIL = CHUNK_ALLOCATOR_ERROR_BASE -3,    //ÄÚ´æÊı¾İ¼ì²éÊ§°Ü
+			CHUNK_ALLOCATOR_ERROR_BASE = -1,
+			CHUNK_ALLOCATOR_ERROR_INVALID_PARAM = CHUNK_ALLOCATOR_ERROR_BASE -1,    //éæ³•å‚æ•°
+			CHUNK_ALLOCATOR_ERROR_FREE_CHUNK_LACK = CHUNK_ALLOCATOR_ERROR_BASE -2,    //ç©ºé—²å†…å­˜å—ä¸è¶³
+			CHUNK_ALLOCATOR_ERROR_DATA_VERIFY_FAIL = CHUNK_ALLOCATOR_ERROR_BASE -3,    //å†…å­˜æ•°æ®æ£€æŸ¥å¤±è´¥
 		};
-		
+
 	public:
-		//³õÊ¼»¯CHUNK ÄÚ´æ¿é    
+		//åˆå§‹åŒ–CHUNK å†…å­˜å—
 		int open(char *pool,bool init, int n_chunks, int chunk_size);
-		
-		//´Ó¿ÕÏĞÁ´±íÖĞ·ÖÅäCHUNK.  
+
+		//ä»ç©ºé—²é“¾è¡¨ä¸­åˆ†é…CHUNK.
 		BC_MEM_HANDLER_L malloc (int chunk_num=1);
-		
-		//½«CHUNK²åÈëµ½¿ÕÏĞÁ´±íÖĞ.
+
+		//å°†CHUNKæ’å…¥åˆ°ç©ºé—²é“¾è¡¨ä¸­.
 		void free(BC_MEM_HANDLER_L head_chunk_hdr);
-		
-		//½«CHUNKÖĞµÄÊı¾İ·ÖÆ¬½øĞĞ×éºÏ
+
+		//å°†CHUNKä¸­çš„æ•°æ®åˆ†ç‰‡è¿›è¡Œç»„åˆ
 		int merge(BC_MEM_HANDLER_L chunk_node_hdr, int chunk_len, void* data_buf, int* data_len);
-        
-		//½«Êı¾İ·ÖÆ¬´æÔÚµ½¸÷CHUNKÖĞ.
-		void split(BC_MEM_HANDLER_L head_hdr, const void* data_buf, int data_len);        
-		
-		//½«Æ«ÒÆÁ¿×ª»»³ÉÕæÊµµÄÄÚ´æµØÖ·
+
+		//å°†æ•°æ®åˆ†ç‰‡å­˜åœ¨åˆ°å„CHUNKä¸­.
+		void split(BC_MEM_HANDLER_L head_hdr, const void* data_buf, int data_len);
+
+		//å°†åç§»é‡è½¬æ¢æˆçœŸå®çš„å†…å­˜åœ°å€
 		TChunkNode *handler2ptr(BC_MEM_HANDLER_L handler);
-		
-		//½«ÄÚ´æµØÖ·×ª»»³ÉÆ«ÒÆÁ¿
+
+		//å°†å†…å­˜åœ°å€è½¬æ¢æˆåç§»é‡
 		BC_MEM_HANDLER_L ptr2handler(TChunkNode* ptr);
-		
-		//¼ÆËãĞèÒª¶àÉÙCHUNK½øĞĞÊı¾İ´æ´¢. 
-		int get_chunk_num(int data_len);    
-		
-		//·µ»Øchunk×ÜÊı
+
+		//è®¡ç®—éœ€è¦å¤šå°‘CHUNKè¿›è¡Œæ•°æ®å­˜å‚¨.
+		int get_chunk_num(int data_len);
+
+		//è¿”å›chunkæ€»æ•°
 		int get_chunk_total() { return chunk_->chunk_total_; }
-		
-		//·µ»ØÊ¹ÓÃµÄCHUNKÊı
+
+		//è¿”å›ä½¿ç”¨çš„CHUNKæ•°
 		int get_used_chunk_num() { return (chunk_->chunk_total_ - chunk_->free_total_); };
-		
-		//·µ»Ø¿ÕÏĞµÄCHUNKÊı
+
+		//è¿”å›ç©ºé—²çš„CHUNKæ•°
 		int get_free_chunk_num() { return chunk_->free_total_; };
 
 		int get_chunk_data_size() { return chunk_->chunk_size_; }
-		
-		//¼ÆËãCHUNK µÄÄÚ´æ¿é³ß´ç
+
+		//è®¡ç®—CHUNK çš„å†…å­˜å—å°ºå¯¸
 		static int get_chunk_size(int n_chunks, int chunk_size)
 		{
-			return (sizeof(TChunkNode) - sizeof(char[1]) + chunk_size); 
+			return (sizeof(TChunkNode) - sizeof(char[1]) + chunk_size);
 		}
 		static long get_pool_size(int n_chunks, int chunk_size)
 		{
 			long chunk_total_size = (long)n_chunks * (long)get_chunk_size(n_chunks, chunk_size);
 			int head_size = (sizeof(TChunk) - sizeof(TChunkNode));
 			long pool_size = head_size + chunk_total_size;
-			return pool_size;        
+			return pool_size;
 		}
-		
+
 		//   void print_stat();
-		
-	protected:    
-		//½«CHUNK²åÈëµ½¿ÕÏĞÁ´±íÖĞ.
+
+	protected:
+		//å°†CHUNKæ’å…¥åˆ°ç©ºé—²é“¾è¡¨ä¸­.
 		void free_list_insert(TChunkNode *node);
-		
-		//´Ó¿ÕÏĞÁ´±íÖĞ·ÖÅäCHUNK.  
+
+		//ä»ç©ºé—²é“¾è¡¨ä¸­åˆ†é…CHUNK.
 		TChunkNode *free_list_remove();
-		
-		//³õÊ¼»¯CHUNK ÄÚ´æ¿éÖĞµÄÊı¾İ½á¹¹
+
+		//åˆå§‹åŒ–CHUNK å†…å­˜å—ä¸­çš„æ•°æ®ç»“æ„
 		void init_pool_data(int n_chunks, int chunk_size);
-		
-		//¼ì²é CHUNK ÄÚ´æ¿éÖĞµÄÊı¾İ½á¹¹
+
+		//æ£€æŸ¥ CHUNK å†…å­˜å—ä¸­çš„æ•°æ®ç»“æ„
 		int verify_pool_data(int n_chunks, int chunk_size);
-		
-		char *pool_;        //CHUNK ÄÚ´æ¿éÆğÊ¼µØÖ·
-		char *pool_tail_;   //CHUNK ÄÚ´æ¿é½áÊøµØÖ·
-		TChunk *chunk_; 	//ÄÚ´æ¿éÖĞµÄ TChunk ½á¹¹µÄÖ¸Õë
+
+		char *pool_;        //CHUNK å†…å­˜å—èµ·å§‹åœ°å€
+		char *pool_tail_;   //CHUNK å†…å­˜å—ç»“æŸåœ°å€
+		TChunk *chunk_; 	//å†…å­˜å—ä¸­çš„ TChunk ç»“æ„çš„æŒ‡é’ˆ
 	};
-	
+
 }}
 #endif

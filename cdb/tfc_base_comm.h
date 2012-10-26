@@ -2,7 +2,7 @@
 #ifndef __TFC_BASE_COMM_H__
 #define __TFC_BASE_COMM_H__
 
-#ifndef _XOPEN_SOURCE 
+#ifndef _XOPEN_SOURCE
 #define _XOPEN_SOURCE
 #endif
 
@@ -29,8 +29,8 @@ void ignore_pipe(void);
 void Daemon();
 
 /**
- * @param s ÊäÈë×Ö·û´®
- * @return bool ÊÇ·ñÈ«²¿ÎªÊı×Ö(0-9)
+ * @param s è¾“å…¥å­—ç¬¦ä¸²
+ * @return bool æ˜¯å¦å…¨éƒ¨ä¸ºæ•°å­—(0-9)
  */
 inline bool is_digits(const string& s)
 {
@@ -42,8 +42,8 @@ inline bool is_digits(const string& s)
 }
 
 /**
- * @param s ÊäÈë×Ö·û´®
- * @return bool ÊÇ·ñÈ«²¿Îª16½øÖÆÊı×Ö(0-9/a-f/A-f)
+ * @param s è¾“å…¥å­—ç¬¦ä¸²
+ * @return bool æ˜¯å¦å…¨éƒ¨ä¸º16è¿›åˆ¶æ•°å­—(0-9/a-f/A-f)
  */
 inline bool is_xdigits(const string& s)
 {
@@ -55,9 +55,9 @@ inline bool is_xdigits(const string& s)
 }
 
 /**
- * @param s ÊäÈë×Ö·û´®
- * @param filt filt´®
- * @return string trimºóµÄÖµ
+ * @param s è¾“å…¥å­—ç¬¦ä¸²
+ * @param filt filtä¸²
+ * @return string trimåçš„å€¼
  */
 inline string trim_left(const string &s,const string& filt=" ")
 {
@@ -75,9 +75,9 @@ inline string trim_left(const string &s,const string& filt=" ")
 }
 
 /**
- * @param s ÊäÈë×Ö·û´®
- * @param filt filt´®
- * @return string trimºóµÄÖµ
+ * @param s è¾“å…¥å­—ç¬¦ä¸²
+ * @param filt filtä¸²
+ * @return string trimåçš„å€¼
  */
 inline string trim_right(const string &s,const string& filt=" ")
 {
@@ -97,9 +97,9 @@ inline string trim_right(const string &s,const string& filt=" ")
 
 /**
  * trim_left+trim_right
- * @param s ÊäÈë×Ö·û´®
- * @param filt filt´®
- * @return string trimºóµÄÖµ
+ * @param s è¾“å…¥å­—ç¬¦ä¸²
+ * @param filt filtä¸²
+ * @return string trimåçš„å€¼
  */
 inline string trim(const string &s,const string& filt=" ")
 {
@@ -125,17 +125,17 @@ inline string lower(const string &s)
 }
 
 /**
- * Ê±¼ä×Ö¶Î
+ * æ—¶é—´å­—æ®µ
  * @see #time_add
  */
 enum TimeField {Year,Month,Day,Hour,Minute,Second};
 
 /**
- * Ê±¼ä´¦Àíº¯Êı
- * @param t Ô´Ê±¼ä
- * @param f Ê±¼ä×Ö¶Î
- * @param i ¼ÓµÄÖµ,¿ÉÎª¸ºÊı±íÊ¾¼õ
- * @return time_t <0Ê±±íÊ¾³¬³ö·¶Î§
+ * æ—¶é—´å¤„ç†å‡½æ•°
+ * @param t æºæ—¶é—´
+ * @param f æ—¶é—´å­—æ®µ
+ * @param i åŠ çš„å€¼,å¯ä¸ºè´Ÿæ•°è¡¨ç¤ºå‡
+ * @return time_t <0æ—¶è¡¨ç¤ºè¶…å‡ºèŒƒå›´
  */
 inline time_t time_add(time_t t,TimeField f,int i)
 {
@@ -166,7 +166,7 @@ inline time_t time_add(time_t t,TimeField f,int i)
 }
 
 /**
- * unsigned×ªstring
+ * unsignedè½¬string
  * @see #s2u
  */
 inline string u2s(const unsigned u)
@@ -177,7 +177,7 @@ inline string u2s(const unsigned u)
 }
 
 /**
- * unsigned×ªstring(16½øÖÆĞÎÊ½)
+ * unsignedè½¬string(16è¿›åˆ¶å½¢å¼)
  * @see #sx2u
  */
 inline string u2sx(const unsigned u)
@@ -188,18 +188,18 @@ inline string u2sx(const unsigned u)
 }
 
 /**
- * int×ªstring
+ * intè½¬string
  * @see #s2i
  */
 inline string i2s(const int i)
 {
 	char sTmp[16] ={0};
 	sprintf(sTmp, "%d", i);
-	return string(sTmp);	
+	return string(sTmp);
 }
 
 /**
- * char×ªstring
+ * charè½¬string
  * @see #s2c
  */
 inline string c2s(const char c)
@@ -210,22 +210,22 @@ inline string c2s(const char c)
 
 /**
  * binary->string
- * @param b binaryÖ¸Õë
- * @param len binary³¤¶È
- * @param block ÏÔÊ¾¸ñÊ½<br>
- *                      =0¸ñÊ½Îª"00 01 02 ..." <br>
- *                      >0¸ñÊ½Îª(ÒÔ8ÎªÀı)"0000h: 00 01 02 03 04 05 06 07 08  09 0a 0b 0c 0d 0e 0f" <br>
+ * @param b binaryæŒ‡é’ˆ
+ * @param len binaryé•¿åº¦
+ * @param block æ˜¾ç¤ºæ ¼å¼<br>
+ *                      =0æ ¼å¼ä¸º"00 01 02 ..." <br>
+ *                      >0æ ¼å¼ä¸º(ä»¥8ä¸ºä¾‹)"0000h: 00 01 02 03 04 05 06 07 08  09 0a 0b 0c 0d 0e 0f" <br>
  *                                                               "0010h: 10 11 12 13 14 15 16 17 18  19 1a 1b 1c 1d 1e 1f" <br>
- * @return string µÃµ½µÄ¸ñÊ½´®
+ * @return string å¾—åˆ°çš„æ ¼å¼ä¸²
  * @see #s2b
  */
 string b2s(const char *b,size_t len,const unsigned block = 8);
 
 /**
  * time_t->string
- * @param t Ê±¼äÖµ
- * @param format ÏÔÊ¾¸ñÊ½,²Î¼ûdateÖ¸Áî¸ñÊ½
- * @return string µÃµ½µÄ¸ñÊ½´®
+ * @param t æ—¶é—´å€¼
+ * @param format æ˜¾ç¤ºæ ¼å¼,å‚è§dateæŒ‡ä»¤æ ¼å¼
+ * @return string å¾—åˆ°çš„æ ¼å¼ä¸²
  * @s2t
  */
 inline string t2s(const time_t t,const string& format="%Y-%m-%d %H:%M:%S")
@@ -239,8 +239,8 @@ inline string t2s(const time_t t,const string& format="%Y-%m-%d %H:%M:%S")
 
 /**
  * now->string
- * @param format ÏÔÊ¾¸ñÊ½,²Î¼ûdateÖ¸Áî¸ñÊ½
- * @return string µÃµ½µÄ¸ñÊ½´®
+ * @param format æ˜¾ç¤ºæ ¼å¼,å‚è§dateæŒ‡ä»¤æ ¼å¼
+ * @return string å¾—åˆ°çš„æ ¼å¼ä¸²
  * @see #t2s
  */
 inline string now(const string& format="%Y-%m-%d %H:%M:%S")
@@ -250,8 +250,8 @@ inline string now(const string& format="%Y-%m-%d %H:%M:%S")
 
 
 /**
- * string×ªunsigned
- * @throw comm_error string¸ñÊ½²»ÊÇunsigned
+ * stringè½¬unsigned
+ * @throw comm_error stringæ ¼å¼ä¸æ˜¯unsigned
  * @see #u2s
  */
 inline unsigned s2u(const string &s) throw (comm_error)
@@ -270,7 +270,7 @@ inline unsigned s2u(const string &s) throw (comm_error)
 
 
 /**
- * string×ªunsigned (¸ñÊ½²»¶ÔÊ±ÉèÎªÄ¬ÈÏÖµ)
+ * stringè½¬unsigned (æ ¼å¼ä¸å¯¹æ—¶è®¾ä¸ºé»˜è®¤å€¼)
  * @see #u2s
  */
 inline unsigned s2u(const string &s,unsigned defaultvalue)
@@ -280,7 +280,7 @@ inline unsigned s2u(const string &s,unsigned defaultvalue)
 	}
 	for (size_t i = 0; i < s.length(); i++){
 		if (!isdigit(s.c_str()[i])) {
-			return defaultvalue;	
+			return defaultvalue;
 		}
 	}
 
@@ -288,8 +288,8 @@ inline unsigned s2u(const string &s,unsigned defaultvalue)
 }
 
 /**
- * 16½øÖÆ¸ñÊ½string×ªunsigned,Ö§³ÖµÄ¸ñÊ½Îª0x+×Ö·û´®»òÕßÖ±½ÓÎª×Ö·û´®
- * @throw comm_error string¸ñÊ½²»ÊÇunsigned
+ * 16è¿›åˆ¶æ ¼å¼stringè½¬unsigned,æ”¯æŒçš„æ ¼å¼ä¸º0x+å­—ç¬¦ä¸²æˆ–è€…ç›´æ¥ä¸ºå­—ç¬¦ä¸²
+ * @throw comm_error stringæ ¼å¼ä¸æ˜¯unsigned
  * @see #u2sx
  */
 inline unsigned sx2u(const string &s) throw (comm_error)
@@ -314,7 +314,7 @@ inline unsigned sx2u(const string &s) throw (comm_error)
 }
 
 /**
- * 16½øÖÆ¸ñÊ½string×ªunsigned (¸ñÊ½²»¶ÔÊ±ÉèÎªÄ¬ÈÏÖµ)
+ * 16è¿›åˆ¶æ ¼å¼stringè½¬unsigned (æ ¼å¼ä¸å¯¹æ—¶è®¾ä¸ºé»˜è®¤å€¼)
  * @see #u2sx
  */
 inline unsigned sx2u(const string &s,unsigned defaultvalue)
@@ -339,8 +339,8 @@ inline unsigned sx2u(const string &s,unsigned defaultvalue)
 }
 
 /**
- * string×ªint
- * @throw comm_error string¸ñÊ½²»ÊÇunsigned
+ * stringè½¬int
+ * @throw comm_error stringæ ¼å¼ä¸æ˜¯unsigned
  * @see #i2s
  */
 inline int s2i(const string &s) throw (comm_error)
@@ -356,10 +356,10 @@ inline int s2i(const string &s) throw (comm_error)
 }
 
 /**
- * string×ªint (¸ñÊ½²»¶ÔÊ±ÉèÎªÄ¬ÈÏÖµ)
+ * stringè½¬int (æ ¼å¼ä¸å¯¹æ—¶è®¾ä¸ºé»˜è®¤å€¼)
  * @see #i2s
  */
-inline int s2i(const string &s,int defaultvalue) 
+inline int s2i(const string &s,int defaultvalue)
 {
 	unsigned d = (defaultvalue < 0?-1*defaultvalue:defaultvalue);
 	if(s.c_str()[0] == '-') {
@@ -373,7 +373,7 @@ inline int s2i(const string &s,int defaultvalue)
 }
 
 /**
- * string×ªchar (È¡stringµÚÒ»Î»)
+ * stringè½¬char (å–stringç¬¬ä¸€ä½)
  * @see #c2s
  */
 inline char s2c(const string &s)
@@ -383,7 +383,7 @@ inline char s2c(const string &s)
 }
 
 /**
- * string×ªchar (stringÎª""Ê±·µ»ØÄ¬ÈÏÖµ)
+ * stringè½¬char (stringä¸º""æ—¶è¿”å›é»˜è®¤å€¼)
  * @see #c2s
  */
 inline char s2c(const string &s,char defaultvalue)
@@ -393,9 +393,9 @@ inline char s2c(const string &s,char defaultvalue)
 }
 
 /**
- * string×ªbinary,Ö§³ÖµÄ¸ñÊ½"00 01 ..."»ò"0001..."
- * @throw comm_error string¸ñÊ½²»¶Ô
- * @return size_t binary´óĞ¡
+ * stringè½¬binary,æ”¯æŒçš„æ ¼å¼"00 01 ..."æˆ–"0001..."
+ * @throw comm_error stringæ ¼å¼ä¸å¯¹
+ * @return size_t binaryå¤§å°
  * @see #b2s
  */
 inline size_t s2b(const string &s,char *b,size_t maxlen) throw (comm_error)
@@ -419,9 +419,9 @@ inline size_t s2b(const string &s,char *b,size_t maxlen) throw (comm_error)
 }
 
 /**
- * string×ªtime_t
- * @throw comm_error string¸ñÊ½²»¶Ô
- * @return time_t ·µ»ØÊ±¼ä
+ * stringè½¬time_t
+ * @throw comm_error stringæ ¼å¼ä¸å¯¹
+ * @return time_t è¿”å›æ—¶é—´
  * @see #t2s
  */
 time_t s2t(const string &s,const string& format="%Y-%m-%d %H:%M:%S") throw (comm_error);
@@ -430,11 +430,11 @@ time_t s2t(const string &s,const string& format="%Y-%m-%d %H:%M:%S") throw (comm
 // out: s - string after trim
 // return : head
 /**
- * ¸ù¾İsplitÈ¥µôstringµÄÍ·,ÀàËÆGetToken<br>
- * Èçstring s = "ab cd ef", trim(s)·µ»Øab£¬sÔò±äÎª"cd ed"
- * @param s Ô´×Ö·û´®
- * @param split ·Ö¸ô·û
- * @return Í·
+ * æ ¹æ®splitå»æ‰stringçš„å¤´,ç±»ä¼¼GetToken<br>
+ * å¦‚string s = "ab cd ef", trim(s)è¿”å›abï¼Œsåˆ™å˜ä¸º"cd ed"
+ * @param s æºå­—ç¬¦ä¸²
+ * @param split åˆ†éš”ç¬¦
+ * @return å¤´
  */
 string trim_head(string& s,const string& split=" \t");
 

@@ -66,7 +66,7 @@ CFileConfig::EntryType CFileConfig::entry_type(const string& s)
 	return T_ERROR;
 }
 
-// #¿ªÍ·µÄÎª×¢ÊÍ,Í¬Ê±trim \n
+// #å¼€å¤´çš„ä¸ºæ³¨é‡Š,åŒæ—¶trim \n
 inline string CFileConfig::trim_comment(const string& s)
 {
 	if(s.c_str()[0] == '#') return "";
@@ -86,7 +86,7 @@ inline string CFileConfig::trim_comment(const string& s)
 	return trimn;
 }
 
-// µÃµ½µ±Ç°Â·¾¶,µ÷ÓÃÖ®Ç°ÅĞ¶ÏÊÇ·ñÎª¿Õ
+// å¾—åˆ°å½“å‰è·¯å¾„,è°ƒç”¨ä¹‹å‰åˆ¤æ–­æ˜¯å¦ä¸ºç©º
 inline string CFileConfig::path(const deque<string>& path)
 {
 	deque<string>::const_iterator it;
@@ -101,7 +101,7 @@ inline string CFileConfig::path(const deque<string>& path)
 	return string(s.c_str(),1,s.length()-1);
 }
 
-// µÃµ½parentÂ·¾¶£¬µ÷ÓÃÇ°ÅĞ¶ÏÊÇ·ñÎª¿Õ£¬¿ÉÄÜ·µ»Ø""
+// å¾—åˆ°parentè·¯å¾„ï¼Œè°ƒç”¨å‰åˆ¤æ–­æ˜¯å¦ä¸ºç©ºï¼Œå¯èƒ½è¿”å›""
 inline string CFileConfig::parent_path(const deque<string>& path)
 {
 	deque<string>::const_iterator it;
@@ -122,7 +122,7 @@ inline string CFileConfig::parent_path(const deque<string>& path)
 	return string(s.c_str(),1,s.length()-1);
 }
 
-// µÃµ½subÂ·¾¶£¬µ÷ÓÃÇ°ÅĞ¶ÏÊÇ·ñÎª¿Õ
+// å¾—åˆ°subè·¯å¾„ï¼Œè°ƒç”¨å‰åˆ¤æ–­æ˜¯å¦ä¸ºç©º
 inline string CFileConfig::sub_path(const deque<string>& path)
 {
 	deque<string>::reverse_iterator it;
@@ -149,10 +149,10 @@ void CFileConfig::Load()
 	string sline;
 	string sreal;
 	ifstream in(_filename.c_str());
-	if(!in) 
+	if(!in)
 		throw conf_load_error(string("CFileConfig::Load: can not open ")+_filename);
 
-	deque<string> path_stack; 
+	deque<string> path_stack;
 	_pairs.clear();
 	_paths.clear();
 	_domains.clear();
@@ -168,7 +168,7 @@ void CFileConfig::Load()
 //			_pairs[path(path_stack)] = _null_map;
 //			_domains[path(path_stack)] = _null_vector;
 //			if(_paths.find(parent_path(path_stack)) == _paths.end())[_paths[parent_path(path_stack)]] = _null_vector);
-			_paths[parent_path(path_stack)].push_back(start_path(sreal));			
+			_paths[parent_path(path_stack)].push_back(start_path(sreal));
 			break;
 		case T_STOPPATH:
 			it = path_stack.rbegin();
@@ -179,7 +179,7 @@ void CFileConfig::Load()
 			break;
 		case T_NULL:
 			break;
-		case T_PAIR: // Í¬Ê±Ò²×÷Îªdomain
+		case T_PAIR: // åŒæ—¶ä¹Ÿä½œä¸ºdomain
 			if(path_stack.size() == 0) {
 				throw conf_load_error("CFileConfig::Load: path is null");
 			}
@@ -196,14 +196,14 @@ void CFileConfig::Load()
 			break;
 		default:
 			throw conf_load_error(string("CFileConfig::Load: invalid:")+sreal);
-		}		
+		}
 	}
-	//ÎÄ¼ş½âÎöÍêÒªÅĞ¶Ïpath_stackÊÇ·ñÎª¿Õ
+	//æ–‡ä»¶è§£æå®Œè¦åˆ¤æ–­path_stackæ˜¯å¦ä¸ºç©º
 	if(path_stack.size() != 0) {
 		throw conf_load_error("CFileConfig::Load: path havenot over");
 	}
 
-/* 
+/*
         size_t i=0;
         cout << "pairs:" << _pairs.size() << endl;
         map<string,map<string,string> >::iterator it_pair;
@@ -279,6 +279,6 @@ const vector<string>& CFileConfig::GetSubPath(const string& path) const
 {
 	map<string,vector<string> >::const_iterator it = _paths.find(path);
 	if(it == _paths.end()) return _null_vector;
-	return (*it).second;	
+	return (*it).second;
 }
 

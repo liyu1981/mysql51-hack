@@ -53,14 +53,14 @@ namespace tfc{namespace cache
 		int get_hash_bucket_size() { return _cache.get_bucket_size(); }
 		int core_dump_mem(char *buff, int maxsize,int modbase, int mobres);
 		int core_recover_mem(char *buff, int buffsize);
-		//-1Ê§°Ü, -2 buff³¤¶È²»¹»(´ËÊ±core_sizeÎªÒÑdump×Ö½ÚÊı£¬core_size == 0 ËµÃ÷Îª¿ÕÍ°)£¬0 ³É¹¦
+		//-1å¤±è´¥, -2 buffé•¿åº¦ä¸å¤Ÿ(æ­¤æ—¶core_sizeä¸ºå·²dumpå­—èŠ‚æ•°ï¼Œcore_size == 0 è¯´æ˜ä¸ºç©ºæ¡¶)ï¼Œ0 æˆåŠŸ
 		int core_dump_bucket_mem(char *buff, int maxsize, unsigned bucket_id, unsigned &core_size);
-		//0³É¹¦£¬-1Ê§°Ü£¬-2²¿·ÖÊ§°Ü(¼´ÔÚ»Ö¸´¹ı³ÌÖĞÊ§°Ü£¬´ËÊ±recover_sizeÎªÒÑ»Ö¸´×Ö½ÚÊı)
+		//0æˆåŠŸï¼Œ-1å¤±è´¥ï¼Œ-2éƒ¨åˆ†å¤±è´¥(å³åœ¨æ¢å¤è¿‡ç¨‹ä¸­å¤±è´¥ï¼Œæ­¤æ—¶recover_sizeä¸ºå·²æ¢å¤å­—èŠ‚æ•°)
 		int core_recover_bucket_mem(char *buff, int buffsize, unsigned &recover_size);
 		int core_dump(char *szcorefile);
 		int core_recover(char *szcorefile);
 		int StartUp();
-		int CoreInit(int coredump_interval/* ¼ä¸ôÊ±¼ä£¬µ¥Î»£ºmin */,
+		int CoreInit(int coredump_interval/* é—´éš”æ—¶é—´ï¼Œå•ä½ï¼šmin */,
 					unsigned coredump_point/* min of day, from 0 - 1439 */,
 				char *coredump_file, char *sBinLogBaseName, long lMaxBinLogSize, int iMaxBinLogNum);
 
@@ -75,15 +75,15 @@ namespace tfc{namespace cache
 		int mirror_dump(char *mirror_file);
 		int mirror_recover(char *mirror_file);
 		int StartUp_mirror();
-		// ret 0: ½øĞĞÁËdump
-		//     1: Ã»ÓĞ½øĞĞdump
+		// ret 0: è¿›è¡Œäº†dump
+		//     1: æ²¡æœ‰è¿›è¡Œdump
 		int time_check_mirror();
 
-		// HashNodeµÄÊ¹ÓÃÂÊ³¬¹ı80£¥
+		// HashNodeçš„ä½¿ç”¨ç‡è¶…è¿‡80ï¼…
 		bool warning_80persent();
 		float get_used_percent();
 
-		// HashNode, ChunkNodeµÄÊ¹ÓÃÇé¿ö
+		// HashNode, ChunkNodeçš„ä½¿ç”¨æƒ…å†µ
 		void get_node_num(unsigned &hash_node_used, unsigned &hash_node_total,
                             unsigned &chunk_node_used, unsigned &chunk_node_total);
 
@@ -101,13 +101,13 @@ namespace tfc{namespace cache
 			st.chunk_data_size = (unsigned)_cache.get_chunk_data_size();
 		}
 
-		// »ñµÃcacheËù¶ÔÓ¦µÄshare memoryÖ¸Õë£¬memory´óĞ¡
+		// è·å¾—cacheæ‰€å¯¹åº”çš„share memoryæŒ‡é’ˆï¼Œmemoryå¤§å°
 		void get_memory(char **mem, long& mem_size)
 		{
 			*mem = _mem;
 			mem_size = _mem_size;
 		};
-		// »ñµÃÊÇ·ñĞÂ½¨¹²ÏíÄÚ´æµÄ±êÖ¾
+		// è·å¾—æ˜¯å¦æ–°å»ºå…±äº«å†…å­˜çš„æ ‡å¿—
 		bool is_new_init(){ return _cacheinit; };
 		/////////////////////////////////
 
@@ -206,9 +206,9 @@ namespace tfc{namespace cache
 		int core_dump_mem(char *buff, int maxsize,int modbase, int mobres);
 		int core_recover_mem(char *buff, int buffsize);
 		int get_hash_bucket_size() { return _da.get_hash_bucket_size(); }
-		//-1Ê§°Ü, -2 buff³¤¶È²»¹»(´ËÊ±core_sizeÎªÒÑdump×Ö½ÚÊı£¬core_size == 0 ËµÃ÷Îª¿ÕÍ°)£¬0 ³É¹¦
+		//-1å¤±è´¥, -2 buffé•¿åº¦ä¸å¤Ÿ(æ­¤æ—¶core_sizeä¸ºå·²dumpå­—èŠ‚æ•°ï¼Œcore_size == 0 è¯´æ˜ä¸ºç©ºæ¡¶)ï¼Œ0 æˆåŠŸ
 		int core_dump_bucket_mem(char *buff, int maxsize, unsigned bucket_id, unsigned &core_size);
-		//0³É¹¦£¬-1Ê§°Ü£¬-2²¿·ÖÊ§°Ü(¼´ÔÚ»Ö¸´¹ı³ÌÖĞÊ§°Ü£¬´ËÊ±recover_sizeÎªÒÑ»Ö¸´×Ö½ÚÊı)
+		//0æˆåŠŸï¼Œ-1å¤±è´¥ï¼Œ-2éƒ¨åˆ†å¤±è´¥(å³åœ¨æ¢å¤è¿‡ç¨‹ä¸­å¤±è´¥ï¼Œæ­¤æ—¶recover_sizeä¸ºå·²æ¢å¤å­—èŠ‚æ•°)
 		int core_recover_bucket_mem(char *buff, int buffsize, unsigned &recover_size);
 
 		int core_dump(char *szcorefile);
@@ -220,11 +220,11 @@ namespace tfc{namespace cache
 		int StartUp();
 		int time_check();
 
-	    // HashNodeµÄÊ¹ÓÃÂÊ³¬¹ı80£¥
+	    // HashNodeçš„ä½¿ç”¨ç‡è¶…è¿‡80ï¼…
 		bool warning_80persent();
 		float get_used_percent();
 
-		// HashNode, ChunkNodeµÄÊ¹ÓÃÇé¿ö
+		// HashNode, ChunkNodeçš„ä½¿ç”¨æƒ…å†µ
 		void get_node_num(unsigned &hash_node_used, unsigned &hash_node_total,
                             unsigned &chunk_node_used, unsigned &chunk_node_total);
 

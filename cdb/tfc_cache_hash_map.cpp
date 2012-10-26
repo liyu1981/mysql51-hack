@@ -24,38 +24,38 @@ CHashMap::~CHashMap()
 int CHashMap::open(char* pool, bool init, int node_total, int bucket_size, int n_chunks, int chunk_size)
 {
 	int ret = 0;
-	
+
 	int hash_map_pool_size = get_pool_size(node_total, bucket_size);
 	int head_size = sizeof(THashMap) - sizeof(BC_MEM_HANDLER_32[1]);
 	int bucket_total_size = bucket_size * sizeof(BC_MEM_HANDLER_32);
-	
+
 	pool_ = pool;
 	pool_tail_ = pool_ + hash_map_pool_size;
 	hash_map_ = (THashMap*)pool_;
 	hash_node_ = (THashNode*)(pool_ + head_size + bucket_total_size);
-	
+
 	if (init)
 	{
 		init_pool_data(node_total, bucket_size);
 	}
 	else
 	{
-		if ((ret = verify_pool_data(node_total, bucket_size)) != 0) 
+		if ((ret = verify_pool_data(node_total, bucket_size)) != 0)
 		{
 			return ret;
 		}
 	}
-	
-	if ((ret = allocator_.open(pool_tail_, init, n_chunks, chunk_size)) != 0) 
+
+	if ((ret = allocator_.open(pool_tail_, init, n_chunks, chunk_size)) != 0)
 	{
 		return ret;
 	}
-	
-	//bucket_size_Ó¦¸ÃÊÇpow(2, x)
+
+	//bucket_size_åº”è¯¥æ˜¯pow(2, x)
 	//right_rotate_ = 32 -(int)( log((double)(hash_map_->bucket_size_ + 0.01)) / log(2.0));
 	//DEBUG_P(LOG_TRACE, " CHashMap::open right_rotate %d\n", right_rotate_);
-	
-	return 0;	
+
+	return 0;
 }
 
 void CHashMap::init_pool_data(int node_total, int bucket_size)
@@ -68,18 +68,18 @@ void CHashMap::init_pool_data(int node_total, int bucket_size)
 	hash_map_->bucket_size_ = bucket_size;
 	hash_map_->used_node_num_ = 0;
 	hash_map_->used_bucket_num_ = 0;
-	
+
 	hash_map_->add_head_ = INVALID_BC_MEM_HANDLER_32;
 	hash_map_->add_tail_ = INVALID_BC_MEM_HANDLER_32;
 	hash_map_->free_list_ = INVALID_BC_MEM_HANDLER_32;
-	
+
 	int i;
 	for(i = 0; i < bucket_size; i++)
 	{
 		hash_map_->bucket[i] = INVALID_BC_MEM_HANDLER_32;
 	}
-	
-	//½«ËùÓĞ½Úµã²åÈëµ½¿ÕÏĞÁ´±íÖĞ
+
+	//å°†æ‰€æœ‰èŠ‚ç‚¹æ’å…¥åˆ°ç©ºé—²é“¾è¡¨ä¸­
 	THashNode* hash_node;
 	BC_MEM_HANDLER_32 offset;
 	for(i = 0; i < node_total; i++)
@@ -89,7 +89,7 @@ void CHashMap::init_pool_data(int node_total, int bucket_size)
 		init_node(hash_node);
 		free_list_insert(hash_node);
 	}
-	
+
 	return;
 }
 
@@ -105,7 +105,7 @@ int CHashMap::verify_pool_data(int node_total, int bucket_size)
 		//ERROR_RETURN(HASH_MAP_ERROR_BASE, "pool data verify fail");
 		return HASH_MAP_ERROR_BASE;
 	}
-	
+
 //	int used_bucket_count = 0;
 //	for (int i = 0; i < hash_map_->bucket_size_; i++)
 //	{
@@ -119,7 +119,7 @@ int CHashMap::verify_pool_data(int node_total, int bucket_size)
 //		//ERROR_RETURN(HASH_MAP_ERROR_BASE, "pool data verify fail");
 //		return HASH_MAP_ERROR_BASE;
 //	}
-	
+
 	int free_node_count = 0;
 	THashNode* free_node = handler2ptr(hash_map_->free_list_);
 	while(free_node)
@@ -127,13 +127,13 @@ int CHashMap::verify_pool_data(int node_total, int bucket_size)
 		free_node_count++;
 		free_node = handler2ptr(free_node->node_next_);
 	}
-	
-	if ((hash_map_->used_node_num_ + free_node_count) != hash_map_->node_total_) 
+
+	if ((hash_map_->used_node_num_ + free_node_count) != hash_map_->node_total_)
 	{
 		//ERROR_RETURN(HASH_MAP_ERROR_BASE, "pool data verify fail");
 		return HASH_MAP_ERROR_BASE;
 	}
-	
+
 	return 0;
 }
 
@@ -144,9 +144,9 @@ THashNode* CHashMap::find_node(TMBHashKey &key)
 	while(node_hdr != INVALID_BC_MEM_HANDLER_32)
 	{
 		THashNode* node = handler2ptr(node_hdr);
-		if (node->key_ == key) 
+		if (node->key_ == key)
 		{
-			//½«¸Ã½Úµã²åÈëµ½¸½¼ÓÁ´±íÍ·²¿
+			//å°†è¯¥èŠ‚ç‚¹æ’å…¥åˆ°é™„åŠ é“¾è¡¨å¤´éƒ¨
 			//node->add_info_1_ = time(NULL);
 			insert_add_list_head(node);
 			return node;
@@ -160,11 +160,11 @@ THashNode* CHashMap::find_node(TMBHashKey &key)
 THashNode* CHashMap::insert_node(TMBHashKey &key, void* new_data, int new_len)
 {
 	THashNode* node = free_list_remove();
-	if (node == NULL) 
+	if (node == NULL)
 	{
-		return NULL;				
+		return NULL;
 	}
-	
+
 	int new_chunk_num = allocator_.get_chunk_num(new_len);
 	BC_MEM_HANDLER_L head_hdr = allocator_.malloc(new_chunk_num);
 	if(head_hdr == INVALID_BC_MEM_HANDLER_L)
@@ -174,8 +174,8 @@ THashNode* CHashMap::insert_node(TMBHashKey &key, void* new_data, int new_len)
 	}
 	allocator_.split(head_hdr, new_data, new_len);
 	use_node(node, key, new_len, head_hdr);
-	
-	//½«¸Ã½Úµã²åÈëµ½¸½¼ÓÁ´±íÍ·²¿
+
+	//å°†è¯¥èŠ‚ç‚¹æ’å…¥åˆ°é™„åŠ é“¾è¡¨å¤´éƒ¨
 	node->add_info_1_ = time(NULL);
 	insert_add_list_head(node);
 	return node;
@@ -184,11 +184,11 @@ THashNode* CHashMap::insert_node(TMBHashKey &key, void* new_data, int new_len)
 THashNode* CHashMap::insert_node_metadata(TMBHashKey &key, void* new_data, int new_len, long expiretime)
 {
 	THashNode* node = free_list_remove();
-	if (node == NULL) 
+	if (node == NULL)
 	{
-		return NULL;				
+		return NULL;
 	}
-	
+
 	int new_chunk_num = allocator_.get_chunk_num(new_len);
 	BC_MEM_HANDLER_L head_hdr = allocator_.malloc(new_chunk_num);
 	if(head_hdr == INVALID_BC_MEM_HANDLER_L)
@@ -198,8 +198,8 @@ THashNode* CHashMap::insert_node_metadata(TMBHashKey &key, void* new_data, int n
 	}
 	allocator_.split(head_hdr, new_data, new_len);
 	use_node(node, key, new_len, head_hdr);
-	
-	//½«¸Ã½Úµã²åÈëµ½¸½¼ÓÁ´±íÍ·²¿
+
+	//å°†è¯¥èŠ‚ç‚¹æ’å…¥åˆ°é™„åŠ é“¾è¡¨å¤´éƒ¨
 	node->add_info_1_ = time(NULL);
 	node->add_info_2_ = expiretime;
 	insert_add_list_head(node);
@@ -210,7 +210,7 @@ THashNode* CHashMap::update_node(THashNode* node, void* new_data, int new_len, c
 {
 	if(old_data != NULL && old_len != NULL)
 	{
-		//·µ»Ø¾ÉÊı¾İ
+		//è¿”å›æ—§æ•°æ®
 		if(allocator_.merge(node->chunk_head_, node->chunk_len_,  old_data, old_len) != 0)
 		{
 			return NULL;
@@ -220,28 +220,28 @@ THashNode* CHashMap::update_node(THashNode* node, void* new_data, int new_len, c
 	{
 		*old_len = node->chunk_len_;
 	}
-	
+
 	int old_chunk_num = allocator_.get_chunk_num(node->chunk_len_);
 	int new_chunk_num = allocator_.get_chunk_num(new_len);
-	
+
 	if (old_chunk_num != new_chunk_num)
 	{
-		//ĞèÒªÖØĞÂ·ÖÅäCHUNK. ÏÈFREEÔÙMALLOC.		
+		//éœ€è¦é‡æ–°åˆ†é…CHUNK. å…ˆFREEå†MALLOC.
 		if (new_chunk_num > old_chunk_num)
 		{
 			if (allocator_.get_free_chunk_num() < (new_chunk_num - old_chunk_num))
 			{
-				//Ê£ÓàCHUNKÊı²»×ã
+				//å‰©ä½™CHUNKæ•°ä¸è¶³
 				//ERROR_RETURN_NULL(CChunkAllocator::CHUNK_ALLOCATOR_ERROR_FREE_CHUNK_LACK, "free chunk lack");
 				return NULL;
 			}
 		}
-		
+
 		allocator_.free(node->chunk_head_);
-		
-		BC_MEM_HANDLER_L head_hdr = allocator_.malloc(new_chunk_num);   //CHUNKÊı×ã¹», ²»»áÊ§°Ü
+
+		BC_MEM_HANDLER_L head_hdr = allocator_.malloc(new_chunk_num);   //CHUNKæ•°è¶³å¤Ÿ, ä¸ä¼šå¤±è´¥
 		allocator_.split(head_hdr, new_data, new_len);
-		
+
 		node->chunk_len_ = new_len;
 		node->chunk_head_ = head_hdr;
 	}
@@ -250,8 +250,8 @@ THashNode* CHashMap::update_node(THashNode* node, void* new_data, int new_len, c
 		allocator_.split(node->chunk_head_, new_data, new_len);
 		node->chunk_len_ = new_len;
 	}
-	
-	//½«¸Ã½Úµã²åÈëµ½¸½¼ÓÁ´±íÍ·²¿
+
+	//å°†è¯¥èŠ‚ç‚¹æ’å…¥åˆ°é™„åŠ é“¾è¡¨å¤´éƒ¨
 	node->add_info_1_ = time(NULL);
 	insert_add_list_head(node);
 	return node;
@@ -261,25 +261,25 @@ THashNode* CHashMap::update_node_metadata(THashNode* node, void* new_data, int n
 {
 	int old_chunk_num = allocator_.get_chunk_num(node->chunk_len_);
 	int new_chunk_num = allocator_.get_chunk_num(new_len);
-	
+
 	if (old_chunk_num != new_chunk_num)
 	{
-		//ĞèÒªÖØĞÂ·ÖÅäCHUNK. ÏÈFREEÔÙMALLOC.		
+		//éœ€è¦é‡æ–°åˆ†é…CHUNK. å…ˆFREEå†MALLOC.
 		if (new_chunk_num > old_chunk_num)
 		{
 			if (allocator_.get_free_chunk_num() < (new_chunk_num - old_chunk_num))
 			{
-				//Ê£ÓàCHUNKÊı²»×ã
+				//å‰©ä½™CHUNKæ•°ä¸è¶³
 				//ERROR_RETURN_NULL(CChunkAllocator::CHUNK_ALLOCATOR_ERROR_FREE_CHUNK_LACK, "free chunk lack");
 				return NULL;
 			}
 		}
-		
+
 		allocator_.free(node->chunk_head_);
-		
-		BC_MEM_HANDLER_L head_hdr = allocator_.malloc(new_chunk_num);   //CHUNKÊı×ã¹», ²»»áÊ§°Ü
+
+		BC_MEM_HANDLER_L head_hdr = allocator_.malloc(new_chunk_num);   //CHUNKæ•°è¶³å¤Ÿ, ä¸ä¼šå¤±è´¥
 		allocator_.split(head_hdr, new_data, new_len);
-		
+
 		node->chunk_len_ = new_len;
 		node->chunk_head_ = head_hdr;
 	}
@@ -288,10 +288,10 @@ THashNode* CHashMap::update_node_metadata(THashNode* node, void* new_data, int n
 		allocator_.split(node->chunk_head_, new_data, new_len);
 		node->chunk_len_ = new_len;
 	}
-	
-	//½«¸Ã½Úµã²åÈëµ½¸½¼ÓÁ´±íÍ·²¿
+
+	//å°†è¯¥èŠ‚ç‚¹æ’å…¥åˆ°é™„åŠ é“¾è¡¨å¤´éƒ¨
 	node->add_info_1_ = time(NULL);
-	node->add_info_1_ = expiretime;	
+	node->add_info_1_ = expiretime;
 	insert_add_list_head(node);
 	return node;
 }
@@ -302,16 +302,16 @@ THashNode* CHashMap::replace_node(TMBHashKey &key, void* new_data, int new_len, 
 	{
 		return update_node(node, new_data, new_len, old_data, old_len);
 	}
-	
+
 	return insert_node(key, new_data, new_len);
 }
 
 int CHashMap::delete_node(THashNode* node, char* data, int* data_len)
 {
-	//¾É½Úµã´æÔÚ
+	//æ—§èŠ‚ç‚¹å­˜åœ¨
 	if(data != NULL && data_len != NULL)
 	{
-		//·µ»Ø¾ÉÊı¾İ
+		//è¿”å›æ—§æ•°æ®
 		if(allocator_.merge(node->chunk_head_, node->chunk_len_, data, data_len) != 0)
 		{
 			return -1;
@@ -321,20 +321,20 @@ int CHashMap::delete_node(THashNode* node, char* data, int* data_len)
 	{
 		*data_len = node->chunk_len_;
 	}
-	
+
 	delete_from_add_list(node);
 	free_node(node);
 	free_list_insert(node);
-	
+
 	return 0;
 }
 
 void CHashMap::insert_node_list(THashNode* node)
 {
-	//²åÈëµ½½ÚµãÁ´±íÍ·
+	//æ’å…¥åˆ°èŠ‚ç‚¹é“¾è¡¨å¤´
 	int bucket_id = get_bucket_id(node->key_);
 	BC_MEM_HANDLER_32 node_hdr = ptr2handler(node);
-	
+
 	node->node_next_ = hash_map_->bucket[bucket_id];
 	node->node_prev_ = INVALID_BC_MEM_HANDLER_32;
 	hash_map_->bucket[bucket_id] = node_hdr;
@@ -343,16 +343,16 @@ void CHashMap::insert_node_list(THashNode* node)
 	{
 		next_node->node_prev_ = node_hdr;
 	}
-	
+
 	//stat
-	hash_map_->used_node_num_ ++;	
+	hash_map_->used_node_num_ ++;
 }
 
 void CHashMap::delete_from_node_list(THashNode* node)
 {
 	BC_MEM_HANDLER_32 next_node_hdr = node->node_next_;
 	BC_MEM_HANDLER_32 prev_node_hdr = node->node_prev_;
-	
+
 	if(prev_node_hdr != INVALID_BC_MEM_HANDLER_32)
 	{
 		THashNode* prev_node = handler2ptr(prev_node_hdr);
@@ -363,42 +363,42 @@ void CHashMap::delete_from_node_list(THashNode* node)
 		THashNode* next_node = handler2ptr(next_node_hdr);
 		next_node->node_prev_ = node->node_prev_;
 	}
-	
+
 	BC_MEM_HANDLER_32 node_hdr = ptr2handler(node);
-	
+
 	int bucket_id = get_bucket_id(node->key_);
-	if (node_hdr == hash_map_->bucket[bucket_id]) 
+	if (node_hdr == hash_map_->bucket[bucket_id])
 	{
-		//µ±Ç°½ÚµãÎªÁ´±íÍ·½Úµã
+		//å½“å‰èŠ‚ç‚¹ä¸ºé“¾è¡¨å¤´èŠ‚ç‚¹
 		hash_map_->bucket[bucket_id] = next_node_hdr;
-		
+
 	}
-	
-	//½«Ç°ºóÁ´±íÖ¸ÕëÇåÁã
+
+	//å°†å‰åé“¾è¡¨æŒ‡é’ˆæ¸…é›¶
 	node->node_next_ = INVALID_BC_MEM_HANDLER_32;
-	node->node_prev_ = INVALID_BC_MEM_HANDLER_32;	
-	
+	node->node_prev_ = INVALID_BC_MEM_HANDLER_32;
+
 	//stat
-	hash_map_->used_node_num_ --;	
+	hash_map_->used_node_num_ --;
 }
 
 
 void CHashMap::free_node(THashNode *node)
 {
-	//´ÓÁ´±íÖĞÉ¾³ı
+	//ä»é“¾è¡¨ä¸­åˆ é™¤
 	delete_from_node_list(node);
-	
-	//ÊÍ·Å chunk
+
+	//é‡Šæ”¾ chunk
 	allocator_.free(node->chunk_head_);
-	
+
 	//stat
 //	int bucket_list_len = get_bucket_list_len(get_bucket_id(node->key_));
 //	if (bucket_list_len == 0)
 //	{
 //		//the bucket change to unused
 //		hash_map_->used_bucket_num_ --;
-//	}	
-	
+//	}
+
 	//reset member
 	init_node(node);
 }
@@ -411,15 +411,15 @@ void CHashMap::use_node(THashNode *node, TMBHashKey &key, int chunk_len, BC_MEM_
 	node->chunk_head_ = chunk_head;
 	node->add_info_1_ = 0;
 	node->add_info_2_ = 0;
-	
-	
+
+
 //	int bucket_list_len = get_bucket_list_len(get_bucket_id(node->key_));
 //	if (bucket_list_len == 0)
 //	{
 //		//the bucket change from unused
 //		hash_map_->used_bucket_num_ ++;
 //	}
-	
+
 	insert_node_list(node);
 	return;
 }
@@ -427,40 +427,40 @@ void CHashMap::use_node(THashNode *node, TMBHashKey &key, int chunk_len, BC_MEM_
 int CHashMap::get_bucket_list_len(int bucket_id)
 {
 	int num = 0;
-	
+
 	BC_MEM_HANDLER_32 node_hdr;
 	node_hdr = hash_map_->bucket[bucket_id];
-	
+
 	while (node_hdr != INVALID_BC_MEM_HANDLER_32)
 	{
-		num ++;		
+		num ++;
 		THashNode* node = handler2ptr(node_hdr);
 		node_hdr = node->node_next_;
 	}
-	
+
 	return num;
 }
 void CHashMap::insert_add_list_head(THashNode* node)
 {
 	delete_from_add_list(node);
 	BC_MEM_HANDLER_32 node_hdr = ptr2handler(node);
-	
+
 	//insert node into head of add list
 	node->add_next_ = hash_map_->add_head_;
 	hash_map_->add_head_ = node_hdr;
-	
+
 	if (hash_map_->add_tail_ == INVALID_BC_MEM_HANDLER_32)
 	{
-		hash_map_->add_tail_ = node_hdr;		
+		hash_map_->add_tail_ = node_hdr;
 	}
-	
+
 	node->add_prev_ = INVALID_BC_MEM_HANDLER_32;
 	THashNode* next_node = handler2ptr(node->add_next_);
 	if(next_node != NULL)
 	{
 		next_node->add_prev_ = node_hdr;
 	}
-	
+
 }
 
 void CHashMap::insert_add_list_tail(THashNode* node)
@@ -468,21 +468,21 @@ void CHashMap::insert_add_list_tail(THashNode* node)
 	delete_from_add_list(node);
 	//reform add list, insert to head
 	BC_MEM_HANDLER_32 node_hdr = ptr2handler(node);
-	
+
 	node->add_prev_ = hash_map_->add_tail_;
 	hash_map_->add_tail_ = node_hdr;
-	
+
 	if (hash_map_->add_head_ == INVALID_BC_MEM_HANDLER_32)
 	{
-		hash_map_->add_head_ = node_hdr;		
-	}	
-	
+		hash_map_->add_head_ = node_hdr;
+	}
+
 	node->add_next_ = INVALID_BC_MEM_HANDLER_32;
 	THashNode* prev_node = handler2ptr(node->add_prev_);
 	if(prev_node != NULL)
 	{
 		prev_node->add_next_ = node_hdr;
-	}	   
+	}
 }
 
 void CHashMap::delete_from_add_list(THashNode* node)
@@ -491,16 +491,16 @@ void CHashMap::delete_from_add_list(THashNode* node)
 	BC_MEM_HANDLER_32 node_hdr = ptr2handler(node);
 	BC_MEM_HANDLER_32 next_add_hdr = node->add_next_;
 	BC_MEM_HANDLER_32 prev_add_hdr = node->add_prev_;
-	
+
 	if ((next_add_hdr == INVALID_BC_MEM_HANDLER_32) &&
 		(prev_add_hdr == INVALID_BC_MEM_HANDLER_32) &&
 		(hash_map_->add_head_ != node_hdr) &&
-		(hash_map_->add_tail_ != node_hdr)) 
+		(hash_map_->add_tail_ != node_hdr))
 	{
-		//²»ÔÚÁ´±íÖĞ
+		//ä¸åœ¨é“¾è¡¨ä¸­
 		return ;
 	}
-	
+
 	if(prev_add_hdr != INVALID_BC_MEM_HANDLER_32)
 	{
 		THashNode* prev_add = handler2ptr(prev_add_hdr);
@@ -511,21 +511,21 @@ void CHashMap::delete_from_add_list(THashNode* node)
 		THashNode* next_add = handler2ptr(next_add_hdr);
 		next_add->add_prev_ = node->add_prev_;
 	}
-	
-	
+
+
 	if (hash_map_->add_head_ == node_hdr)
 	{
-		hash_map_->add_head_ =  next_add_hdr;		
+		hash_map_->add_head_ =  next_add_hdr;
 	}
-	if (hash_map_->add_tail_ == node_hdr) 
+	if (hash_map_->add_tail_ == node_hdr)
 	{
 		hash_map_->add_tail_ =  prev_add_hdr;
 	}
-	
-	//½«Ç°ºóÁ´±íÖ¸ÕëÇåÁã
+
+	//å°†å‰åé“¾è¡¨æŒ‡é’ˆæ¸…é›¶
 	node->add_prev_ = INVALID_BC_MEM_HANDLER_32;
 	node->add_next_ = INVALID_BC_MEM_HANDLER_32;
-	
+
 }
 
 THashNode* CHashMap::get_add_list_head()

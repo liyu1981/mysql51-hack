@@ -345,7 +345,7 @@ int CacheAccess::oldest_key(char* key, unsigned& data_len , bool& dirty_flag, lo
 
 	memcpy(key, node->key_._.md5_, TMBHashKey::C_DATA_LEN);
 
-	//ÒÔÏÂ¼¸ĞĞÓÃÀ´¸üĞÂ¸½¼ÓÁ´±í
+	//ä»¥ä¸‹å‡ è¡Œç”¨æ¥æ›´æ–°é™„åŠ é“¾è¡¨
 	TMBHashKey hash_key;
 	memcpy(hash_key._.md5_, key, TMBHashKey::C_DATA_LEN);
 	node = _cache.find_node(hash_key);
@@ -438,8 +438,8 @@ int CacheAccess::mark_clean(int modbase, int mobres)
 	return 0;
 }
 
-//-1Ê§°Ü,·µ»Ø×Ö½ÚÊı
-//Ö»µ¹ÔàÊı¾İ,modbase=-1±íÊ¾È«²¿
+//-1å¤±è´¥,è¿”å›å­—èŠ‚æ•°
+//åªå€’è„æ•°æ®,modbase=-1è¡¨ç¤ºå…¨éƒ¨
 int CacheAccess::core_dump_mem(char *buff, int maxsize,int modbase, int mobres)
 {
 	if (!buff || maxsize <= 0)
@@ -478,7 +478,7 @@ int CacheAccess::core_dump_mem(char *buff, int maxsize,int modbase, int mobres)
 	return ipos;
 }
 
-//-1Ê§°Ü,·µ»ØÒÑ»Ö¸´×Ö½ÚÊı
+//-1å¤±è´¥,è¿”å›å·²æ¢å¤å­—èŠ‚æ•°
 int CacheAccess::core_recover_mem(char *buff, int buffsize)
 {
 	if (!buff || buffsize < 0)
@@ -504,7 +504,7 @@ int CacheAccess::core_recover_mem(char *buff, int buffsize)
 		{
 			break;
 		}
-		//·Ç´ÅÅÌÊı¾İ£¬ĞèÒªbinlog
+		//éç£ç›˜æ•°æ®ï¼Œéœ€è¦binlog
 		int ret = set(key, buff+ipos+HEAD_LEN, data_len);
 		assert(ret == 0);
 
@@ -515,7 +515,7 @@ int CacheAccess::core_recover_mem(char *buff, int buffsize)
 	return ipos;
 }
 
-//-1Ê§°Ü, -2 buff³¤¶È²»¹»(´ËÊ±core_sizeÎªÒÑdump×Ö½ÚÊı£¬core_size == 0 ËµÃ÷Îª¿ÕÍ°)£¬0 ³É¹¦
+//-1å¤±è´¥, -2 buffé•¿åº¦ä¸å¤Ÿ(æ­¤æ—¶core_sizeä¸ºå·²dumpå­—èŠ‚æ•°ï¼Œcore_size == 0 è¯´æ˜ä¸ºç©ºæ¡¶)ï¼Œ0 æˆåŠŸ
 int CacheAccess::core_dump_bucket_mem(char *buff, int maxsize, unsigned bucket_id, unsigned &core_size)
 {
 	const int		HEAD_LEN = TMBHashKey::C_DATA_LEN + sizeof(int);
@@ -551,7 +551,7 @@ int CacheAccess::core_dump_bucket_mem(char *buff, int maxsize, unsigned bucket_i
 	return 0;
 }
 
-//0³É¹¦£¬-1Ê§°Ü£¬-2²¿·ÖÊ§°Ü(¼´ÔÚ»Ö¸´¹ı³ÌÖĞÊ§°Ü£¬´ËÊ±recover_sizeÎªÒÑ»Ö¸´×Ö½ÚÊı)
+//0æˆåŠŸï¼Œ-1å¤±è´¥ï¼Œ-2éƒ¨åˆ†å¤±è´¥(å³åœ¨æ¢å¤è¿‡ç¨‹ä¸­å¤±è´¥ï¼Œæ­¤æ—¶recover_sizeä¸ºå·²æ¢å¤å­—èŠ‚æ•°)
 int CacheAccess::core_recover_bucket_mem(char *buff, int buffsize, unsigned &recover_size)
 {
 	const int		HEAD_LEN = TMBHashKey::C_DATA_LEN + sizeof(int);
@@ -594,7 +594,7 @@ int CacheAccess::core_recover_bucket_mem(char *buff, int buffsize, unsigned &rec
 	return 0;
 }
 
-//-1Ê§°Ü,·µ»Ø×Ö½ÚÊı
+//-1å¤±è´¥,è¿”å›å­—èŠ‚æ•°
 int CacheAccess::core_dump(char *szcorefile)
 {
 	char last_file[256], tmp_name[256];
@@ -607,7 +607,7 @@ int CacheAccess::core_dump(char *szcorefile)
 		return -1;
 	}
 
-	// Ã¿´ÎĞ´Èë128M, ¼Ó¿ìdumpËÙ¶È
+	// æ¯æ¬¡å†™å…¥128M, åŠ å¿«dumpé€Ÿåº¦
 	unsigned buf_size = 128*1024*1024;
 	char *buf = new char[buf_size];
 	char *node_buf = new char[MAX_BINLOG_ITEM_LEN];
@@ -625,7 +625,7 @@ int CacheAccess::core_dump(char *szcorefile)
 
 		if (buf_size < (write_len + TMBHashKey::C_DATA_LEN + sizeof(unsigned) + data_len))
 		{
-			// µ±Ç°µÄ½Úµã²»ÄÜÈëbufÁË£¬ÏÈ°ÑbufĞ´ÈëÎÄ¼ş,bufÒÑÊ¹ÓÃ³¤¶È¹é0
+			// å½“å‰çš„èŠ‚ç‚¹ä¸èƒ½å…¥bufäº†ï¼Œå…ˆæŠŠbufå†™å…¥æ–‡ä»¶,bufå·²ä½¿ç”¨é•¿åº¦å½’0
 			fwrite(buf, write_len, 1, fp);
 			write_len = 0;
 		}
@@ -638,7 +638,7 @@ int CacheAccess::core_dump(char *szcorefile)
 		write_len += data_len;
 	}
 
-	// ×îºóÔÙĞ´Ò»´Î
+	// æœ€åå†å†™ä¸€æ¬¡
 	if (write_len > 0)
 	{
 		fwrite(buf, write_len, 1, fp);
@@ -708,9 +708,9 @@ int CacheAccess::core_recover(char *szcorefile)
 	return 0;
 }
 
-//Ã¿¸ôcoredump_min ·ÖÖÓ½øĞĞcore, Î»ÖÃcoredump_dir
-//coredump_min == 0²»core£¬Ö»log
-//coredump_min == -1ÎŞcore,ÎŞlog
+//æ¯éš”coredump_min åˆ†é’Ÿè¿›è¡Œcore, ä½ç½®coredump_dir
+//coredump_min == 0ä¸coreï¼Œåªlog
+//coredump_min == -1æ— core,æ— log
 //such as CoreInit(3,"../log/smcd1.dump","../log/smcd1bin_",10000000,5,0);
 //default is no core
 int CacheAccess::CoreInit(int coredump_min, unsigned coredump_point,
@@ -734,11 +734,11 @@ int CacheAccess::CoreInit(int coredump_min, unsigned coredump_point,
 }
 
 
-//ret 0: »Ö¸´ÁËdump file
-//    1£ºÃ»ÓĞ»Ö¸´
+//ret 0: æ¢å¤äº†dump file
+//    1ï¼šæ²¡æœ‰æ¢å¤
 int CacheAccess::StartUp()
 {
-	//·ÇĞÂ½¨µÄ¹²ÏíÄÚ´æ,²»ÓÃ»Ö¸´
+	//éæ–°å»ºçš„å…±äº«å†…å­˜,ä¸ç”¨æ¢å¤
 #ifdef _CACHE_COMPLETE_CHECK
 	if (!_cacheinit && _cache.get_complete_flag())
 #else
@@ -749,14 +749,14 @@ int CacheAccess::StartUp()
 	}
 
 	int len = 0;
-	// _cache_dump_min == 0´ú±í²»ĞèÒªcore_recover
+	// _cache_dump_min == 0ä»£è¡¨ä¸éœ€è¦core_recover
 	if (access(_cache_dump_file, F_OK) == 0 && _cache_dump_min > 0)
 	{
-		//»Ö¸´core
+		//æ¢å¤core
 		core_recover(_cache_dump_file);
 	}
 
-	//»Ö¸´ÈÕÖ¾Á÷Ë®
+	//æ¢å¤æ—¥å¿—æµæ°´
 	_binlog.SetReadRecordStartTime(-1);
 
 	char key[TMBHashKey::C_DATA_LEN];
@@ -808,11 +808,11 @@ int CacheAccess::StartUp()
 	return 0;
 }
 
-// ret 0: Íê³Édump
-//     1£»Ã»ÓĞdump
+// ret 0: å®Œæˆdump
+//     1ï¼›æ²¡æœ‰dump
 int CacheAccess::time_check()
 {
-	// cache_dump_min == 0´ú±íÖ»Ğ´binlog£¬²»dump
+	// cache_dump_min == 0ä»£è¡¨åªå†™binlogï¼Œä¸dump
 	if (_cache_dump_min <= 0)
 		return 0;
 
@@ -825,7 +825,7 @@ int CacheAccess::time_check()
 
 	bool bNeedCore = false;
 	unsigned min_of_day = 60 * stTmNow.tm_hour + stTmNow.tm_min;
-	//ĞÂµÄÒ»Ìì£¬ÇÒµ½´ïdump_point£¬±ØĞëcoreÒ»´Î
+	//æ–°çš„ä¸€å¤©ï¼Œä¸”åˆ°è¾¾dump_pointï¼Œå¿…é¡»coreä¸€æ¬¡
 	if ((stTmLast.tm_mday != stTmNow.tm_mday) && (min_of_day == _cache_dump_point))
 	{
 		bNeedCore = true;
@@ -858,9 +858,9 @@ int CacheAccess::mirror_dump(char *mirror_file)
 	snprintf(last_file, sizeof(last_file), "%s.last", mirror_file);
 	snprintf(tmp_name, sizeof(tmp_name), "%s.tmp", mirror_file);
 
-	//64Î»ÏµÍ³ÏÂfopen,fread,fwriteÄ¬ÈÏÊÇ64Î»²Ù×÷
+	//64ä½ç³»ç»Ÿä¸‹fopen,fread,fwriteé»˜è®¤æ˜¯64ä½æ“ä½œ
 	// get share memory
-	// Ğ´µ½file
+	// å†™åˆ°file
 	FILE *fp = fopen(last_file, "w");
 	if (fp == NULL)
 	{
@@ -869,11 +869,11 @@ int CacheAccess::mirror_dump(char *mirror_file)
 	fwrite(_mem, _mem_size, 1, fp);
 	fclose(fp);
 
-	// ÖØÃüÃû¾ÉµÄdump file
+	// é‡å‘½åæ—§çš„dump file
 	rename(mirror_file, tmp_name);
-	// ÖØÃüÃûĞÂµÄdump file
+	// é‡å‘½åæ–°çš„dump file
 	rename(last_file, mirror_file);
-	// ÖØÃüÃû¾ÉµÄdump file
+	// é‡å‘½åæ—§çš„dump file
 	rename(tmp_name, last_file);
 
 	return 0;
@@ -881,7 +881,7 @@ int CacheAccess::mirror_dump(char *mirror_file)
 
 int CacheAccess::mirror_recover(char *mirror_file)
 {
-	// ¼ì²édump fileÊÇ·ñ´æÔÚ
+	// æ£€æŸ¥dump fileæ˜¯å¦å­˜åœ¨
 	struct stat st_stat;
 	int ret = ::stat(mirror_file, &st_stat);
 	if (ret == -1)
@@ -890,7 +890,7 @@ int CacheAccess::mirror_recover(char *mirror_file)
 		return 0;
 	}
 
-	// ¼ì²édump file´óĞ¡ÊÇ·ñ·ûºÏshare memory size
+	// æ£€æŸ¥dump fileå¤§å°æ˜¯å¦ç¬¦åˆshare memory size
 	assert(st_stat.st_size == _mem_size);
 
 	FILE *fp = fopen(mirror_file, "r");
@@ -902,11 +902,11 @@ int CacheAccess::mirror_recover(char *mirror_file)
 	return 0;
 }
 
-//ret 0: »Ö¸´ÁËdump file
-//    1£ºÃ»ÓĞ»Ö¸´
+//ret 0: æ¢å¤äº†dump file
+//    1ï¼šæ²¡æœ‰æ¢å¤
 int CacheAccess::StartUp_mirror()
 {
-	//·ÇĞÂ½¨µÄ¹²ÏíÄÚ´æ,²»ÓÃ»Ö¸´
+	//éæ–°å»ºçš„å…±äº«å†…å­˜,ä¸ç”¨æ¢å¤
 #ifdef _CACHE_COMPLETE_CHECK
 	if (!_cacheinit && _cache.get_complete_flag())
 #else
@@ -917,17 +917,17 @@ int CacheAccess::StartUp_mirror()
 	}
 
 	int len = 0;
-	// _cache_dump_min == 0´ú±í²»ĞèÒªdump_recover
+	// _cache_dump_min == 0ä»£è¡¨ä¸éœ€è¦dump_recover
 	if (access(_cache_dump_file, F_OK) == 0 && _cache_dump_min > 0)
 	{
-		//»Ö¸´mirror
+		//æ¢å¤mirror
 		mirror_recover(_cache_dump_file);
 #ifdef _CACHE_COMPLETE_CHECK
 		_cache.set_complete_flag(false);
 #endif
 	}
 
-	//»Ö¸´ÈÕÖ¾Á÷Ë®
+	//æ¢å¤æ—¥å¿—æµæ°´
 	_binlog.SetReadRecordStartTime(-1);
 
 	char key[TMBHashKey::C_DATA_LEN];
@@ -981,8 +981,8 @@ int CacheAccess::StartUp_mirror()
 	return 0;
 }
 
-// 0: ½øĞĞÁËdump
-// 1: Ã»ÓĞ½øĞĞdump
+// 0: è¿›è¡Œäº†dump
+// 1: æ²¡æœ‰è¿›è¡Œdump
 int CacheAccess::time_check_mirror()
 {
 	bool need_dump = is_need_dump();
@@ -1004,7 +1004,7 @@ int CacheAccess::time_check_mirror()
 
 bool CacheAccess::is_need_dump()
 {
-	// cache_dump_min == 0´ú±íÖ»Ğ´binlog£¬²»dump
+	// cache_dump_min == 0ä»£è¡¨åªå†™binlogï¼Œä¸dump
 	if (_cache_dump_min <= 0)
 	{
 		return false;
@@ -1018,7 +1018,7 @@ bool CacheAccess::is_need_dump()
 	localtime_r(&_lastdumptime,&stTmLast);
 
 	unsigned min_of_day = 60 * stTmNow.tm_hour + stTmNow.tm_min;
-	//ĞÂµÄÒ»Ìì£¬ÇÒµ½´ïdump_point£¬±ØĞëdumpÒ»´Î
+	//æ–°çš„ä¸€å¤©ï¼Œä¸”åˆ°è¾¾dump_pointï¼Œå¿…é¡»dumpä¸€æ¬¡
 	if ((stTmLast.tm_mday != stTmNow.tm_mday) && (min_of_day == _cache_dump_point))
 	{
 		return true;
@@ -1034,10 +1034,10 @@ bool CacheAccess::is_need_dump()
 
 void CacheAccess::init_lastdumptime()
 {
-	// Í¨¹ıdump_point, dump_min¼ÆËã³ÌĞòÆô¶¯Ê±µÄ_lastdumptime
-	// ¼ÆËãÔ­Ôò£º
-	// 1¡¢ÈônÂú×ã dump_point + n*dump_min <= now < dump_point + (n+1)*dump_min
-	// 2¡¢_lastdumptime = dump_point + n*dump_min
+	// é€šè¿‡dump_point, dump_minè®¡ç®—ç¨‹åºå¯åŠ¨æ—¶çš„_lastdumptime
+	// è®¡ç®—åŸåˆ™ï¼š
+	// 1ã€è‹¥næ»¡è¶³ dump_point + n*dump_min <= now < dump_point + (n+1)*dump_min
+	// 2ã€_lastdumptime = dump_point + n*dump_min
 
 	time_t now = time(NULL);
 	struct tm st_now;
@@ -1048,7 +1048,7 @@ void CacheAccess::init_lastdumptime()
 		return;
 	}
 
-	if (_cache_dump_min >= 60 * 24) // ¼ä¸ôÊ±¼ä³¬¹ı1Ìì
+	if (_cache_dump_min >= 60 * 24) // é—´éš”æ—¶é—´è¶…è¿‡1å¤©
 	{
 		_lastdumptime = now;
 		return;
@@ -1063,11 +1063,11 @@ void CacheAccess::init_lastdumptime()
 	}
 	else if ((int)_cache_dump_point > min_of_day)
 	{
-		// ¿ÉÄÜÎª¸ºÊı£¬±íÊ¾×òÌì
+		// å¯èƒ½ä¸ºè´Ÿæ•°ï¼Œè¡¨ç¤ºæ˜¨å¤©
 		last_dump_min = min_of_day-_cache_dump_min+(_cache_dump_point-min_of_day)%_cache_dump_min;
 	}
 
-	//  °Ñlast_dump_min»»Ëã³É_lastdumptime
+	//  æŠŠlast_dump_minæ¢ç®—æˆ_lastdumptime
 	_lastdumptime = now - (min_of_day - last_dump_min) * 60;
 
 	printf("min_of_day:%d last_dump_min:%d\n", min_of_day, last_dump_min);

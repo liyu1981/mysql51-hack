@@ -2,17 +2,17 @@
 #ifndef __TFC_BASE_CONFIG_H__
 #define __TFC_BASE_CONFIG_H__
 /*
-	ÅäÖÃ½Ó¿ÚÀà
+	é…ç½®æ¥å£ç±»
 
-	ÒªÇóÖ§³Ö²ã´Î½á¹¹,²ã´ÎÒÔ\·Ö¸î,Èçconf["Main\\ListenPort"]È¡MainÂ·¾¶ÏÂµÄListenPortÅäÖÃÖµ
-	´óĞ¡Ğ´Ãô¸Ğ,
-	a.name-valueĞÍÅäÖÃ:[]·ÃÎÊµ¥¸öÅäÖÃÖµ,Èç¹û²»´æÔÚ,Å×³öÒì³£conf_not_find
-			GetPairs·µ»ØÄ³¸öpathÏÂËùÓĞµÄname-value¶Ô,²»¿¼ÂÇË³Ğò
-			ÏàÍ¬Â·¾¶ÏÂ´æÔÚÍ¬ÑùµÄÅäÖÃÃû,È¡ºóÒ»¸ö
+	è¦æ±‚æ”¯æŒå±‚æ¬¡ç»“æ„,å±‚æ¬¡ä»¥\åˆ†å‰²,å¦‚conf["Main\\ListenPort"]å–Mainè·¯å¾„ä¸‹çš„ListenPorté…ç½®å€¼
+	å¤§å°å†™æ•æ„Ÿ,
+	a.name-valueå‹é…ç½®:[]è®¿é—®å•ä¸ªé…ç½®å€¼,å¦‚æœä¸å­˜åœ¨,æŠ›å‡ºå¼‚å¸¸conf_not_find
+			GetPairsè¿”å›æŸä¸ªpathä¸‹æ‰€æœ‰çš„name-valueå¯¹,ä¸è€ƒè™‘é¡ºåº
+			ç›¸åŒè·¯å¾„ä¸‹å­˜åœ¨åŒæ ·çš„é…ç½®å,å–åä¸€ä¸ª
 
-	b.domainĞÍÅäÖÃ:GetDomains·µ»ØÄ³¸öpathÏÂËùÓĞµÄdomainÅäÖÃÏî,ÓëË³ĞòÏà¹Ø
+	b.domainå‹é…ç½®:GetDomainsè¿”å›æŸä¸ªpathä¸‹æ‰€æœ‰çš„domainé…ç½®é¡¹,ä¸é¡ºåºç›¸å…³
 
-	c.GetSubPath·µ»ØÄ³¸öpathÏÂËùÓĞµÄsubpathÃû
+	c.GetSubPathè¿”å›æŸä¸ªpathä¸‹æ‰€æœ‰çš„subpathå
 	Create by casper@tencent.com ,2004-11-15
 */
 
@@ -29,7 +29,7 @@ struct conf_load_error: public runtime_error{ conf_load_error(const string& s):r
 struct conf_not_find: public runtime_error{ conf_not_find(const string& s):runtime_error(s){}};
 
 /**
- * ÅäÖÃÀà½Ó¿Ú<br>
+ * é…ç½®ç±»æ¥å£<br>
  * @author  casper@tencent.com
  * @version  0.4
  * @see #CFileConfig
@@ -45,27 +45,27 @@ public:
 
 public:
 	/**
-	 * ¼ÓÔØÅäÖÃ
+	 * åŠ è½½é…ç½®
 	 * @throw conf_load_error when Load fail
 	 */
 	virtual void Load()=0;
 
 	/**
-	 * È¡ÅäÖÃ,ÒªÇóÖ§³Ö²ã´Î½á¹¹,ÒÔ'\'»®·Ö,Èçconf["Main\\ListenPort"]
+	 * å–é…ç½®,è¦æ±‚æ”¯æŒå±‚æ¬¡ç»“æ„,ä»¥'\'åˆ’åˆ†,å¦‚conf["Main\\ListenPort"]
 	 * @throw conf_not_find when Load fail
 	 */
 	virtual const string& operator [](const string& name) const = 0;
 
 	/**
-	 * È¡pathÏÂËùÓĞname-value¶Ô
+	 * å–pathä¸‹æ‰€æœ‰name-valueå¯¹
 	 */
 	virtual const map<string,string>& GetPairs(const string& path) const = 0;
 	/**
-	 * È¡pathÏÂËùÓĞname-value»òsingleÅäÖÃ
+	 * å–pathä¸‹æ‰€æœ‰name-valueæˆ–singleé…ç½®
 	 */
 	virtual const vector<string>& GetDomains(const string& path) const = 0;
 	/**
-	 * È¡pathÏÂËùÓĞsubpathÃû(Ö»È¡Ò»²ã)
+	 * å–pathä¸‹æ‰€æœ‰subpathå(åªå–ä¸€å±‚)
 	 */
 	virtual const vector<string>& GetSubPath(const string& path) const = 0;
 };

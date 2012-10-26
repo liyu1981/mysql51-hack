@@ -11,8 +11,8 @@ using namespace std;
 namespace tfc { namespace base {
 
 /**
- * ÅäÖÃÀà: CConfigµÄFileÊµÏÖ°æ±¾<br>
- * ÅäÖÃÖĞ\n±íÊ¾»Ø³µ·û
+ * é…ç½®ç±»: CConfigçš„Fileå®ç°ç‰ˆæœ¬<br>
+ * é…ç½®ä¸­\nè¡¨ç¤ºå›è½¦ç¬¦
  * @author  casper@tencent.com
  * @version  0.4
  * @see #CConfig
@@ -30,33 +30,33 @@ public:
 
 public:
 	/**
-	 * ³õÊ¼»¯,ÉèÖÃÅäÖÃÎÄ¼şÃû&Load
+	 * åˆå§‹åŒ–,è®¾ç½®é…ç½®æ–‡ä»¶å&Load
 	 * @throw conf_load_error when Load fail
-	 * @param filename ÅäÖÃÎÄ¼şÃû
+	 * @param filename é…ç½®æ–‡ä»¶å
 	 */
 	void Init(const string& filename) throw(conf_load_error);
 
 	/**
-	 * ¼ÓÔØÅäÖÃ
+	 * åŠ è½½é…ç½®
 	 * @throw conf_load_error when Load fail
 	 */
 	virtual void Load() throw (conf_load_error);
 
 	/**
-	 * È¡ÅäÖÃ,Ö§³Ö²ã´Î½á¹¹,ÒÔ'\'»®·Ö,Èçconf["Main\\ListenPort"]
+	 * å–é…ç½®,æ”¯æŒå±‚æ¬¡ç»“æ„,ä»¥'\'åˆ’åˆ†,å¦‚conf["Main\\ListenPort"]
 	 * @throw conf_not_find when Load fail
 	 */
 	virtual const string& operator [](const string& name) const throw(conf_not_find);
 	/**
-	 * È¡pathÏÂËùÓĞname-value¶Ô
+	 * å–pathä¸‹æ‰€æœ‰name-valueå¯¹
 	 */
 	virtual const map<string,string>& GetPairs(const string& path) const;
 	/**
-	 * È¡pathÏÂËùÓĞname-value»òsingleÅäÖÃ
+	 * å–pathä¸‹æ‰€æœ‰name-valueæˆ–singleé…ç½®
 	 */
 	virtual const vector<string>& GetDomains(const string& path) const;
 	/**
-	 * È¡pathÏÂËùÓĞsubpathÃû(Ö»È¡Ò»²ã)
+	 * å–pathä¸‹æ‰€æœ‰subpathå(åªå–ä¸€å±‚)
 	 */
 	virtual const vector<string>& GetSubPath(const string& path) const;
 
@@ -73,7 +73,7 @@ protected:
 	string start_path(const string& s);
 	string stop_path(const string& s);
 	void decode_pair(const string& s,string& name,string& value);
-	string trim_comment(const string& s); //trim×¢ÊÍºÍ\n·ûºÅ
+	string trim_comment(const string& s); //trimæ³¨é‡Šå’Œ\nç¬¦å·
 	string path(const deque<string>& path);
 	string parent_path(const deque<string>& path);
 	string sub_path(const deque<string>& path);
