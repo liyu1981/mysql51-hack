@@ -2811,9 +2811,11 @@ pthread_handler_t signal_hand(void *arg __attribute__((unused)))
       while ((error=my_sigwait(&set,&sig)) == EINTR) ;
     if (cleanup_done)
     {
+#ifdef WITH_CDB
       //yuli: cdb final cleanup start
       cdb_shutdown_shm_mgr();
       //yuli: cdb final cleanup end
+#endif
       DBUG_PRINT("quit",("signal_handler: calling my_thread_end()"));
       my_thread_end();
       signal_thread_in_use= 0;
@@ -4201,6 +4203,7 @@ a file name for --log-bin-index option", opt_binlog_index_name);
   init_max_user_conn();
   init_update_queries();
 
+#ifdef WITH_CDB
   // yuli: cdb modifications start
   {
     if (!cdb_init_shm_mgr(mysql_real_data_home)) {
@@ -4212,6 +4215,7 @@ a file name for --log-bin-index option", opt_binlog_index_name);
     }
   }
   // yuli: cdb modifications end
+#endif
 
   DBUG_RETURN(0);
 }
@@ -8956,7 +8960,7 @@ static void set_server_version(void)
 
 #ifdef WITH_CDB
   //yuli: add CDB suffix start, remember that server_version currently can be 60bytes max.
-  strmov(end, "-CDB");
+  strmov(end, "-CDB-3.0.0");
   //yuli: add CDB suffix end
 #endif
 }
