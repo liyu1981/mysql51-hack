@@ -104,14 +104,14 @@ inline spinlock_t* shm_spin_lock_init(key_t iShmKey,int iNumber=1)
 #endif
 
 /*
-¼Ó½âËø1000w´Î£º ÎŞ-O2
+åŠ è§£é”1000wæ¬¡ï¼š æ— -O2
 pthread_spin_lock  cost 224ms
 spin lock cost 307ms
 pthread_mutex  cost 558ms
 sem  cost 4563ms
 
 
-¼Ó½âËø1000w´Î£º ÓĞ-O2
+åŠ è§£é”1000wæ¬¡ï¼š æœ‰-O2
 spin lock cost 107ms
 pthread_spin_lock  cost 200ms
 pthread_mutex  cost 470ms

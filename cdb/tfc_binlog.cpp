@@ -119,7 +119,7 @@ int CBinLog::SetReadRecordStartTime(int starttime/*=-1*/)
 		}
 		fread(&tLogTime,sizeof(int),1,_read_fp);
 
-		//±Ø¶¨ÔÚ±¾ÎÄ¼şÖĞ
+		//å¿…å®šåœ¨æœ¬æ–‡ä»¶ä¸­
 		if (tLogTime < starttime)
 		{
 			fread(&len,sizeof(int),1,_read_fp);
@@ -131,7 +131,7 @@ int CBinLog::SetReadRecordStartTime(int starttime/*=-1*/)
 			}
 			fread(buff,len,1,_read_fp);
 
-			//ºóĞøÅĞ¶Ï
+			//åç»­åˆ¤æ–­
 			do
 			{
 				fread(&tLogTime,sizeof(int),1,_read_fp);
@@ -145,10 +145,10 @@ int CBinLog::SetReadRecordStartTime(int starttime/*=-1*/)
 				fread(buff,len,1,_read_fp);
 			}while((tLogTime<starttime) && (!feof(_read_fp)));
 
-			//ÕÒµ½ÁË
+			//æ‰¾åˆ°äº†
 			if (tLogTime >= starttime)
 			{
-				//×Ö½Ú»ØÍË
+				//å­—èŠ‚å›é€€
 				fseek(_read_fp,-8-len,SEEK_CUR);
 				break;
 			}
@@ -166,18 +166,18 @@ int CBinLog::SetReadRecordStartTime(int starttime/*=-1*/)
 
 			break;
 		}
-		//±Ø¶¨²»ÔÚ±¾ÎÄ¼şÖĞ
+		//å¿…å®šä¸åœ¨æœ¬æ–‡ä»¶ä¸­
 		else if (tLogTime > starttime)
 		{
 			fclose(_read_fp);
 			_read_fp = NULL;
 		}
-		//¿ÉÄÜÔÚ±¾ÎÄ¼şÖĞÓĞÒ»²¿·Ö
+		//å¯èƒ½åœ¨æœ¬æ–‡ä»¶ä¸­æœ‰ä¸€éƒ¨åˆ†
 		else
 		{
 			if (_read_fp_mybe) fclose(_read_fp_mybe);
 
-			//»ØÍË4×Ö½Ú
+			//å›é€€4å­—èŠ‚
 			fseek(_read_fp,-4,SEEK_CUR);
 			_read_fp_mybe = _read_fp;
 			_read_fp = NULL;
@@ -271,14 +271,14 @@ void CBinLog::ReadBinLogEnd()
 }
 #endif
 
-//·µ»Ø³¤¶È<0Ê±½áÊø,=0ÇëºöÂÔ²¢¼ÌĞø
+//è¿”å›é•¿åº¦<0æ—¶ç»“æŸ,=0è¯·å¿½ç•¥å¹¶ç»§ç»­
 int CBinLog::ReadRecordFromBinLog(char* buff, int maxsize)
 {
 	char sLogFileName[300];
 	int tLogTime = 0;
 	int len = 0;
 
-	//¶¨Î»ÏÂÒ»¸ö_read_fp
+	//å®šä½ä¸‹ä¸€ä¸ª_read_fp
 	if(!_read_fp || feof(_read_fp))
 	{
 		if (_read_fp)
@@ -287,7 +287,7 @@ int CBinLog::ReadRecordFromBinLog(char* buff, int maxsize)
 			_read_fp = NULL;
 		}
 
-		//ÕÒÏÂÒ»¸öÎÄ¼ş
+		//æ‰¾ä¸‹ä¸€ä¸ªæ–‡ä»¶
 		do
 		{
 			_readidx--;
@@ -297,7 +297,7 @@ int CBinLog::ReadRecordFromBinLog(char* buff, int maxsize)
 				sprintf(sLogFileName,"%s%d.log", _log_basename, _readidx);
 		}while((_readidx>=0) && (access(sLogFileName, F_OK)!=0));
 
-		//¶ÁÍêÁË
+		//è¯»å®Œäº†
 		if (_readidx < 0)
 		{
 			return -1;
@@ -310,7 +310,7 @@ int CBinLog::ReadRecordFromBinLog(char* buff, int maxsize)
 		return -2;
 	}
 
-	//Ö»ÓĞreadÒ»´Î²ÅÖªµÀfeof...
+	//åªæœ‰readä¸€æ¬¡æ‰çŸ¥é“feof...
 	fread(&tLogTime,sizeof(int),1,_read_fp);
 	fread(&len,sizeof(int),1,_read_fp);
 
@@ -322,7 +322,7 @@ int CBinLog::ReadRecordFromBinLog(char* buff, int maxsize)
 	}
 	if (feof(_read_fp))
 	{
-		//±¾ÎÄ¼ş½áÊø,¼ÌĞøÏÂÒ»¸öÎÄ¼ş
+		//æœ¬æ–‡ä»¶ç»“æŸ,ç»§ç»­ä¸‹ä¸€ä¸ªæ–‡ä»¶
 		return ReadRecordFromBinLog(buff,maxsize);
 	}
 
