@@ -37,8 +37,10 @@ CDBShmConf cdb_shm_conf_array[] = {
     {"cdb_ins_conn_2",       4, 1*MB,  4096, 4096, 4096, 128},
     {"cdb_ins_client_dml_1", 5, 1*MB,  4096, 4096, 4096, 128},
     {"cdb_ins_client_dml_2", 6, 1*MB,  4096, 4096, 4096, 128},
-    {"cdb_tab_dml_1",        7, 64*MB, 4096, 4096, 4096, 512},
-    {"cdb_tab_dml_2",        8, 64*MB, 4096, 4096, 4096, 512}
+    //{"cdb_tab_dml_1",        7, 64*MB, 100000, 100000, 100000, 512},
+    //{"cdb_tab_dml_2",        8, 64*MB, 100000, 100000, 100000, 512}
+    {"cdb_tab_dml_1",        7, 1*MB, 1024, 1024, 1024, 512},
+    {"cdb_tab_dml_2",        8, 1*MB, 1024, 1024, 1024, 512}
 };
 int cdb_shm_conf_size = sizeof(cdb_shm_conf_array)/sizeof(cdb_shm_conf_array[0]);
 
@@ -70,7 +72,7 @@ cdb_shm_pair_switch_function(void* p)
             ret = pair.flush_pair_info(cdb_mysqld_data_path);
             if (ret != 0) {
                 // TOFIX: Fatal Error, then?
-                sql_print_error("CDB: flush_pair_info %s failed %d\n", it->first.c_str(), ret);
+                sql_print_error("CDB: flush_pair_info %s failed %d", it->first.c_str(), ret);
             }
         }
     }
@@ -85,20 +87,20 @@ cdb_init_config_file(const string& config_file)
         cfc.Init(config_file);
     }
     catch (conf_load_error ex) {
-        sql_print_error("[cdb_init_config_file] CFileConfig::Init failed: %s, Use default config.\n", ex.what());
+        sql_print_error("[cdb_init_config_file] CFileConfig::Init failed: %s, Use default config.", ex.what());
         /*return true, use default config*/
         return true;
     }
 
     int shm_num = from_str<int>(cfc["root\\shm\\shm_num"]);
     if(cdb_shm_conf_size != shm_num) {
-        sql_print_error("[cdb_init_config_file] shm_num is invalid.\n");
+        sql_print_error("[cdb_init_config_file] shm_num is invalid.");
         return false;
     }
 
     int pair_num = from_str<int>(cfc["root\\shm_pair\\pair_num"]);
     if(cdb_shm_pair_conf_size != pair_num) {
-        sql_print_error("[cdb_init_config_file] pair_num is invalid.\n");
+        sql_print_error("[cdb_init_config_file] pair_num is invalid.");
         return false;
     }
 
@@ -128,7 +130,7 @@ cdb_init_config_file(const string& config_file)
 
         if((cdb_shm_names.find(c._shm_name1) == cdb_shm_names.end()) ||
            (cdb_shm_names.find(c._shm_name2) == cdb_shm_names.end()) ) {
-            sql_print_error("shm_name: %s or %s is not exsit.\n", c._shm_name1.c_str(), c._shm_name2.c_str());
+            sql_print_error("shm_name: %s or %s is not exsit.", c._shm_name1.c_str(), c._shm_name2.c_str());
             return false;
         }
 
@@ -145,13 +147,13 @@ cdb_check_shm_conf(CDBShmConf& c)
     long need_shm_size = CHashMap::get_total_pool_size(c._node_total, c._bucket_size, c._n_chunks, c._chunk_size);
     double ratio = ((double)need_shm_size)/c._size;
     if (ratio > 1.0) {
-        sql_print_error("CDB: shm named %s is configured smaller size than needed(%d bytes, %f %%), check your shm conf!\n",
-                        c._name.c_str(), (int)need_shm_size, ratio*100);
+        sql_print_error("CDB: shm named %s is configured smaller size than needed(%d bytes, %d %%), check your shm conf!",
+                        c._name.c_str(), (int)need_shm_size, (int)(ratio*100));
         return false;
     }
     else if (ratio < 0.8) {
-        sql_print_warning("CDB: shm named %s is configured bigger size than needed(%d bytes, %f %%)!\n",
-                          c._name.c_str(), (int)need_shm_size, ratio*100);
+        sql_print_warning("CDB: shm named %s is configured bigger size than needed(%d bytes, %d %%)!",
+                          c._name.c_str(), (int)need_shm_size, (int)(ratio*100));
     }
 
     return true;
@@ -356,7 +358,7 @@ cdb_ins_dml_add(CDBInsDml& op, unsigned long long int begin_time, unsigned long 
         int r = m.insert(op._key, op);
         if (r>0) {
             // TOFIX: insert failed, then?
-            sql_print_error("CDB: cdb_ins_dml_add insert new item failed %d\n", r);
+            sql_print_error("CDB: cdb_ins_dml_add insert new item failed %d", r);
         }
     }
     else if (rv == 0) {
@@ -365,18 +367,18 @@ cdb_ins_dml_add(CDBInsDml& op, unsigned long long int begin_time, unsigned long 
         int r = m.get(op._key, entry);
         if (r>0) {
             // TOFIX: insert failed, then?
-            sql_print_error("CDB: cdb_ins_dml_add get item failed %d\n", r);
+            sql_print_error("CDB: cdb_ins_dml_add get item failed %d", r);
         }
         cdb_comm_stat_add(entry._comm_stat, op_diff);
         r = m.insert(entry._key, entry);
         if (r>0) {
             // TOFIX: insert failed, then?
-            sql_print_error("CDB: cdb_ins_dml_add update item failed %d\n", r);
+            sql_print_error("CDB: cdb_ins_dml_add update item failed %d", r);
         }
     }
     else {
         // TOFIX: sth wrong, may be shm map corrupted?
-        sql_print_error("CDB: cdb_ins_dml_add find key failed %d\n", rv);
+        sql_print_error("CDB: cdb_ins_dml_add find key failed %d", rv);
     }
 
     spin_unlock(s._lock);
@@ -402,7 +404,7 @@ cdb_ins_conn_add(CDBInsConn& conn, unsigned long long int begin_time, unsigned l
         int r = m.insert(conn._key, conn);
         if (r>0) {
             // TOFIX: insert failed, then?
-            sql_print_error("CDB: cdb_ins_conn_add insert new item failed %d\n", r);
+            sql_print_error("CDB: cdb_ins_conn_add insert new item failed %d", r);
         }
     }
     else if (rv == 0) {
@@ -411,19 +413,19 @@ cdb_ins_conn_add(CDBInsConn& conn, unsigned long long int begin_time, unsigned l
         int r = m.get(conn._key, entry);
         if (r>0) {
             // TOFIX: insert failed, then?
-            sql_print_error("CDB: cdb_ins_conn_add get item failed %d\n", r);
+            sql_print_error("CDB: cdb_ins_conn_add get item failed %d", r);
         }
         m.get(conn._key, entry);
         cdb_comm_stat_add(entry._comm_stat, time_diff);
         r = m.insert(entry._key, entry);
         if (r>0) {
             // TOFIX: insert failed, then?
-            sql_print_error("CDB: cdb_ins_conn_add update item failed %d\n", r);
+            sql_print_error("CDB: cdb_ins_conn_add update item failed %d", r);
         }
     }
     else {
         // TOFIX: sth wrong, may be shm map corrupted?
-        sql_print_error("CDB: cdb_ins_conn_add find key failed %d\n", rv);
+        sql_print_error("CDB: cdb_ins_conn_add find key failed %d", rv);
     }
 
     spin_unlock(s._lock);
@@ -449,7 +451,7 @@ cdb_ins_client_dml_add(CDBInsClientDml& op, unsigned long long int begin_time, u
         int r = m.insert(op._key, op);
         if (r>0) {
             // TOFIX: insert failed, then?
-            sql_print_error("CDB: cdb_ins_client_dml_add insert new item failed %d\n", r);
+            sql_print_error("CDB: cdb_ins_client_dml_add insert new item failed %d", r);
         }
     }
     else if (rv == 0) {
@@ -458,19 +460,19 @@ cdb_ins_client_dml_add(CDBInsClientDml& op, unsigned long long int begin_time, u
         int r = m.get(op._key, entry);
         if (r>0) {
             // TOFIX: insert failed, then?
-            sql_print_error("CDB: cdb_ins_client_dml_add get item failed %d\n", r);
+            sql_print_error("CDB: cdb_ins_client_dml_add get item failed %d", r);
         }
         m.get(op._key, entry);
         cdb_comm_stat_add(entry._comm_stat, op_diff);
         r = m.insert(entry._key, entry);
         if (r>0) {
             // TOFIX: insert failed, then?
-            sql_print_error("CDB: cdb_ins_client_dml_add update item failed %d\n", r);
+            sql_print_error("CDB: cdb_ins_client_dml_add update item failed %d", r);
         }
     }
     else {
         // TOFIX: sth wrong, may be shm map corrupted?
-        sql_print_error("CDB: cdb_ins_client_dml_add find key failed %d\n", rv);
+        sql_print_error("CDB: cdb_ins_client_dml_add find key failed %d", rv);
     }
 
     spin_unlock(s._lock);
@@ -507,6 +509,7 @@ void
 CDBTabDml::marshal_key(char* buf, int buf_size, char*& key_md5)
 {
     char* p = buf + sizeof(_comm_stats);
+    char* key_buf = p;
     int key_size = buf_size - sizeof(_comm_stats);
 
     *(int*)p = _key._result; p = p+sizeof(_key._result);
@@ -524,7 +527,7 @@ CDBTabDml::marshal_key(char* buf, int buf_size, char*& key_md5)
         memcpy(p, s.c_str(), ss); p = p+ss;
     }
 
-    key_md5 = md5_buf((unsigned char*)p, key_size);
+    key_md5 = md5_buf((unsigned char*)key_buf, key_size);
 }
 
 int
@@ -571,10 +574,16 @@ CDBTabDml::de_marshal(char* buf, int buf_size)
 }
 
 void
+CDBTabDml::reset_stats()
+{
+    memset(&_comm_stats[0], 0, sizeof(_comm_stats));
+}
+
+void
 cdb_tab_dml_add(CDBTabDml& op, int type, unsigned long long int begin_time, unsigned long long int end_time)
 {
     if (type <0 || type >= CDB_OP_TYPE_SIZE) {
-        sql_print_error("CDB: cdb_tab_dml_add wrong type %d, skip\n", type);
+        sql_print_error("CDB: cdb_tab_dml_add wrong type %d, skip", type);
         return;
     }
 
@@ -595,12 +604,13 @@ cdb_tab_dml_add(CDBTabDml& op, int type, unsigned long long int begin_time, unsi
     int rv = s._ca->get_key(md5, dl, df, ts);
     if (rv>0) {
         // not found
+        op.reset_stats();
         cdb_comm_stat_add(op._comm_stats[type], op_diff, true);
         op.marshal_stats(buf, buf_size);
         int r = s._ca->set(md5, buf, buf_size);
         if (r>0) {
             // TOFIX:
-            sql_print_error("CDB: cdb_tab_dml_add insert new item failed %d\n", r);
+            sql_print_error("CDB: cdb_tab_dml_add insert new item failed %d", r);
         }
     }
     else if (rv==0) {
@@ -608,7 +618,7 @@ cdb_tab_dml_add(CDBTabDml& op, int type, unsigned long long int begin_time, unsi
         int r = s._ca->get(md5, buf, buf_size, dl, df, ts);
         if (r>0) {
             // TOFIX:
-            sql_print_error("CDB: cdb_tab_dml_add get item failed %d\n", r);
+            sql_print_error("CDB: cdb_tab_dml_add get item failed %d", r);
         }
         op.de_marshal_stats(buf, buf_size);
         cdb_comm_stat_add(op._comm_stats[type], op_diff);
@@ -616,12 +626,12 @@ cdb_tab_dml_add(CDBTabDml& op, int type, unsigned long long int begin_time, unsi
         r = s._ca->set(md5, buf, buf_size);
         if (r>0) {
             // TOFIX: insert failed, then?
-            sql_print_error("CDB: cdb_tab_dml_add update item failed %d\n", r);
+            sql_print_error("CDB: cdb_tab_dml_add update item failed %d", r);
         }
     }
     else {
         // TOFIX: sth wrong, may be shm map corrupted?
-        sql_print_error("CDB: cdb_tab_dml_add find key failed %d\n", rv);
+        sql_print_error("CDB: cdb_tab_dml_add find key failed %d", rv);
     }
 
     spin_unlock(s._lock);

@@ -148,6 +148,7 @@ struct CDBTabDml
     int de_marshal_key(char* buf, int buf_size);
     int de_marshal_stats(char* buf, int buf_size);
     int de_marshal(char* buf, int buf_size);
+    void reset_stats();
 };
 #pragma pack(pop)
 

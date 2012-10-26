@@ -189,11 +189,12 @@ dump_ins_client_dml(const CDBShm& s)
 void
 tab_dml_gen_name_str(CDBTabDml& td, string& s)
 {
-    ostringstream oss(s);
+    ostringstream oss;
     for (int i=0; i<td._key._names.size(); ++i) {
-        if (i == 0) oss << ",";
+        if (i != 0) oss << ",";
         oss << td._key._names[i]._db << "." << td._key._names[i]._table;
     }
+    s = oss.str();
 }
 
 void
@@ -303,29 +304,43 @@ main(int argc, char* argv[])
         exit(2);
     }
 
-    if (strcmp(argv[2], "cdb_ins_dml") == 0) {
-        if(!check_standby(s)) {
-            cerr << "check standby error: flag is " << cdb_errno << endl;
+    if (argc >= 4) {
+        // if has 4th param, dump only
+        FILE* f = fopen("shm_dump.dat", "wb");
+        if (f == 0) {
+            cerr << "can not open shm_dump.dat for write." << endl;
         }
-        dump_ins_dml(s);
+        else {
+            fwrite(s._addr, 1, s._size, f);
+            fclose(f);
+            cout << "shm " << s._key << " dumped to file." << endl;
+        }
     }
-    else if (strcmp(argv[2], "cdb_ins_conn") == 0) {
-        if(!check_standby(s)) {
-            cerr << "check standby error: flag is " << cdb_errno << endl;
+    else {
+        if (strcmp(argv[2], "cdb_ins_dml") == 0) {
+            if(!check_standby(s)) {
+                cerr << "check standby error: flag is " << cdb_errno << endl;
+            }
+            dump_ins_dml(s);
         }
-        dump_ins_conn(s);
-    }
-    else if (strcmp(argv[2], "cdb_ins_client_dml") == 0) {
-        if (!check_standby(s)) {
-            cerr << "check standby error: flag is " << cdb_errno << endl;
+        else if (strcmp(argv[2], "cdb_ins_conn") == 0) {
+            if(!check_standby(s)) {
+                cerr << "check standby error: flag is " << cdb_errno << endl;
+            }
+            dump_ins_conn(s);
         }
-        dump_ins_client_dml(s);
-    }
-    else if(strcmp(argv[2], "cdb_tab_dml") == 0) {
-        if (!check_standby(s)) {
-            cerr << "check standby error: flag is " << cdb_errno << endl;
+        else if (strcmp(argv[2], "cdb_ins_client_dml") == 0) {
+            if (!check_standby(s)) {
+                cerr << "check standby error: flag is " << cdb_errno << endl;
+            }
+            dump_ins_client_dml(s);
         }
-        dump_tab_dml(s);
+        else if(strcmp(argv[2], "cdb_tab_dml") == 0) {
+            if (!check_standby(s)) {
+                cerr << "check standby error: flag is " << cdb_errno << endl;
+            }
+            dump_tab_dml(s);
+        }
     }
 
     sm.detach_all();
