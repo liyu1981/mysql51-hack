@@ -82,7 +82,7 @@ check_standby(const CDBShm& s)
 void
 dump_ins_dml(const CDBShm& s)
 {
-    TfcShmMap<CDBInsDmlOpKey, CDBInsDmlOp> m;
+    TfcShmMap<CDBInsDmlKey, CDBInsDml> m;
     m._ca = s._ca;
 
     cout << "shm[" << s._name << "] addr " << hex << s._addr
@@ -90,8 +90,8 @@ dump_ins_dml(const CDBShm& s)
          << " size " << dec << s._size << endl;
     cout << "#type result total time_sum time_min time_max >20ms >40ms >60ms >80ms >100ms >500ms >1s >2s >10s" << endl;
 
-    for (TfcShmMap<CDBInsDmlOpKey, CDBInsDmlOp>::iterator it = m.begin(); it != m.end(); it++) {
-        CDBInsDmlOp entry;
+    for (TfcShmMap<CDBInsDmlKey, CDBInsDml>::iterator it = m.begin(); it != m.end(); it++) {
+        CDBInsDml entry;
         if (it.extract(entry) == 0) {
             if( entry._key._type >= 0 && entry._key._type < dml_names_num ) {
                 cout << dml_names[entry._key._type] << " "
