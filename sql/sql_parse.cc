@@ -1764,33 +1764,12 @@ void cdb_stat_instance_dml_func(THD *thd)
     CDBInsDml op;
 	op._key._type = sql_type;
 
-    switch(thd->lex->sql_command) {
-    case SQLCOM_SELECT:
-      op._key._type = CDB_SELECT;
-      break;
-    case SQLCOM_INSERT:
-      op._key._type = CDB_INSERT;
-      break;
-    case SQLCOM_UPDATE:
-      op._key._type = CDB_UPDATE;
-      break;
-    case SQLCOM_REPLACE:
-      op._key._type = CDB_REPLACE;
-      break;
-    case SQLCOM_DELETE:
-      op._key._type = CDB_DELETE;
-      break;
-    default:
-      op._key._type = CDB_OTHER_TYPE;
-      break;
-    }
-
     if(unlikely(thd->is_error()))
       op._key._result = thd->main_da.sql_errno();
     else
       op._key._result = 0;
 
-    cdb_ins_dml_add(op, thd->start_utime, thd->current_utime());
+    cdb_ins_dml_add(op, thd->start_utime, current_time);
   }
 
   if(likely(opt_cdb_stat_client_dml))
