@@ -35,7 +35,7 @@ function rm_shm(){
     id=1
     while [ $id -le $SHM_NUM ]; do
         ftok $sPathName $id
-        printf "%s, %d, %#x\n" $sPathName $id $key
+        printf "rm %s, %d, %#x\n" $sPathName $id $key
         ipcrm -M $key
         id=`expr $id + 1`
     done;
@@ -68,9 +68,11 @@ if ! test -d ${sPathName} ; then
 	exit 4
 fi
 
-if [ $OP="list" ]; then
+if [ "$OP" = "list" ]; then
+    echo "list shm"
     list_shm
-elif [ $OP="rm" ]; then
+elif [ "$OP" = "rm" ]; then
+    echo "do rm shm"
     rm_shm
 else
     list_shm
