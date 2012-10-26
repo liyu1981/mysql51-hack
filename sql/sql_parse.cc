@@ -1760,11 +1760,9 @@ void cdb_stat_instance_dml_func(THD *thd)
 
   if(likely(opt_cdb_stat_ins_dml))
   {
-<<<<<<< HEAD
-    CDBInsDmlOp op;
-	op._key._type = sql_type;
-=======
+
     CDBInsDml op;
+	op._key._type = sql_type;
 
     switch(thd->lex->sql_command) {
     case SQLCOM_SELECT:
@@ -1783,7 +1781,7 @@ void cdb_stat_instance_dml_func(THD *thd)
       op._key._type = CDB_DELETE;
       break;
     default:
-      op._key._type = CDB_UNKOWN_TYPE;
+      op._key._type = CDB_OTHER_TYPE;
       break;
     }
 
@@ -1807,8 +1805,27 @@ void cdb_stat_instance_dml_func(THD *thd)
 	cdb_ins_client_dml_add(op, thd->start_utime, current_time);
   }
 
-  if(likely(opt_cdb_stat_table_dml)) 
+  if(likely(opt_cdb_stat_table_dml))
   {
+    CDBTabDml op;
+    TABLE *table = thd->open_tables;
+	
+	/* at most 10 table, may be mysql global variable will be better */
+    for(int i = 0; table && (i < 10); ++i) 
+    {
+      CDBTabName tab_name;
+      tab_name._table.assign(table->s->table_name.str, table->s->table_name.length);
+      tab_name._db.assign(table->s->db.str, table->s->db.length);
+      op._key._names.push_back(tab_name);
+	  table = table->next;
+    }
+
+    if(unlikely(thd->is_error()))
+      op._key._result = thd->main_da.sql_errno();
+    else
+      op._key._result = 0;
+
+    cdb_tab_dml_add(op, sql_type, thd->start_utime, current_time);
   }
 
   DBUG_VOID_RETURN;
