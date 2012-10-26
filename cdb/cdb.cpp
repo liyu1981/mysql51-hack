@@ -481,7 +481,7 @@ cdb_ins_client_dml_add(CDBInsClientDml& op, unsigned long long int begin_time, u
 /* CDBTabDml binary layout
 
    -----------------------------------------------------------------------------
-   | _comm_stats | _result | <name> <name> <name> ....
+   | _comm_stats | _result | name_count <name> <name> <name> ....
    -----------------------------------------------------------------------------
    ^             ^
    |             |
@@ -494,22 +494,24 @@ int
 CDBTabDml::marshal_size()
 {
     int ret = sizeof(_comm_stats);
+    ret += sizeof(_key._result);
+    ret += sizeof(unsigned char); // one byte for name_count, so max 256 names
     for (size_t i=0; i<_key._names.size(); ++i) {
         ret += _key._names[i]._db.size()+1; // each string has 1byte for len.
         ret += _key._names[i]._table.size()+1;
     }
-    ret += sizeof(_key._result);
     return ret;
 }
 
 void
-CDBTabDml::marshal_key(char*& buf, int buf_size, char*& key_md5)
+CDBTabDml::marshal_key(char* buf, int buf_size, char*& key_md5)
 {
     char* p = buf + sizeof(_comm_stats);
     int key_size = buf_size - sizeof(_comm_stats);
 
     *(int*)p = _key._result; p = p+sizeof(_key._result);
 
+    *(unsigned char*)p = (unsigned char)_key._names.size(); p = p+1;
     for (size_t i=0; i<_key._names.size(); ++i) {
         string& s = _key._names[i]._db;
         int ss = s.size();
@@ -525,16 +527,47 @@ CDBTabDml::marshal_key(char*& buf, int buf_size, char*& key_md5)
     key_md5 = md5_buf((unsigned char*)p, key_size);
 }
 
+int
+CDBTabDml::de_marshal_key(char* buf, int buf_size)
+{
+    char* p = buf + sizeof(_comm_stats);
+    //int key_size = buf_size - sizeof(_comm_stats);
+
+    _key._result = *(int*)p; p = p+sizeof(_key._result);
+
+    int name_count = *(unsigned char*)p; p = p+1;
+    for (int i=0; i<name_count; ++i) {
+        CDBTabName tn;
+        int ss = *(char*)p; p = p+sizeof(char);
+        tn._db.assign(p, ss); p = p+ss;
+        ss = *(char*)p; p = p+sizeof(char);
+        tn._table.assign(p, ss); p = p+ss;
+        _key._names.push_back(tn);
+    }
+
+    return CDB_FINE;
+}
+
 void
-CDBTabDml::marshal_stats(char*& buf)
+CDBTabDml::marshal_stats(char* buf, int buf_size)
 {
     memcpy(buf, &_comm_stats[0], sizeof(_comm_stats));
 }
 
-void
-CDBTabDml::de_marshal_stats(char*& buf)
+int
+CDBTabDml::de_marshal_stats(char* buf, int buf_size)
 {
     memcpy(&_comm_stats[0], buf, sizeof(_comm_stats));
+    return CDB_FINE;
+}
+
+int
+CDBTabDml::de_marshal(char* buf, int buf_size)
+{
+    int rv = de_marshal_stats(buf, buf_size);
+    if (rv != CDB_FINE)
+        return rv;
+    return de_marshal_key(buf, buf_size);
 }
 
 void
@@ -563,7 +596,7 @@ cdb_tab_dml_add(CDBTabDml& op, int type, unsigned long long int begin_time, unsi
     if (rv>0) {
         // not found
         cdb_comm_stat_add(op._comm_stats[type], op_diff, true);
-        op.marshal_stats(buf);
+        op.marshal_stats(buf, buf_size);
         int r = s._ca->set(md5, buf, buf_size);
         if (r>0) {
             // TOFIX:
@@ -577,9 +610,9 @@ cdb_tab_dml_add(CDBTabDml& op, int type, unsigned long long int begin_time, unsi
             // TOFIX:
             sql_print_error("CDB: cdb_tab_dml_add get item failed %d\n", r);
         }
-        op.de_marshal_stats(buf);
+        op.de_marshal_stats(buf, buf_size);
         cdb_comm_stat_add(op._comm_stats[type], op_diff);
-        op.marshal_stats(buf);
+        op.marshal_stats(buf, buf_size);
         r = s._ca->set(md5, buf, buf_size);
         if (r>0) {
             // TOFIX: insert failed, then?
@@ -592,5 +625,7 @@ cdb_tab_dml_add(CDBTabDml& op, int type, unsigned long long int begin_time, unsi
     }
 
     spin_unlock(s._lock);
+
+    free(buf);
 }
 

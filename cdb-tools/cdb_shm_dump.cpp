@@ -7,6 +7,7 @@ using namespace cdb;
 #include <string>
 #include <iomanip>
 #include <iostream>
+#include <sstream>
 using namespace std;
 
 #include <sys/socket.h>
@@ -19,7 +20,8 @@ CDBShmPairConf shm_pair_conf_array[] = {
     //name, shm_name1, shm_name2, conf_index, map_file
     {"cdb_ins_dml", "cdb_ins_dml_1", "cdb_ins_dml_2", 0, "cdb_ins_dml_map.txt"},
     {"cdb_ins_conn", "cdb_ins_conn_1", "cdb_ins_conn_2", 2, "cdb_ins_conn_map.txt"},
-    {"cdb_ins_client_dml", "cdb_ins_client_dml_1", "cdb_ins_client_dml_2", 4, "cdb_ins_client_dml_map.txt"}
+    {"cdb_ins_client_dml", "cdb_ins_client_dml_1", "cdb_ins_client_dml_2", 4, "cdb_ins_client_dml_map.txt"},
+    {"cdb_tab_dml", "cdb_tab_dml_1", "cdb_tab_dml_2", 6, "cdb_tab_dml_map.txt"}
 };
 int shm_pair_conf_size = sizeof(shm_pair_conf_array)/sizeof(shm_pair_conf_array[0]);
 
@@ -82,7 +84,7 @@ check_standby(const CDBShm& s)
 void
 dump_ins_dml(const CDBShm& s)
 {
-    TfcShmMap<CDBInsDmlOpKey, CDBInsDmlOp> m;
+    TfcShmMap<CDBInsDmlKey, CDBInsDml> m;
     m._ca = s._ca;
 
     cout << "shm[" << s._name << "] addr " << hex << s._addr
@@ -90,8 +92,8 @@ dump_ins_dml(const CDBShm& s)
          << " size " << dec << s._size << endl;
     cout << "#type result total time_sum time_min time_max >20ms >40ms >60ms >80ms >100ms >500ms >1s >2s >10s" << endl;
 
-    for (TfcShmMap<CDBInsDmlOpKey, CDBInsDmlOp>::iterator it = m.begin(); it != m.end(); it++) {
-        CDBInsDmlOp entry;
+    for (TfcShmMap<CDBInsDmlKey, CDBInsDml>::iterator it = m.begin(); it != m.end(); it++) {
+        CDBInsDml entry;
         if (it.extract(entry) == 0) {
             if( entry._key._type >= 0 && entry._key._type < dml_names_num ) {
                 cout << dml_names[entry._key._type] << " "
@@ -184,6 +186,95 @@ dump_ins_client_dml(const CDBShm& s)
     }
 }
 
+void
+tab_dml_gen_name_str(CDBTabDml& td, string& s)
+{
+    ostringstream oss(s);
+    for (int i=0; i<td._key._names.size(); ++i) {
+        if (i == 0) oss << ",";
+        oss << td._key._names[i]._db << "." << td._key._names[i]._table;
+    }
+}
+
+void
+dump_tab_dml(const CDBShm& s)
+{
+    cout << "shm[" << s._name << "] addr " << hex << s._addr
+         << " key " << dec << s._key
+         << " size " << dec << s._size << endl;
+
+    tfc::cache::CacheAccess* ca = s._ca;
+
+    int rv;
+    unsigned dl; bool df; long ts;
+    char cur_key[KEY_SIZE];
+    char first_key[KEY_SIZE];
+    char* data = NULL;
+    int data_size = 0;
+    rv = ca->oldest_key(cur_key, dl, df, ts);
+    if (rv != 0) {
+        // empty, just return
+        return;
+    }
+    memcpy(first_key, cur_key, KEY_SIZE);
+
+    CDBTabDml td;
+    while (true) {
+        if (data != NULL) {
+            free(data);
+            data = NULL;
+        }
+
+        data_size = dl;
+        data = (char*)malloc(data_size);
+        rv = ca->get(cur_key, data, data_size, dl, df, ts);
+        if (rv != 0) {
+            // corrupted data, now what?
+        }
+
+        rv = td.de_marshal(data, data_size);
+        if (rv != 0) {
+            // corrupted data, now what?
+        }
+
+        string tab_name_str;
+        tab_dml_gen_name_str(td, tab_name_str);
+        cout << "Table: " << tab_name_str << endl;
+        cout << "Result: " << td._key._result << endl;
+
+        cout << "#type total time_sum time_min time_max >20ms >40ms >60ms >80ms >100ms >500ms >1s >2s >10s" << endl;
+        for (int i=0; i<CDB_OP_TYPE_SIZE; ++i) {
+            CDBCommStat& cs = td._comm_stats[i];
+            cout << dml_names[i] << " "
+                 << cs._total << " "
+                 << fixed << setprecision(3)
+                 << cs._time_sum*1000 << " "
+                 << cs._time_min*1000 << " "
+                 << cs._time_max*1000 << " ";
+            for (int j=0; j<CDB_TIME_BUCKET_SIZE; ++j) {
+                cout << cs._time_bucket[j] << " ";
+            }
+            cout << endl;
+        }
+
+        cout << endl;
+
+        rv = ca->oldest_key(cur_key, dl, df, ts);
+        if (rv != 0) {
+            // something wrong, should warning and break
+            break;
+        }
+        if (memcmp(cur_key, first_key, KEY_SIZE) == 0) {
+            // we are back, no more new items
+            break;
+        }
+    }
+
+    if (data != NULL) {
+        free(data);
+    }
+}
+
 int
 main(int argc, char* argv[])
 {
@@ -229,6 +320,12 @@ main(int argc, char* argv[])
             cerr << "check standby error: flag is " << cdb_errno << endl;
         }
         dump_ins_client_dml(s);
+    }
+    else if(strcmp(argv[2], "cdb_tab_dml") == 0) {
+        if (!check_standby(s)) {
+            cerr << "check standby error: flag is " << cdb_errno << endl;
+        }
+        dump_tab_dml(s);
     }
 
     sm.detach_all();
