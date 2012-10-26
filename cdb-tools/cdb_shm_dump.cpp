@@ -226,6 +226,8 @@ dump_tab_dml(const CDBShm& s)
             data = NULL;
         }
 
+        td._key._names.clear();
+
         data_size = dl;
         data = (char*)malloc(data_size);
         rv = ca->get(cur_key, data, data_size, dl, df, ts);
