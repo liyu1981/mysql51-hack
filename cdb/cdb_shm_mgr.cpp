@@ -39,10 +39,10 @@ CDBShmMgr::init(const char* mysqld_data_path, int shm_conf_size, ofstream& shmid
         return CDB_SHM_INIT_SHMLOCKS_ERROR;
     }
     CDBShm& sm = get(CDB_SHM_LOCKS_NAME);
+    shmid_of << CDB_SHM_LOCKS_NAME << " " << key << endl;
     if (!sm._new) {
         return CDB_SHM_INIT_SHMLOCKS_STALE;
     }
-    shmid_of << CDB_SHM_LOCKS_NAME << " " << key << endl;
     return CDB_FINE;
 }
 

@@ -7,12 +7,18 @@ prefix=$(mysql_prefix)/bin/
 
 exe_comm_obj=cdb_tool_comm.o
 
-all_exe=cdb_shm_dump cdb_shm_conf_calc
-all_script=cdb_ins_dml_monitor cdb_ins_conn_monitor cdb_ins_client_dml_monitor cdb_tab_dml_monitor
+all_exe=cdb_shm_dump \
+		cdb_shm_conf_calc
+
+all_script=cdb_ins_dml_monitor \
+           cdb_ins_conn_monitor \
+		   cdb_ins_client_dml_monitor \
+		   cdb_tab_dml_monitor \
+		   cdb_clear_shm.sh
 
 all: $(all_exe)
 
-install:
+install: all
 	install -m 0755 -t $(prefix) $(all_exe)
 	install -m 0755 -t $(prefix) $(all_script)
 
