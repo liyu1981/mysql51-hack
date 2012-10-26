@@ -538,6 +538,7 @@ CDBTabDml::de_marshal_key(char* buf, int buf_size)
 
     _key._result = *(int*)p; p = p+sizeof(_key._result);
 
+    _key._names.clear();
     int name_count = *(unsigned char*)p; p = p+1;
     for (int i=0; i<name_count; ++i) {
         CDBTabName tn;
