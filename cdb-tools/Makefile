@@ -8,7 +8,7 @@ prefix=$(mysql_prefix)/bin/
 exe_comm_obj=cdb_tool_comm.o
 
 all_exe=cdb_shm_dump cdb_shm_conf_calc
-all_script=cdb_ins_dml_monitor cdb_ins_conn_monitor cdb_ins_client_dml_monitor
+all_script=cdb_ins_dml_monitor cdb_ins_conn_monitor cdb_ins_client_dml_monitor cdb_tab_dml_monitor
 
 all: $(all_exe)
 
