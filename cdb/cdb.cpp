@@ -10,8 +10,8 @@
 #include "tfc_base_str.h"
 #include "cdb.h"
 #include "cdb_error.h"
-//#include "cdb_shm_mgr.h"
 
+#define MYSQL_SERVER // define MYSQL_SERVER since we need opt_cdb_* variables
 #include "../sql/mysql_priv.h" // must be included after system headers such as pthread.h, otherwise conflict with mysys
 
 using namespace std;
@@ -343,6 +343,9 @@ cdb_comm_stat_add(CDBCommStat& cs, double v, bool init)
 void
 cdb_ins_dml_add(CDBInsDml& op, unsigned long long int begin_time, unsigned long long int end_time)
 {
+    if (!opt_cdb_stat_ins_dml)
+        return;
+
     double op_diff = (end_time - begin_time) * 0.000001;
 
     CDBShm& s = cdb_shm_pair_map["cdb_ins_dml"]->get_current();
@@ -389,6 +392,9 @@ cdb_ins_dml_add(CDBInsDml& op, unsigned long long int begin_time, unsigned long 
 void
 cdb_ins_conn_add(CDBInsConn& conn, unsigned long long int begin_time, unsigned long long end_time)
 {
+    if (!opt_cdb_stat_ins_conn)
+        return;
+
     double time_diff = (end_time - begin_time) * 0.000001;
 
     CDBShm& s = cdb_shm_pair_map["cdb_ins_conn"]->get_current();
@@ -436,6 +442,9 @@ cdb_ins_conn_add(CDBInsConn& conn, unsigned long long int begin_time, unsigned l
 void
 cdb_ins_client_dml_add(CDBInsClientDml& op, unsigned long long int begin_time, unsigned long long int end_time)
 {
+    if (!opt_cdb_stat_client_dml)
+        return;
+
     double op_diff = (end_time - begin_time) * 0.000001;
 
     CDBShm& s = cdb_shm_pair_map["cdb_ins_client_dml"]->get_current();
@@ -583,6 +592,9 @@ CDBTabDml::reset_stats()
 void
 cdb_tab_dml_add(CDBTabDml& op, int type, unsigned long long int begin_time, unsigned long long int end_time)
 {
+    if (!opt_cdb_stat_table_dml)
+        return;
+
     if (type <0 || type >= CDB_OP_TYPE_SIZE) {
         sql_print_error("CDB: cdb_tab_dml_add wrong type %d, skip", type);
         return;

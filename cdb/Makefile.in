@@ -417,7 +417,7 @@ yassl_libs = @yassl_libs@
 yassl_taocrypt_extra_cxxflags = @yassl_taocrypt_extra_cxxflags@
 yassl_thread_cxxflags = @yassl_thread_cxxflags@
 zlib_dir = @zlib_dir@
-INCLUDES = -I$(top_builddir)/include -I$(top_srcdir)/include -I$(top_srcdir)/sql \
+INCLUDES = -I$(top_builddir)/include -I$(top_srcdir)/include -I$(top_srcdir)/sql -I$(top_srcdir)/regex \
 			$(openssl_includes)
 
 LDADD = @CLIENT_EXTRA_LDFLAGS@ $(openssl_libs) $(yassl_libs)
