@@ -15,16 +15,16 @@
 @SET_MAKE@
 
 # Copyright 2000-2008 MySQL AB, 2009 Sun Microsystems, Inc.
-# 
+#
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; version 2 of the License.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
@@ -407,7 +407,7 @@ AUTOMAKE_OPTIONS = foreign
 EXTRA_DIST = INSTALL-SOURCE INSTALL-WIN-SOURCE \
 			README COPYING CMakeLists.txt
 
-SUBDIRS = . include @docs_dirs@ @zlib_dir@ cdb\
+SUBDIRS = . include @docs_dirs@ @zlib_dir@ cdb cdb-tools \
 			@readline_topdir@ sql-common scripts \
 			@sql_union_dirs@ unittest \
 			@sql_server@ @man_dirs@ tests \
@@ -890,7 +890,7 @@ dist-hook:
 		--srcdir=$(top_srcdir)
 	storage/myisam/myisamchk --silent --fast $(distdir)/win/data/mysql/*.MYI
 
-all-local:		@ABI_CHECK@	
+all-local:		@ABI_CHECK@
 
 tags:
 	support-files/build-tags
@@ -1070,7 +1070,7 @@ test-fast:
 	cd mysql-test ; \
 	    @PERL@ ./mysql-test-run.pl $(subset) --force --skip-ndb --skip-innodb --skip-im --skip-rpl ; \
 	    @PERL@ ./mysql-test-run.pl $(subset) --force --suite=funcs_1 --do-test=myisam ; \
-	    @PERL@ ./mysql-test-run.pl $(subset) --force --suite=stress --do-test=ddl_myisam 
+	    @PERL@ ./mysql-test-run.pl $(subset) --force --suite=stress --do-test=ddl_myisam
 
 test-fast-view:
 	$(MAKE) subset=--view-protocol test-fast
@@ -1097,7 +1097,7 @@ test-full-qa:
 #    results in messages in stderr saying that these headers
 #    were not found. Redirect the stderr output to /dev/null
 #    to prevent seeing these messages.
-# 2) sed the output to 
+# 2) sed the output to
 #    2.1) remove blank lines and lines that begin with "# "
 #    2.2) When gcc -E is run on the Mac OS  and solaris sparc platforms it
 #         introduces a line of output that shows up as a difference between
@@ -1119,7 +1119,7 @@ test-full-qa:
 # leave a <build directory>/abi_check.out file.
 #
 # A developer with a justified API change will then do a
-# mv <build directory>/abi_check.out include/mysql/plugin.pp 
+# mv <build directory>/abi_check.out include/mysql/plugin.pp
 # to replace the old canons with the new ones.
 #
 
