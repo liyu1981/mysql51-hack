@@ -10,7 +10,7 @@
 #include "tfc_base_str.h"
 #include "cdb.h"
 #include "cdb_error.h"
-#include "cdb_shm_mgr.h"
+//#include "cdb_shm_mgr.h"
 
 #include "../sql/mysql_priv.h" // must be included after system headers such as pthread.h, otherwise conflict with mysys
 

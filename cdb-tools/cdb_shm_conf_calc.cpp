@@ -12,7 +12,7 @@ using namespace std;
 void
 usage(const char* appname)
 {
-    cout << "usage: " << appname << " <shm_size_in_MB> <total_node> <bucket_size> <n_chuncks> <chunck_size>"
+    cout << "usage: " << appname << " <shm_size_in_MB> <total_node> <bucket_size> <n_chunks> <chunk_size>"
          << endl;
 }
 
@@ -27,11 +27,11 @@ main(int argc, char* argv[])
     long total_node = atoi(argv[2]);
     long bucket_size = atoi(argv[3]);
     long n_chunks = atoi(argv[4]);
-    long chunck_size = atoi(argv[5]);
+    long chunk_size = atoi(argv[5]);
 
-    long need_shm_size = CHashMap::get_total_pool_size(total_node, bucket_size, n_chunks, chunck_size);
+    long need_shm_size = CHashMap::get_total_pool_size(total_node, bucket_size, n_chunks, chunk_size);
 
-    long data_size = n_chunks*chunck_size + total_node*16; // current we use md5 as key, which is 16bytes in tfc_md5.cpp
+    long data_size = n_chunks*chunk_size + total_node*16; // current we use md5 as key, which is 16bytes in tfc_md5.cpp
 
     long user_shm_size = atoi(argv[1])*MB;
 

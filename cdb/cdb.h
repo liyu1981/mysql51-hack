@@ -9,10 +9,18 @@
 #include <vector>
 using namespace std;
 
+#include "cdb_shm_mgr.h"
+
 extern int cdb_errno;
 extern int cdb_2nd_errno;
 
 ///////////////////////////////////////////////////////////////////////////////
+
+extern cdb::CDBShmConf cdb_shm_conf_array[];
+extern int cdb_shm_conf_size;
+
+extern cdb::CDBShmPairConf cdb_shm_pair_conf_array[];
+extern int cdb_shm_pair_conf_size;
 
 // for mysqld
 bool cdb_init_shm_mgr(const char* mysqld_data_path);

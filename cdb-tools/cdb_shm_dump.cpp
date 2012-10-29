@@ -16,15 +16,6 @@ using namespace std;
 
 #include "cdb_tool_comm.h"
 
-CDBShmPairConf shm_pair_conf_array[] = {
-    //name, shm_name1, shm_name2, conf_index, map_file
-    {"cdb_ins_dml", "cdb_ins_dml_1", "cdb_ins_dml_2", 0, "cdb_ins_dml_map.txt"},
-    {"cdb_ins_conn", "cdb_ins_conn_1", "cdb_ins_conn_2", 2, "cdb_ins_conn_map.txt"},
-    {"cdb_ins_client_dml", "cdb_ins_client_dml_1", "cdb_ins_client_dml_2", 4, "cdb_ins_client_dml_map.txt"},
-    {"cdb_tab_dml", "cdb_tab_dml_1", "cdb_tab_dml_2", 6, "cdb_tab_dml_map.txt"}
-};
-int shm_pair_conf_size = sizeof(shm_pair_conf_array)/sizeof(shm_pair_conf_array[0]);
-
 void
 usage(const char* appname)
 {
@@ -46,8 +37,8 @@ string
 parse_pair_map_file(const char* mysqld_data_path, const char* pair_name)
 {
     int found = -1;
-    for (int i=0; i<shm_pair_conf_size; ++i) {
-        CDBShmPairConf& c = shm_pair_conf_array[i];
+    for (int i=0; i<cdb_shm_pair_conf_size; ++i) {
+        CDBShmPairConf& c = cdb_shm_pair_conf_array[i];
         if (strcmp(c._name.c_str(), pair_name) == 0) {
             found = i;
             break;
@@ -56,7 +47,7 @@ parse_pair_map_file(const char* mysqld_data_path, const char* pair_name)
     if (found < 0)
         return string("");
 
-    CDBShmPairConf& found_c = shm_pair_conf_array[found];
+    CDBShmPairConf& found_c = cdb_shm_pair_conf_array[found];
     string pair_map_file_path = string(mysqld_data_path) + "/" + string(found_c._map_file);
     FILE* fp = fopen(pair_map_file_path.c_str(), "r");
     if (fp == NULL)
@@ -81,11 +72,40 @@ check_standby(const CDBShm& s)
     return *p==0;
 }
 
+CacheAccess*
+copy_shm_data(const CDBShm& s)
+{
+    char* mem = (char*)malloc(s._data_size);
+    memcpy(mem, s._data_addr, s._data_size);
+
+    CDBShmConf* c = NULL;
+    for (int i=0; i<cdb_shm_conf_size; ++i) {
+        if (cdb_shm_conf_array[i]._name.compare(s._name) == 0) {
+            c = &cdb_shm_conf_array[i];
+            break;
+        }
+    }
+    if (c == NULL) {
+        cerr << "can not found shm conf of " << s._name << endl;
+        exit(1);
+    }
+
+    CacheAccess* ca = new CacheAccess();
+    int ret = ca->open((char*)mem, s._data_size, true,
+                       c->_node_total, c->_bucket_size,
+                       c->_n_chunks, c->_chunk_size);
+    if (ret != 0) {
+        cerr << "construct ca on copied mem failed, error: " << ret << endl;
+        exit(ret);
+    }
+    return ca;
+}
+
 void
 dump_ins_dml(const CDBShm& s)
 {
     TfcShmMap<CDBInsDmlKey, CDBInsDml> m;
-    m._ca = s._ca;
+    m._ca = copy_shm_data(s);
 
     cout << "shm[" << s._name << "] addr " << hex << s._addr
          << " key " << dec << s._key
@@ -119,7 +139,7 @@ void
 dump_ins_conn(const CDBShm& s)
 {
     TfcShmMap<CDBInsConnKey, CDBInsConn> m;
-    m._ca = s._ca;
+    m._ca = copy_shm_data(s);
 
     cout << "shm[" << s._name << "] addr " << hex << s._addr
          << " key " << dec << s._key
@@ -152,7 +172,7 @@ void
 dump_ins_client_dml(const CDBShm& s)
 {
     TfcShmMap<CDBInsClientDmlKey, CDBInsClientDml> m;
-    m._ca = s._ca;
+    m._ca = copy_shm_data(s);
 
     cout << "shm[" << s._name << "] addr " << hex << s._addr
          << " key " << dec << s._key
@@ -204,7 +224,7 @@ dump_tab_dml(const CDBShm& s)
          << " key " << dec << s._key
          << " size " << dec << s._size << endl;
 
-    tfc::cache::CacheAccess* ca = s._ca;
+    tfc::cache::CacheAccess* ca = copy_shm_data(s);
 
     int rv;
     unsigned dl; bool df; long ts;
