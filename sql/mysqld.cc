@@ -13,9 +13,9 @@
    along with this program; if not, write to the Free Software
    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA */
 
-// yuli: cdb modifications start
-#include "cdb.h"
-// yuli: cdb modifications end
+#ifdef WITH_CDB
+#include "cdb.h"  // this must be included before all mysql headers to avoid the stdc++ confict
+#endif
 
 #include "mysql_priv.h"
 #include <m_ctype.h>

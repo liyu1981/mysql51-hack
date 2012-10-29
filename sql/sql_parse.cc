@@ -13,9 +13,9 @@
    along with this program; if not, write to the Free Software
    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA */
 
-//yuli: cdb modification start
-#include "cdb.h"
-//yuli: cdb modification end
+#ifdef WITH_CDB
+#include "cdb.h"  // this must be included before all mysql headers to avoid the stdc++ confict
+#endif
 
 #define MYSQL_LEX 1
 #include "mysql_priv.h"
@@ -1788,9 +1788,9 @@ void cdb_stat_instance_dml_func(THD *thd)
   {
     CDBTabDml op;
     TABLE *table = thd->open_tables;
-	
+
 	/* at most 10 table, may be mysql global variable will be better */
-    for(int i = 0; table && (i < 10); ++i) 
+    for(int i = 0; table && (i < 10); ++i)
     {
       CDBTabName tab_name;
       tab_name._table.assign(table->s->table_name.str, table->s->table_name.length);

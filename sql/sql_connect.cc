@@ -19,7 +19,7 @@
 */
 
 #ifdef WITH_CDB
-#include "cdb.h"
+#include "cdb.h"  // this must be included before all mysql headers to avoid the stdc++ confict
 #endif
 
 #include "mysql_priv.h"
