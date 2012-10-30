@@ -13,7 +13,7 @@
    along with this program; if not, write to the Free Software
    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA */
 
-/* This file is for Chinese character sets GBK, created by Wei He 
+/* This file is for Chinese character sets GBK, created by Wei He
    (hewei@mail.ied.ac.cn)
 */
 
@@ -2585,7 +2585,7 @@ int my_strnncoll_gbk_internal(const uchar **a_res, const uchar **b_res,
 			      size_t length)
 {
   const uchar *a= *a_res, *b= *b_res;
-  uint a_char,b_char; 
+  uint a_char,b_char;
 
   while (length--)
   {
@@ -2623,7 +2623,7 @@ int my_strnncoll_gbk(CHARSET_INFO *cs __attribute__((unused)),
 
 
 static int my_strnncollsp_gbk(CHARSET_INFO * cs __attribute__((unused)),
-			      const uchar *a, size_t a_length, 
+			      const uchar *a, size_t a_length,
 			      const uchar *b, size_t b_length,
                               my_bool diff_if_only_endspace_difference)
 {
@@ -2681,7 +2681,7 @@ static size_t my_strnxfrm_gbk(CHARSET_INFO *cs __attribute__((unused)),
         *dest++ = gbktail(e);
       src+=2;
       len--;
-    } else 
+    } else
       *dest++ = sort_order_gbk[(uchar) *src++];
   }
   if (dstlen > srclen)
@@ -2701,6 +2701,10 @@ static uint mbcharlen_gbk(CHARSET_INFO *cs __attribute__((unused)),uint c)
   return (isgbkhead(c)? 2 : 1);
 }
 
+/* 补充了FE50~FEA0的GBK编码 */
+/* tab_gbk_uni0是gbk到unicode编码映射全表 */
+/* 其中FE7F的GBK编码对应为null,即对应unicode为0 */
+/* 这里是用GBK编码来做数据索引,所以不能跳过,必须填充对应unicode编码为0 */
 /* page 0 0x8140-0xFE4F */
 static uint16 tab_gbk_uni0[]={
 0x4E02,0x4E04,0x4E05,0x4E06,0x4E0F,0x4E12,0x4E17,0x4E1F,
@@ -5478,7 +5482,10 @@ static uint16 tab_gbk_uni0[]={
 0x594F,0x63CD,0x79DF,0x8DB3,0x5352,0x65CF,0x7956,0x8BC5,
 0x963B,0x7EC4,0x94BB,0x7E82,0x5634,0x9189,0x6700,0x7F6A,
 0x5C0A,0x9075,0x6628,0x5DE6,0x4F50,0x67DE,0x505A,0x4F5C,
-0x5750,0x5EA7,     0,     0,     0,     0,     0,     0,
+//0x5750,0x5EA7,     0,     0,     0,     0,     0,     0,
+/* change for cdb3.0 20120925 */
+/* 0xe810~0xe814为gbk 0xd7fa~0xd7fe对应的unicode编码 */
+0x5750,0x5EA7,0xE810,0xE811,0xE812,0xE813,0xE814,     0,
      0,     0,     0,     0,     0,     0,     0,     0,
      0,     0,     0,     0,     0,     0,     0,     0,
      0,     0,     0,     0,     0,     0,     0,     0,
@@ -6704,11 +6711,28 @@ static uint16 tab_gbk_uni0[]={
      0,     0,     0,     0,     0,     0,     0,     0,
      0,     0,     0,     0,     0,     0,     0,     0,
 0xFA0C,0xFA0D,0xFA0E,0xFA0F,0xFA11,0xFA13,0xFA14,0xFA18,
-0xFA1F,0xFA20,0xFA21,0xFA23,0xFA24,0xFA27,0xFA28,0xFA29
+0xFA1F,0xFA20,0xFA21,0xFA23,0xFA24,0xFA27,0xFA28,0xFA29,
+/* change for cdb3.0 20120924*/
+0xE815,0xE816,0xE817,0xE818,0xE819,0xE81A,0xE81B,0xE81C,
+0xE81D,0xE81E,0xE81F,0xE820,0xE821,0xE822,0xE823,0xE824,
+0xE825,0xE826,0xE827,0xE828,0xE829,0xE82A,0xE82B,0xE82C,
+0xE82D,0xE82E,0xE82F,0xE830,0xE831,0xE832,0xE833,0xE834,
+0xE835,0xE836,0xE837,0xE838,0xE839,0xE83A,0xE83B,0xE83C,
+0xE83D,0xE83E,0xE83F,0xE840,0xE841,0xE842,0xE843,     0,
+0xE844,0xE845,0xE846,0xE847,0xE848,0xE849,0xE84A,0xE84B,
+0xE84C,0xE84D,0xE84E,0xE84F,0xE850,0xE851,0xE852,0xE853,
+0xE854,0xE855,0xE856,0xE857,0xE858,0xE859,0xE85A,0xE85B,
+0xE85C,0xE85D,0xE85E,0xE85F,0xE860,0xE861,0xE862,0xE863,
+0xE864/* change for cdb3.0 20120924*/
 };
 
+/* 补充了FE50~FEA0的GBK编码 */
+/* func_gbk_uni_onechar是gbk到unicode编码映射表入口函数 */
 static int func_gbk_uni_onechar(int code){
-  if  ((code>=0x8140)&&(code<=0xFE4F))
+  /* change for cdb3.0 20120924 */
+  //if  ((code>=0x8140)&&(code<=0xFE4F))
+  if ((code>=0x8140)&&(code<=0xFEA0))
+  /* change for cdb3.0 20120924 */
     return(tab_gbk_uni0[code-0x8140]);
   return(0);
 }
@@ -9783,6 +9807,31 @@ static uint16 tab_uni_gbk8[]={
      0,     0,     0,     0,     0,     0,     0,     0,
 0xA1E9,0xA1EA,0xA956,0xA3FE,0xA957,0xA3A4};
 
+/* 补充了E815~E864的unicode编码到gbk编码的映射 */
+/* tab_uni_gbk9是新增的unicode编码到gbk编码的映射表 */
+/* 注意FE7F的gbk编码不存在,所以在tab_uni_gbk9的映射表中找不到 */
+/* change for cdb3.0 20120924 */
+/* page 8 0xE810-0xE864 */
+static uint16 tab_uni_gbk9[]={
+/* change for cdb3.0 20120925 */
+/* gbk编码0xd7fa~0xd7fe为空洞,属于GBK/2区,收录gb2312汉字6763个 */
+/* gbk编码0xd7fa~0xd7fe对应的unicode编码为0xe810~0xe814 */
+0xD7FA,0xD7FB,0xD7FC,0xD7FD,0xD7FE,
+/* change for cdb3.0 20120925 */
+0xFE50,0xFE51,0xFE52,0xFE53,0xFE54,0xFE55,0xFE56,0xFE57,
+0xFE58,0xFE59,0xFE5A,0xFE5B,0xFE5C,0xFE5D,0xFE5E,0xFE5F,
+0xFE60,0xFE61,0xFE62,0xFE63,0xFE64,0xFE65,0xFE66,0xFE67,
+0xFE68,0xFE69,0xFE6A,0xFE6B,0xFE6C,0xFE6D,0xFE6E,0xFE6F,
+0xFE70,0xFE71,0xFE72,0xFE73,0xFE74,0xFE75,0xFE76,0xFE77,
+0xFE78,0xFE79,0xFE7A,0xFE7B,0xFE7C,0xFE7D,0xFE7E,0xFE80,
+0xFE81,0xFE82,0xFE83,0xFE84,0xFE85,0xFE86,0xFE87,0xFE88,
+0xFE89,0xFE8A,0xFE8B,0xFE8C,0xFE8D,0xFE8E,0xFE8F,0xFE90,
+0xFE91,0xFE92,0xFE93,0xFE94,0xFE95,0xFE96,0xFE97,0xFE98,
+0xFE99,0xFE9A,0xFE9B,0xFE9C,0xFE9D,0xFE9E,0xFE9F,0xFEA0};
+/* change for cdb3.0 20120924 */
+
+/* 补充了E815~E864的unicode编码到gbk编码的映射处理 */
+/* func_uni_gbk_onechar是unicode编码到gbk编码映射的入口函数 */
 static int func_uni_gbk_onechar(int code){
   if ((code>=0x00A4)&&(code<=0x0451))
     return(tab_uni_gbk0[code-0x00A4]);
@@ -9802,6 +9851,10 @@ static int func_uni_gbk_onechar(int code){
     return(tab_uni_gbk7[code-0xF92C]);
   if ((code>=0xFE30)&&(code<=0xFFE5))
     return(tab_uni_gbk8[code-0xFE30]);
+  /* change for cdb3.0 20120924 */
+  if ((code>=0xE810)&&(code<=0xE864))
+    return(tab_uni_gbk9[code-0xE810]);
+  /* change for cdb3.0 20120924 */
   return(0);
 }
 
@@ -9810,22 +9863,22 @@ my_wc_mb_gbk(CHARSET_INFO *cs  __attribute__((unused)),
 	      my_wc_t wc, uchar *s, uchar *e)
 {
   int code;
-  
+
   if (s >= e)
     return MY_CS_TOOSMALL;
-  
+
   if ((uint) wc < 0x80)
   {
     s[0]= (uchar) wc;
     return 1;
   }
-  
+
   if (!(code=func_uni_gbk_onechar(wc)))
     return MY_CS_ILUNI;
-  
+
   if (s+2>e)
     return MY_CS_TOOSMALL2;
-    
+
   s[0]=code>>8;
   s[1]=code&0xFF;
   return 2;
@@ -9836,26 +9889,26 @@ my_mb_wc_gbk(CHARSET_INFO *cs __attribute__((unused)),
 	      my_wc_t *pwc, const uchar *s, const uchar *e)
 {
   int hi;
-  
+
   if (s >= e)
     return MY_CS_TOOSMALL;
-  
+
   hi=s[0];
-  
+
   if (hi<0x80)
   {
     pwc[0]=hi;
     return 1;
   }
-  
+
   if (s+2>e)
     return MY_CS_TOOSMALL2;
-    
+
   if (!(pwc[0]=func_gbk_uni_onechar( (hi<<8) + s[1])))
     return -2;
-  
+
   return 2;
-  
+
 }
 
 
@@ -9894,7 +9947,7 @@ size_t my_well_formed_len_gbk(CHARSET_INFO *cs __attribute__((unused)),
 }
 
 
-                             
+
 
 static MY_COLLATION_HANDLER my_collation_ci_handler =
 {
