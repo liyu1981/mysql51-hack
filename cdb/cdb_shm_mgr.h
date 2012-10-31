@@ -12,9 +12,6 @@
 #include "tfc_shm_map.h"
 #include "tfc_cache_access.h"
 
-//#define MYSQL_SERVER // define MYSQL_SERVER since we need opt_cdb_* variables
-//#include "../sql/mysql_priv.h" // must be included after system headers such as pthread.h, otherwise conflict with mysys
-
 namespace cdb {
 
 using namespace std;

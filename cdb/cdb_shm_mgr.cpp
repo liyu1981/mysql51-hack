@@ -6,7 +6,7 @@
 #include <sys/shm.h>
 #include <sys/time.h>
 
-#include "../sql/mysql_priv.h" // must be included after system headers such as pthread.h, otherwise conflict with mysys
+#include "mysql_headers.h"
 
 namespace cdb {
 
