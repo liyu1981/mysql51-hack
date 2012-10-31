@@ -59,6 +59,13 @@ map<string, CDBShmPair*> cdb_shm_pair_map;
 pthread_t cdb_shm_pair_switch_thread;
 const int cdb_shm_pair_switch_period = 60;
 
+#define SHM_LOCK_NUM 4
+#define SHM_LOCK_INS_DML 0
+#define SHM_LOCK_INS_CONN 1
+#define SHM_LOCK_CLIENT_DML 2
+#define SHM_LOCK_TABLE_DML 3
+pthread_mutex_t shm_lock_array[SHM_LOCK_NUM];
+
 void*
 cdb_shm_pair_switch_function(void* p)
 {
@@ -226,6 +233,10 @@ cdb_init_shm_mgr(const char* mysqld_data_path)
 
     shmid_of.close();
 
+    for(int i = 0; i < SHM_LOCK_NUM; ++i){
+        pthread_mutex_init(&shm_lock_array[i], MY_MUTEX_INIT_FAST);
+    }
+
     // init shm pair map
     for (int i=0; i<cdb_shm_pair_conf_size; ++i) {
         CDBShmPairConf& c = cdb_shm_pair_conf_array[i];
@@ -265,6 +276,9 @@ cdb_shutdown_shm_mgr()
     else
         return shmctl(shm_locks._id, IPC_RMID, NULL) == 0;
 
+    for(int i = 0; i < SHM_LOCK_NUM; ++i){
+        pthread_mutex_destroy(&shm_lock_array[i]);
+    }
     // no need to free mem of cdb_shm_pair_map, left it to OS
 
     // need to wait for the switch thread finish?
@@ -349,8 +363,8 @@ cdb_ins_dml_add(CDBInsDml& op, unsigned long long int begin_time, unsigned long 
     TfcShmMap<CDBInsDmlKey, CDBInsDml> m;
     m._ca = s._ca;
 
-    spin_lock(s._lock);
-
+   // spin_lock(s._lock);
+    pthread_mutex_lock(&shm_lock_array[SHM_LOCK_INS_DML]);
     int rv = m.find(op._key);
     if (rv > 0) {
         // not found
@@ -381,7 +395,8 @@ cdb_ins_dml_add(CDBInsDml& op, unsigned long long int begin_time, unsigned long 
         sql_print_error("CDB: cdb_ins_dml_add find key failed %d", rv);
     }
 
-    spin_unlock(s._lock);
+    //spin_unlock(s._lock);
+    pthread_mutex_unlock(&shm_lock_array[SHM_LOCK_INS_DML]);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -395,7 +410,8 @@ cdb_ins_conn_add(CDBInsConn& conn, unsigned long long int begin_time, unsigned l
     TfcShmMap<CDBInsConnKey, CDBInsConn> m;
     m._ca = s._ca;
 
-    spin_lock(s._lock);
+    //spin_lock(s._lock);
+    pthread_mutex_lock(&shm_lock_array[SHM_LOCK_INS_CONN]);
 
     int rv = m.find(conn._key);
     if (rv > 0) {
@@ -428,7 +444,8 @@ cdb_ins_conn_add(CDBInsConn& conn, unsigned long long int begin_time, unsigned l
         sql_print_error("CDB: cdb_ins_conn_add find key failed %d", rv);
     }
 
-    spin_unlock(s._lock);
+    //spin_unlock(s._lock);
+    pthread_mutex_unlock(&shm_lock_array[SHM_LOCK_INS_CONN]);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -442,7 +459,8 @@ cdb_ins_client_dml_add(CDBInsClientDml& op, unsigned long long int begin_time, u
     TfcShmMap<CDBInsClientDmlKey, CDBInsClientDml> m;
     m._ca = s._ca;
 
-    spin_lock(s._lock);
+    //spin_lock(s._lock);
+    pthread_mutex_lock(&shm_lock_array[SHM_LOCK_CLIENT_DML]);
 
     int rv = m.find(op._key);
     if (rv > 0) {
@@ -475,7 +493,8 @@ cdb_ins_client_dml_add(CDBInsClientDml& op, unsigned long long int begin_time, u
         sql_print_error("CDB: cdb_ins_client_dml_add find key failed %d", rv);
     }
 
-    spin_unlock(s._lock);
+    //spin_unlock(s._lock);
+    pthread_mutex_unlock(&shm_lock_array[SHM_LOCK_CLIENT_DML]);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -596,7 +615,8 @@ cdb_tab_dml_add(CDBTabDml& op, int type, unsigned long long int begin_time, unsi
     int buf_size = op.marshal_size();
     char* buf = (char*)malloc(buf_size);
 
-    spin_lock(s._lock);
+    //spin_lock(s._lock);
+    pthread_mutex_lock(&shm_lock_array[SHM_LOCK_TABLE_DML]);
 
     // NOTICE: have to do this after lock since the md5 calc function inside marshal_key is not thread safe.
     op.marshal_key(buf, buf_size, md5);
@@ -635,8 +655,8 @@ cdb_tab_dml_add(CDBTabDml& op, int type, unsigned long long int begin_time, unsi
         sql_print_error("CDB: cdb_tab_dml_add find key failed %d", rv);
     }
 
-    spin_unlock(s._lock);
-
+    //spin_unlock(s._lock);
+    pthread_mutex_unlock(&shm_lock_array[SHM_LOCK_TABLE_DML]);
     free(buf);
 }
 

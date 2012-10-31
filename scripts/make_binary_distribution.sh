@@ -323,7 +323,7 @@ if [ x"$BASE_SYSTEM" != x"netware" ] ; then
   # For CDB
   mkdir	$DEST/cdb-tools
   cp cdb/cdb.conf $DEST/cdb-tools
-  CDB_TOOLS="cdb_clear_shm.sh cdb_ins_dml_monitor cdb_ins_client_dml_monitor cdb_shm_conf_calc \
+  CDB_TOOLS="cdb_shm_dump cdb_clear_shm.sh cdb_ins_dml_monitor cdb_ins_client_dml_monitor cdb_shm_conf_calc \
   cdb_tab_dml_monitor cdb_ins_conn_monitor"
   for i in $CDB_TOOLS
   do
