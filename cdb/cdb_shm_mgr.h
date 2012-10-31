@@ -11,9 +11,9 @@
 #include "cdb_error.h"
 #include "tfc_shm_map.h"
 #include "tfc_cache_access.h"
-#include "tfc_spin_lock.h"
 
-#define CDB_SHM_LOCKS_NAME "cdb_shm_locks"
+//#define MYSQL_SERVER // define MYSQL_SERVER since we need opt_cdb_* variables
+//#include "../sql/mysql_priv.h" // must be included after system headers such as pthread.h, otherwise conflict with mysys
 
 namespace cdb {
 
@@ -51,17 +51,17 @@ const int CDB_SHM_META_MAX = 4096;
  */
 struct CDBShm
 {
-    string       _name;
-    key_t        _key;
-    size_t       _size;
-    int          _id;
-    void*        _addr;
-    bool         _new;
-    CacheAccess* _ca;
-    spinlock_t*  _lock;
-    void*        _data_addr;
-    size_t       _data_size;
-    void*        _meta_addr;
+    string           _name;
+    key_t            _key;
+    size_t           _size;
+    int              _id;
+    void*            _addr;
+    bool             _new;
+    CacheAccess*     _ca;
+    pthread_mutex_t* _lock;
+    void*            _data_addr;
+    size_t           _data_size;
+    void*            _meta_addr;
 };
 
 class CDBShmMgr
@@ -86,9 +86,21 @@ public:
 
     void detach_all();
 
+    pthread_mutex_t* get_lock(int i) { return &_shm_lock_array[i]; }
+
+    void destroy_all_lock()
+    {
+        for (int i=0; i<_shm_lock_array_size; ++i) {
+            pthread_mutex_destroy(&_shm_lock_array[i]);
+        }
+    }
+
 private:
     static CDBShmMgr* _instance;
+
     map<string, CDBShm*> _shm_map;
+    pthread_mutex_t*     _shm_lock_array;
+    int                  _shm_lock_array_size;
 
 private:
     CDBShmMgr();

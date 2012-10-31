@@ -1,5 +1,5 @@
 cdb_prefix=$(shell readlink -f ..)/sql/
-LIBCDB_INC=../cdb
+LIBCDB_INC=-I../cdb -I../include -I../regex -I../sql
 LIBCDB_A=../cdb/libcdb.a -lpthread
 
 mysql_prefix=$(shell grep "^prefix = " ../Makefile | awk '{print $$3}')
@@ -29,7 +29,7 @@ cdb_shm_conf_calc: cdb_shm_conf_calc.o $(exe_comm_obj)
 	g++ $(LDFLAG) -o $@ $^ $(LIBCDB_A)
 
 .cpp.o:
-	g++ -c -g $(CXXFLAG) -I$(LIBCDB_INC) -o $@ $<
+	g++ -c -g $(CXXFLAG) $(LIBCDB_INC) -o $@ $<
 
 clean:
 	rm *.o

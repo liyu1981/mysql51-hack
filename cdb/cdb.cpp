@@ -4,7 +4,6 @@
 #include <sstream>
 #include <set>
 #include <sys/ipc.h>
-#include <pthread.h>
 
 #include "tfc_base_config_file.h"
 #include "tfc_base_str.h"
@@ -58,13 +57,6 @@ set<string> cdb_shm_names;
 map<string, CDBShmPair*> cdb_shm_pair_map;
 pthread_t cdb_shm_pair_switch_thread;
 const int cdb_shm_pair_switch_period = 60;
-
-#define SHM_LOCK_NUM 4
-#define SHM_LOCK_INS_DML 0
-#define SHM_LOCK_INS_CONN 1
-#define SHM_LOCK_CLIENT_DML 2
-#define SHM_LOCK_TABLE_DML 3
-pthread_mutex_t shm_lock_array[SHM_LOCK_NUM];
 
 void*
 cdb_shm_pair_switch_function(void* p)
@@ -188,7 +180,7 @@ cdb_init_shm_mgr(const char* mysqld_data_path)
         }
     }
 
-    // init shm mgr & lock section
+    // init shm mgr
     string shmid_file_path = cdb_mysqld_data_path + string("/cdb_shm_id.txt");
     ofstream shmid_of;
     shmid_of.open(shmid_file_path.c_str(), std::ios::out | std::ios::trunc);
@@ -202,7 +194,6 @@ cdb_init_shm_mgr(const char* mysqld_data_path)
     cdb_errno = sm.init(mysqld_data_path, cdb_shm_conf_size, shmid_of);
     if (cdb_errno != CDB_FINE)
         return false;
-    CDBShm& shm_locks = sm.get(CDB_SHM_LOCKS_NAME);
 
     // init all shm sections
     for (int i=0; i<cdb_shm_conf_size; ++i) {
@@ -223,8 +214,7 @@ cdb_init_shm_mgr(const char* mysqld_data_path)
             return false;
         }
 
-        s._lock = (spinlock_t*)shm_locks._data_addr+i;
-        spin_lock_init(s._lock);
+        s._lock = sm.get_lock(i);
 
         shmid_of << s._name << " " << s._key << " (lock " << i << ")" << endl;
         fprintf(stderr, "=== shm_name: %s, shm_key: %#x ===\n", s._name.c_str(), s._key);
@@ -232,10 +222,6 @@ cdb_init_shm_mgr(const char* mysqld_data_path)
     }
 
     shmid_of.close();
-
-    for(int i = 0; i < SHM_LOCK_NUM; ++i){
-        pthread_mutex_init(&shm_lock_array[i], MY_MUTEX_INIT_FAST);
-    }
 
     // init shm pair map
     for (int i=0; i<cdb_shm_pair_conf_size; ++i) {
@@ -270,18 +256,13 @@ bool
 cdb_shutdown_shm_mgr()
 {
     CDBShmMgr& sm = CDBShmMgr::getInstance();
-    CDBShm& shm_locks = sm.get(CDB_SHM_LOCKS_NAME);
-    if (shm_locks._data_addr == 0)
-        return false;
-    else
-        return shmctl(shm_locks._id, IPC_RMID, NULL) == 0;
+    sm.destroy_all_lock();
 
-    for(int i = 0; i < SHM_LOCK_NUM; ++i){
-        pthread_mutex_destroy(&shm_lock_array[i]);
-    }
     // no need to free mem of cdb_shm_pair_map, left it to OS
 
     // need to wait for the switch thread finish?
+
+    return true;
 }
 
 bool
@@ -294,7 +275,6 @@ cdb_attach_shm_mgr(const char* mysqld_data_path)
     cdb_errno = sm.attach(mysqld_data_path, cdb_shm_conf_size);
     if (cdb_errno != CDB_FINE)
         return false;
-    CDBShm& shm_locks = sm.get(CDB_SHM_LOCKS_NAME);
 
     for (int i=0; i<cdb_shm_conf_size; ++i) {
         CDBShmConf& c = cdb_shm_conf_array[i];
@@ -312,10 +292,6 @@ cdb_attach_shm_mgr(const char* mysqld_data_path)
             cdb_2nd_errno = ret;
             return false;
         }
-
-        s._lock = (spinlock_t*)shm_locks._data_addr+i;
-        if(shm_locks._new)
-            spin_lock_init(s._lock);
     }
 
     return true;
@@ -368,8 +344,8 @@ cdb_ins_dml_add(CDBInsDml& op, unsigned long long int begin_time, unsigned long 
     TfcShmMap<CDBInsDmlKey, CDBInsDml> m;
     m._ca = s._ca;
 
-   // spin_lock(s._lock);
-    pthread_mutex_lock(&shm_lock_array[SHM_LOCK_INS_DML]);
+    pthread_mutex_lock(s._lock);
+
     int rv = m.find(op._key);
     if (rv > 0) {
         // not found
@@ -400,8 +376,7 @@ cdb_ins_dml_add(CDBInsDml& op, unsigned long long int begin_time, unsigned long 
         sql_print_error("CDB: cdb_ins_dml_add find key failed %d", rv);
     }
 
-    //spin_unlock(s._lock);
-    pthread_mutex_unlock(&shm_lock_array[SHM_LOCK_INS_DML]);
+    pthread_mutex_unlock(s._lock);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -418,8 +393,7 @@ cdb_ins_conn_add(CDBInsConn& conn, unsigned long long int begin_time, unsigned l
     TfcShmMap<CDBInsConnKey, CDBInsConn> m;
     m._ca = s._ca;
 
-    //spin_lock(s._lock);
-    pthread_mutex_lock(&shm_lock_array[SHM_LOCK_INS_CONN]);
+    pthread_mutex_lock(s._lock);
 
     int rv = m.find(conn._key);
     if (rv > 0) {
@@ -451,8 +425,7 @@ cdb_ins_conn_add(CDBInsConn& conn, unsigned long long int begin_time, unsigned l
         sql_print_error("CDB: cdb_ins_conn_add find key failed %d", rv);
     }
 
-    //spin_unlock(s._lock);
-    pthread_mutex_unlock(&shm_lock_array[SHM_LOCK_INS_CONN]);
+    pthread_mutex_unlock(s._lock);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -469,8 +442,7 @@ cdb_ins_client_dml_add(CDBInsClientDml& op, unsigned long long int begin_time, u
     TfcShmMap<CDBInsClientDmlKey, CDBInsClientDml> m;
     m._ca = s._ca;
 
-    //spin_lock(s._lock);
-    pthread_mutex_lock(&shm_lock_array[SHM_LOCK_CLIENT_DML]);
+    pthread_mutex_lock(s._lock);
 
     int rv = m.find(op._key);
     if (rv > 0) {
@@ -502,8 +474,7 @@ cdb_ins_client_dml_add(CDBInsClientDml& op, unsigned long long int begin_time, u
         sql_print_error("CDB: cdb_ins_client_dml_add find key failed %d", rv);
     }
 
-    //spin_unlock(s._lock);
-    pthread_mutex_unlock(&shm_lock_array[SHM_LOCK_CLIENT_DML]);
+    pthread_mutex_unlock(s._lock);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -627,8 +598,7 @@ cdb_tab_dml_add(CDBTabDml& op, int type, unsigned long long int begin_time, unsi
     int buf_size = op.marshal_size();
     char* buf = (char*)malloc(buf_size);
 
-    //spin_lock(s._lock);
-    pthread_mutex_lock(&shm_lock_array[SHM_LOCK_TABLE_DML]);
+    pthread_mutex_lock(s._lock);
 
     // NOTICE: have to do this after lock since the md5 calc function inside marshal_key is not thread safe.
     op.marshal_key(buf, buf_size, md5);
@@ -667,8 +637,7 @@ cdb_tab_dml_add(CDBTabDml& op, int type, unsigned long long int begin_time, unsi
         sql_print_error("CDB: cdb_tab_dml_add find key failed %d", rv);
     }
 
-    //spin_unlock(s._lock);
-    pthread_mutex_unlock(&shm_lock_array[SHM_LOCK_TABLE_DML]);
+    pthread_mutex_unlock(s._lock);
     free(buf);
 }
 

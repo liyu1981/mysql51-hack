@@ -1,9 +1,3 @@
-#include "cdb.h"
-#include "cdb_shm_mgr.h"
-#include "tfc_shm_map.h"
-#include "tfc_spin_lock.h"
-using namespace cdb;
-
 #include <string>
 #include <iomanip>
 #include <iostream>
@@ -15,6 +9,11 @@ using namespace std;
 #include <arpa/inet.h>
 
 #include "cdb_tool_comm.h"
+
+#include "cdb.h"
+#include "cdb_shm_mgr.h"
+#include "tfc_shm_map.h"
+using namespace cdb;
 
 void
 usage(const char* appname)
@@ -97,6 +96,7 @@ copy_shm_data(const CDBShm& s)
         exit(ret);
     }
 
+    /*
     unsigned hash_node_used, hash_node_total, chunk_node_used, chunk_node_total;
     ca->get_node_num(hash_node_used, hash_node_total, chunk_node_used, chunk_node_total);
     cerr << "debug: ca hash_node_used:" << hash_node_used
@@ -104,6 +104,7 @@ copy_shm_data(const CDBShm& s)
          << " chunk_node_used:" << chunk_node_used
          << " chunk_node_total:" << chunk_node_total
          << endl;
+    */
 
     return ca;
 

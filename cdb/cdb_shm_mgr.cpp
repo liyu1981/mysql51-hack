@@ -1,7 +1,6 @@
 /* vim: set ts=4 sw=4 tw=0: */
 #include "cdb_shm_mgr.h"
 #include "cdb_error.h"
-#include "tfc_spin_lock.h"
 
 #include <sys/ipc.h>
 #include <sys/shm.h>
@@ -19,6 +18,7 @@ CDBShm wrong_shm = {"", 0, 0, 0, 0, false, 0, 0, 0, 0, 0};
 
 CDBShmMgr::CDBShmMgr()
 {
+    _shm_lock_array_size = 0;
 }
 
 CDBShmMgr&
@@ -33,27 +33,18 @@ CDBShmMgr::getInstance()
 int
 CDBShmMgr::init(const char* mysqld_data_path, int shm_conf_size, ofstream& shmid_of)
 {
-    size_t size = sizeof(spinlock_t)*shm_conf_size;
-    key_t key = ftok(mysqld_data_path, 0);
-    if (!reg(CDB_SHM_LOCKS_NAME, key, size, false)) {
-        return CDB_SHM_INIT_SHMLOCKS_ERROR;
+    _shm_lock_array_size = shm_conf_size;
+    _shm_lock_array = (pthread_mutex_t*)malloc(sizeof(pthread_mutex_t)*_shm_lock_array_size);
+    for (int i=0; i<_shm_lock_array_size; ++i) {
+        pthread_mutex_init(&_shm_lock_array[i], NULL);
     }
-    CDBShm& sm = get(CDB_SHM_LOCKS_NAME);
-    shmid_of << CDB_SHM_LOCKS_NAME << " " << key << endl;
-    if (!sm._new) {
-        return CDB_SHM_INIT_SHMLOCKS_STALE;
-    }
+
     return CDB_FINE;
 }
 
 int
 CDBShmMgr::attach(const char* mysqld_data_path, int shm_conf_size)
 {
-    size_t size = sizeof(spinlock_t)*shm_conf_size;
-    key_t key = ftok(mysqld_data_path, 0);
-    if (!reg(CDB_SHM_LOCKS_NAME, key, size, false)) {
-        return CDB_SHM_INIT_SHMLOCKS_ERROR;
-    }
     return CDB_FINE;
 }
 
@@ -148,8 +139,8 @@ CDBShmPair::switch_shm()
     }
 
     // 2nd: lock _current and _standby, wait for outstand write
-    spin_lock(_current->_lock);
-    spin_lock(_standby->_lock);
+    pthread_mutex_lock(_current->_lock);
+    pthread_mutex_lock(_standby->_lock);
 
     // 3rd: switch pointers
     CDBShm* tmp = _current;
@@ -157,8 +148,8 @@ CDBShmPair::switch_shm()
     _standby = tmp;
 
     // 4th: release locks
-    spin_unlock(_standby->_lock);
-    spin_unlock(_current->_lock);
+    pthread_mutex_unlock(_standby->_lock);
+    pthread_mutex_unlock(_current->_lock);
 }
 
 CDBShm&
