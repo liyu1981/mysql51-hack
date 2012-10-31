@@ -373,13 +373,21 @@ char* md5_get_str(char md5[16])
 
 char* md5_buf(u_char* buf,int size)
 {
-	//static u_char p[16];
-    u_char* p = (u_char*)malloc(sizeof(u_char)*16);
+	static u_char p[16];
     MD5_CTX md5;
     MD5Init(&md5);
     MD5Update(&md5,(u_char*)buf,size);
     MD5Final(p,&md5);
-	return (char*)p;
+    return (char*)p;
+}
+
+void md5_buf_safe(u_char* buf,int size, char* k)
+{
+	//static u_char p[16];
+    MD5_CTX md5;
+    MD5Init(&md5);
+    MD5Update(&md5,(u_char*)buf,size);
+    MD5Final((u_char*)k,&md5);
 }
 
 char* md5_str(u_char* buf,int size)

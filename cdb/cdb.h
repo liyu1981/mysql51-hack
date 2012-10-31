@@ -151,7 +151,7 @@ struct CDBTabDml
     CDBCommStat _comm_stats[CDB_OP_TYPE_SIZE];
 
     int marshal_size();
-    void marshal_key(char* buf, int buf_size, char*& key_md5_buf);
+    void marshal_key(char* buf, int buf_size, char* key_md5_buf);
     void marshal_stats(char* buf, int buf_size);
     int de_marshal_key(char* buf, int buf_size);
     int de_marshal_stats(char* buf, int buf_size);

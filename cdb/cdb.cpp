@@ -342,14 +342,15 @@ cdb_ins_dml_add(CDBInsDml& op, unsigned long long int begin_time, unsigned long 
     CDBShm& s = cdb_shm_pair_map["cdb_ins_dml"]->get_current();
     TfcShmMap<CDBInsDmlKey, CDBInsDml> m;
     m._ca = s._ca;
+    m.cache_key(op._key);
 
     pthread_mutex_lock(s._lock);
 
-    int rv = m.find(op._key);
+    int rv = m.find();
     if (rv > 0) {
         // not found
         cdb_comm_stat_add(op._comm_stat, op_diff, true);
-        int r = m.insert(op._key, op);
+        int r = m.insert(op);
         if (r>0) {
             // TOFIX: insert failed, then?
             sql_print_error("CDB: cdb_ins_dml_add insert new item failed %d", r);
@@ -358,13 +359,13 @@ cdb_ins_dml_add(CDBInsDml& op, unsigned long long int begin_time, unsigned long 
     else if (rv == 0) {
         // found, so update
         CDBInsDml entry;
-        int r = m.get(op._key, entry);
+        int r = m.get(entry);
         if (r>0) {
             // TOFIX: insert failed, then?
             sql_print_error("CDB: cdb_ins_dml_add get item failed %d", r);
         }
         cdb_comm_stat_add(entry._comm_stat, op_diff);
-        r = m.insert(entry._key, entry);
+        r = m.insert(entry);
         if (r>0) {
             // TOFIX: insert failed, then?
             sql_print_error("CDB: cdb_ins_dml_add update item failed %d", r);
@@ -391,14 +392,15 @@ cdb_ins_conn_add(CDBInsConn& conn, unsigned long long int begin_time, unsigned l
     CDBShm& s = cdb_shm_pair_map["cdb_ins_conn"]->get_current();
     TfcShmMap<CDBInsConnKey, CDBInsConn> m;
     m._ca = s._ca;
+    m.cache_key(conn._key);
 
     pthread_mutex_lock(s._lock);
 
-    int rv = m.find(conn._key);
+    int rv = m.find();
     if (rv > 0) {
         // not found
         cdb_comm_stat_add(conn._comm_stat, time_diff, true);
-        int r = m.insert(conn._key, conn);
+        int r = m.insert(conn);
         if (r>0) {
             // TOFIX: insert failed, then?
             sql_print_error("CDB: cdb_ins_conn_add insert new item failed %d", r);
@@ -407,13 +409,13 @@ cdb_ins_conn_add(CDBInsConn& conn, unsigned long long int begin_time, unsigned l
     else if (rv == 0) {
         // found, so update
         CDBInsConn entry;
-        int r = m.get(conn._key, entry);
+        int r = m.get(entry);
         if (r>0) {
             // TOFIX: insert failed, then?
             sql_print_error("CDB: cdb_ins_conn_add get item failed %d", r);
         }
         cdb_comm_stat_add(entry._comm_stat, time_diff);
-        r = m.insert(entry._key, entry);
+        r = m.insert(entry);
         if (r>0) {
             // TOFIX: insert failed, then?
             sql_print_error("CDB: cdb_ins_conn_add update item failed %d", r);
@@ -440,14 +442,15 @@ cdb_ins_client_dml_add(CDBInsClientDml& op, unsigned long long int begin_time, u
     CDBShm& s = cdb_shm_pair_map["cdb_ins_client_dml"]->get_current();
     TfcShmMap<CDBInsClientDmlKey, CDBInsClientDml> m;
     m._ca = s._ca;
+    m.cache_key(op._key);
 
     pthread_mutex_lock(s._lock);
 
-    int rv = m.find(op._key);
+    int rv = m.find();
     if (rv > 0) {
         // not found
         cdb_comm_stat_add(op._comm_stat, op_diff, true);
-        int r = m.insert(op._key, op);
+        int r = m.insert(op);
         if (r>0) {
             // TOFIX: insert failed, then?
             sql_print_error("CDB: cdb_ins_client_dml_add insert new item failed %d", r);
@@ -456,13 +459,13 @@ cdb_ins_client_dml_add(CDBInsClientDml& op, unsigned long long int begin_time, u
     else if (rv == 0) {
         // found, so update
         CDBInsClientDml entry;
-        int r = m.get(op._key, entry);
+        int r = m.get(entry);
         if (r>0) {
             // TOFIX: insert failed, then?
             sql_print_error("CDB: cdb_ins_client_dml_add get item failed %d", r);
         }
         cdb_comm_stat_add(entry._comm_stat, op_diff);
-        r = m.insert(entry._key, entry);
+        r = m.insert(entry);
         if (r>0) {
             // TOFIX: insert failed, then?
             sql_print_error("CDB: cdb_ins_client_dml_add update item failed %d", r);
@@ -504,7 +507,7 @@ CDBTabDml::marshal_size()
 }
 
 void
-CDBTabDml::marshal_key(char* buf, int buf_size, char*& key_md5)
+CDBTabDml::marshal_key(char* buf, int buf_size, char* key)
 {
     char* p = buf + sizeof(_comm_stats);
     char* key_buf = p;
@@ -525,7 +528,7 @@ CDBTabDml::marshal_key(char* buf, int buf_size, char*& key_md5)
         memcpy(p, s.c_str(), ss); p = p+ss;
     }
 
-    key_md5 = md5_buf((unsigned char*)key_buf, key_size);
+    MurmurHash3_x64_128(key_buf, key_size, MURMURHASH_SEED, (void*)key);
 }
 
 int
@@ -578,7 +581,6 @@ CDBTabDml::reset_stats()
     memset(&_comm_stats[0], 0, sizeof(_comm_stats));
 }
 
-/*
 void
 cdb_tab_dml_add(CDBTabDml& op, int type, unsigned long long int begin_time, unsigned long long int end_time)
 {
@@ -594,23 +596,21 @@ cdb_tab_dml_add(CDBTabDml& op, int type, unsigned long long int begin_time, unsi
 
     CDBShm& s = cdb_shm_pair_map["cdb_tab_dml"]->get_current();
 
-    char* md5 = NULL;
+    char h[KEY_SIZE];
     int buf_size = op.marshal_size();
     char* buf = (char*)malloc(buf_size);
+    op.marshal_key(buf, buf_size, &h[0]);
 
     pthread_mutex_lock(s._lock);
 
-    // NOTICE: have to do this after lock since the md5 calc function inside marshal_key is not thread safe.
-    op.marshal_key(buf, buf_size, md5);
-
     unsigned int dl; bool df; long ts;
-    int rv = s._ca->get_key(md5, dl, df, ts);
+    int rv = s._ca->get_key(h, dl, df, ts);
     if (rv>0) {
         // not found
         op.reset_stats();
         cdb_comm_stat_add(op._comm_stats[type], op_diff, true);
         op.marshal_stats(buf, buf_size);
-        int r = s._ca->set(md5, buf, buf_size);
+        int r = s._ca->set(h, buf, buf_size);
         if (r>0) {
             // TOFIX:
             sql_print_error("CDB: cdb_tab_dml_add insert new item failed %d", r);
@@ -618,7 +618,7 @@ cdb_tab_dml_add(CDBTabDml& op, int type, unsigned long long int begin_time, unsi
     }
     else if (rv==0) {
         // found, so update
-        int r = s._ca->get(md5, buf, buf_size, dl, df, ts);
+        int r = s._ca->get(h, buf, buf_size, dl, df, ts);
         if (r>0) {
             // TOFIX:
             sql_print_error("CDB: cdb_tab_dml_add get item failed %d", r);
@@ -626,70 +626,7 @@ cdb_tab_dml_add(CDBTabDml& op, int type, unsigned long long int begin_time, unsi
         op.de_marshal_stats(buf, buf_size);
         cdb_comm_stat_add(op._comm_stats[type], op_diff);
         op.marshal_stats(buf, buf_size);
-        r = s._ca->set(md5, buf, buf_size);
-        if (r>0) {
-            // TOFIX: insert failed, then?
-            sql_print_error("CDB: cdb_tab_dml_add update item failed %d", r);
-        }
-    }
-    else {
-        // TOFIX: sth wrong, may be shm map corrupted?
-        sql_print_error("CDB: cdb_tab_dml_add find key failed %d", rv);
-    }
-
-    pthread_mutex_unlock(s._lock);
-    free(buf);
-}
-*/
-
-void
-cdb_tab_dml_add(CDBTabDml& op, int type, unsigned long long int begin_time, unsigned long long int end_time)
-{
-    if (opt_cdb_stat_table_dml == 0)
-        return;
-
-    if (type <0 || type >= CDB_OP_TYPE_SIZE) {
-        sql_print_error("CDB: cdb_tab_dml_add wrong type %d, skip", type);
-        return;
-    }
-
-    double op_diff = (end_time - begin_time) * 0.000001;
-
-    CDBShm& s = cdb_shm_pair_map["cdb_tab_dml"]->get_current();
-
-    char* md5 = NULL;
-    int buf_size = op.marshal_size();
-    char* buf = (char*)malloc(buf_size);
-
-    pthread_mutex_lock(s._lock);
-
-    // NOTICE: have to do this after lock since the md5 calc function inside marshal_key is not thread safe.
-    op.marshal_key(buf, buf_size, md5);
-
-    unsigned int dl; bool df; long ts;
-    int rv = s._ca->get_key(md5, dl, df, ts);
-    if (rv>0) {
-        // not found
-        op.reset_stats();
-        cdb_comm_stat_add(op._comm_stats[type], op_diff, true);
-        op.marshal_stats(buf, buf_size);
-        int r = s._ca->set(md5, buf, buf_size);
-        if (r>0) {
-            // TOFIX:
-            sql_print_error("CDB: cdb_tab_dml_add insert new item failed %d", r);
-        }
-    }
-    else if (rv==0) {
-        // found, so update
-        int r = s._ca->get(md5, buf, buf_size, dl, df, ts);
-        if (r>0) {
-            // TOFIX:
-            sql_print_error("CDB: cdb_tab_dml_add get item failed %d", r);
-        }
-        op.de_marshal_stats(buf, buf_size);
-        cdb_comm_stat_add(op._comm_stats[type], op_diff);
-        op.marshal_stats(buf, buf_size);
-        r = s._ca->set(md5, buf, buf_size);
+        r = s._ca->set(h, buf, buf_size);
         if (r>0) {
             // TOFIX: insert failed, then?
             sql_print_error("CDB: cdb_tab_dml_add update item failed %d", r);

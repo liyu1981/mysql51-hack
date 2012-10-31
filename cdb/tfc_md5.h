@@ -28,6 +28,7 @@ char* md5_get_str(char md5[16]);
 
 char* md5_str(u_char* buf,int size);
 char* md5_buf(u_char* buf,int size);
+void md5_buf_safe(u_char* buf,int size, char* k);
 
 char* md5_file(char* filename);
 

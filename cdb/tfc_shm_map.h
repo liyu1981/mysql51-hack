@@ -9,6 +9,9 @@
 #include "tfc_spin_lock.h"
 #include "MurmurHash3.h"
 
+#define KEY_SIZE 16
+#define MURMURHASH_SEED 17
+
 namespace tfc {
 
 using namespace std;
@@ -26,8 +29,6 @@ struct TfcShmMapNoLock
     static void lock(spinlock_t* l) {}
     static void unlock(spinlock_t* l) {}
 };
-
-#define KEY_SIZE 16
 
 template<class VT, class LockPolicy>
 class TfcShmMapBase
@@ -91,34 +92,20 @@ public:
 };
 
 template<class T>
-struct TfcShmMapKey
+struct TfcShmMapHashMd5
 {
-	static char* get_md5key(const T& key)
+	static void get_hash_key(const T& key, char* hash_key)
 	{
-        char* s =  md5_buf((unsigned char*)&key, sizeof(T));
-        return s;
+        md5_buf_safe((unsigned char*)&key, sizeof(T), hash_key);
 	}
-
-    static void get_murmur_hash3(const T& key, char* h)
-    {
-        MurmurHash3_x64_128((const void*)&key, sizeof(T), 0, (void*)h);
-    }
 };
 
-template<>
-struct TfcShmMapKey<string>
+template<class T>
+struct TfcShmMapHashMurmur
 {
-	static char* get_md5key(const string& key)
-	{
-		const char* rawkey = key.c_str();
-        char* s =  md5_buf((unsigned char*)&rawkey[0], key.size());
-        return s;
-	}
-
-    static void get_murmur_hash3(const string& key, char* h)
+    static void get_hash_key(const T& key, char* hash_key)
     {
-        const char* rawkey = key.c_str();
-        MurmurHash3_x64_128((const void*)&rawkey[0], key.size(), 0, (void*)h);
+        MurmurHash3_x64_128((const void*)&key, sizeof(T), MURMURHASH_SEED, (void*)hash_key);
     }
 };
 
@@ -221,101 +208,87 @@ struct TfcShmMapIterator
 	int cur_data_flag;
 };
 
+template<class PT>
 struct TfcShmMapFreeLater
 {
-    TfcShmMapFreeLater(char* p): _p(p) {}
+    TfcShmMapFreeLater(PT* p): _p(p) {}
     ~TfcShmMapFreeLater() { free(_p); }
-    char* _p;
+    PT* _p;
 };
 
-/*
-template<class KT, class VT, class LockPolicy = TfcShmMapNoLock>
+template<class KT, class VT,
+         class LockPolicy = TfcShmMapNoLock,
+         class HashPolicy = TfcShmMapHashMurmur<KT> >
 class TfcShmMap
 	: public TfcShmMapBase<VT, LockPolicy>
 {
 public:
+    void cache_key(const KT key)
+    {
+        HashPolicy::get_hash_key(key, _hash_key);
+    }
+
+    void set_cache_key(char* hash_key)
+    {
+        memcpy(_hash_key, hash_key, KEY_SIZE);
+    }
+
+    int find()
+    {
+        return TfcShmMapBase<VT, LockPolicy>::base_find(_hash_key);
+    }
+
 	int find(const KT key)
     {
-        char* md5 = TfcShmMapKey<KT>::get_md5key(key);
-        TfcShmMapFreeLater __fl(md5);
-        return TfcShmMapBase<VT, LockPolicy>::base_find(md5);
+        cache_key(key);
+        return find();
+    }
+
+    VT get()
+    {
+        return TfcShmMapBase<VT, LockPolicy>::base_get(_hash_key);
     }
 
     VT get(const KT key)
     {
-        char* md5 = TfcShmMapKey<KT>::get_md5key(key);
-        TfcShmMapFreeLater __fl(md5);
-        return TfcShmMapBase<VT, LockPolicy>::base_get(md5);
+        cache_key(key);
+        return get();
+    }
+
+    int get(VT& value)
+    {
+        return TfcShmMapBase<VT, LockPolicy>::base_get(_hash_key, value);
     }
 
     int get(const KT key, VT& value)
     {
-        char* md5 = TfcShmMapKey<KT>::get_md5key(key);
-        TfcShmMapFreeLater __fl(md5);
-        return TfcShmMapBase<VT, LockPolicy>::base_get(md5, value);
+        cache_key(key);
+        return get(value);
+    }
+
+    int insert(const VT value)
+    {
+        return base_insert(_hash_key, value);
     }
 
 	int insert(const KT key, const VT value )
     {
-        char* md5 = TfcShmMapKey<KT>::get_md5key(key);
-        TfcShmMapFreeLater __fl(md5);
-        return base_insert(md5, value);
+        cache_key(key);
+        return insert(value);
+    }
+
+    int erase()
+    {
+        return TfcShmMapBase<VT, LockPolicy>::base_erase(_hash_key);
     }
 
 	int erase(const KT key)
     {
-        char* md5 = TfcShmMapKey<KT>::get_md5key(key);
-        TfcShmMapFreeLater __fl(md5);
-        return TfcShmMapBase<VT, LockPolicy>::base_erase(md5);
+        cache_key(key);
+        return erase();
     }
 
-	typedef TfcShmMapIterator<VT> iterator;
-    iterator begin() { _begin.init_begin(TfcShmMapBase<VT, LockPolicy>::_ca); return _begin; }
-    iterator end() { _end._ca = NULL; return _end; }
-	iterator _begin;
-	iterator _end;
-};
-*/
-
-template<class KT, class VT, class LockPolicy = TfcShmMapNoLock>
-class TfcShmMap
-	: public TfcShmMapBase<VT, LockPolicy>
-{
-public:
-	int find(const KT key)
-    {
-        char h[KEY_SIZE];
-        TfcShmMapKey<KT>::get_murmur_hash3(key, h);
-        return TfcShmMapBase<VT, LockPolicy>::base_find(h);
-    }
-
-    VT get(const KT key)
-    {
-        char h[KEY_SIZE];
-        TfcShmMapKey<KT>::get_murmur_hash3(key, h);
-        return TfcShmMapBase<VT, LockPolicy>::base_get(h);
-    }
-
-    int get(const KT key, VT& value)
-    {
-        char h[KEY_SIZE];
-        TfcShmMapKey<KT>::get_murmur_hash3(key, h);
-        return TfcShmMapBase<VT, LockPolicy>::base_get(h, value);
-    }
-
-	int insert(const KT key, const VT value )
-    {
-        char h[KEY_SIZE];
-        TfcShmMapKey<KT>::get_murmur_hash3(key, h);
-        return base_insert(h, value);
-    }
-
-	int erase(const KT key)
-    {
-        char h[KEY_SIZE];
-        TfcShmMapKey<KT>::get_murmur_hash3(key, h);
-        return TfcShmMapBase<VT, LockPolicy>::base_erase(h);
-    }
+    char _hash_key[KEY_SIZE];
 
 	typedef TfcShmMapIterator<VT> iterator;
     iterator begin() { _begin.init_begin(TfcShmMapBase<VT, LockPolicy>::_ca); return _begin; }
