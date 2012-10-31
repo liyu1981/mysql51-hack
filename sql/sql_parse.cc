@@ -1760,7 +1760,6 @@ void cdb_stat_instance_dml_func(THD *thd)
 
   if(likely(opt_cdb_stat_ins_dml))
   {
-
     CDBInsDml op;
 	op._key._type = sql_type;
 

@@ -91,11 +91,20 @@ copy_shm_data(const CDBShm& s)
     }
 
     CacheAccess* ca = new CacheAccess();
-    int ret = ca->open((char*)mem, s._data_size, true, c->_node_total, c->_bucket_size, c->_n_chunks, c->_chunk_size);
+    int ret = ca->open((char*)mem, s._data_size, false, c->_node_total, c->_bucket_size, c->_n_chunks, c->_chunk_size);
     if (ret != 0) {
         cerr << "construct ca on copied mem failed, error: " << ret << endl;
         exit(ret);
     }
+
+    unsigned hash_node_used, hash_node_total, chunk_node_used, chunk_node_total;
+    ca->get_node_num(hash_node_used, hash_node_total, chunk_node_used, chunk_node_total);
+    cerr << "debug: ca hash_node_used:" << hash_node_used
+         << " hash_node_total:" << hash_node_total
+         << " chunk_node_used:" << chunk_node_used
+         << " chunk_node_total:" << chunk_node_total
+         << endl;
+
     return ca;
 
     // both mem and ca is not needed to be handly freed since it must exist all lifetime of this program

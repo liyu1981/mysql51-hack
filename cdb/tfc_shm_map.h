@@ -3,6 +3,7 @@
 
 #include <string>
 #include <stdio.h>
+#include <stdlib.h>
 #include "tfc_cache_access.h"
 #include "tfc_md5.h"
 #include "tfc_spin_lock.h"
@@ -208,6 +209,13 @@ struct TfcShmMapIterator
 	int cur_data_flag;
 };
 
+struct TfcShmMapFreeLater
+{
+    TfcShmMapFreeLater(char* p): _p(p) {}
+    ~TfcShmMapFreeLater() { free(_p); }
+    char* _p;
+};
+
 template<class KT, class VT, class LockPolicy = TfcShmMapNoLock>
 class TfcShmMap
 	: public TfcShmMapBase<VT, LockPolicy>
@@ -215,30 +223,37 @@ class TfcShmMap
 public:
 	int find(const KT key)
     {
-        return base_find(TfcShmMapKey<KT>::get_md5key(key));
+        char* md5 = TfcShmMapKey<KT>::get_md5key(key);
+        TfcShmMapFreeLater __fl(md5);
+        return TfcShmMapBase<VT, LockPolicy>::base_find(md5);
     }
 
     VT get(const KT key)
     {
-        char* s = TfcShmMapKey<KT>::get_md5key(key);
-        return TfcShmMapBase<VT, LockPolicy>::base_get(s);
+        char* md5 = TfcShmMapKey<KT>::get_md5key(key);
+        TfcShmMapFreeLater __fl(md5);
+        return TfcShmMapBase<VT, LockPolicy>::base_get(md5);
     }
 
     int get(const KT key, VT& value)
     {
-        char* s = TfcShmMapKey<KT>::get_md5key(key);
-        return TfcShmMapBase<VT, LockPolicy>::base_get(s, value);
+        char* md5 = TfcShmMapKey<KT>::get_md5key(key);
+        TfcShmMapFreeLater __fl(md5);
+        return TfcShmMapBase<VT, LockPolicy>::base_get(md5, value);
     }
 
 	int insert(const KT key, const VT value )
     {
-        char* s = TfcShmMapKey<KT>::get_md5key(key);
-        return base_insert(s, value);
+        char* md5 = TfcShmMapKey<KT>::get_md5key(key);
+        TfcShmMapFreeLater __fl(md5);
+        return base_insert(md5, value);
     }
 
 	int erase(const KT key)
     {
-        return base_erase(TfcShmMapKey<KT>::get_md5key(key));
+        char* md5 = TfcShmMapKey<KT>::get_md5key(key);
+        TfcShmMapFreeLater __fl(md5);
+        return TfcShmMapBase<VT, LockPolicy>::base_erase(md5);
     }
 
 	typedef TfcShmMapIterator<VT> iterator;

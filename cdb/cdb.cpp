@@ -343,8 +343,10 @@ cdb_comm_stat_add(CDBCommStat& cs, double v, bool init)
 void
 cdb_ins_dml_add(CDBInsDml& op, unsigned long long int begin_time, unsigned long long int end_time)
 {
-    if (!opt_cdb_stat_ins_dml)
+    if (opt_cdb_stat_ins_dml == 0) {
+        sql_print_warning("CDB: opt_cdb_stat_ins_dml is off.");
         return;
+    }
 
     double op_diff = (end_time - begin_time) * 0.000001;
 
@@ -392,7 +394,7 @@ cdb_ins_dml_add(CDBInsDml& op, unsigned long long int begin_time, unsigned long 
 void
 cdb_ins_conn_add(CDBInsConn& conn, unsigned long long int begin_time, unsigned long long end_time)
 {
-    if (!opt_cdb_stat_ins_conn)
+    if (opt_cdb_stat_ins_conn == 0)
         return;
 
     double time_diff = (end_time - begin_time) * 0.000001;
@@ -421,7 +423,6 @@ cdb_ins_conn_add(CDBInsConn& conn, unsigned long long int begin_time, unsigned l
             // TOFIX: insert failed, then?
             sql_print_error("CDB: cdb_ins_conn_add get item failed %d", r);
         }
-        m.get(conn._key, entry);
         cdb_comm_stat_add(entry._comm_stat, time_diff);
         r = m.insert(entry._key, entry);
         if (r>0) {
@@ -442,7 +443,7 @@ cdb_ins_conn_add(CDBInsConn& conn, unsigned long long int begin_time, unsigned l
 void
 cdb_ins_client_dml_add(CDBInsClientDml& op, unsigned long long int begin_time, unsigned long long int end_time)
 {
-    if (!opt_cdb_stat_client_dml)
+    if (opt_cdb_stat_client_dml == 0)
         return;
 
     double op_diff = (end_time - begin_time) * 0.000001;
@@ -471,7 +472,6 @@ cdb_ins_client_dml_add(CDBInsClientDml& op, unsigned long long int begin_time, u
             // TOFIX: insert failed, then?
             sql_print_error("CDB: cdb_ins_client_dml_add get item failed %d", r);
         }
-        m.get(op._key, entry);
         cdb_comm_stat_add(entry._comm_stat, op_diff);
         r = m.insert(entry._key, entry);
         if (r>0) {
@@ -592,7 +592,7 @@ CDBTabDml::reset_stats()
 void
 cdb_tab_dml_add(CDBTabDml& op, int type, unsigned long long int begin_time, unsigned long long int end_time)
 {
-    if (!opt_cdb_stat_table_dml)
+    if (opt_cdb_stat_table_dml == 0)
         return;
 
     if (type <0 || type >= CDB_OP_TYPE_SIZE) {
