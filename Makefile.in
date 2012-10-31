@@ -415,10 +415,10 @@ SUBDIRS = . include @docs_dirs@ @zlib_dir@ cdb cdb-tools \
 			mysql-test support-files sql-bench @tools_dirs@ \
 			win
 
-DIST_SUBDIRS = . include Docs zlib \
+DIST_SUBDIRS = . include Docs zlib cdb \
 			cmd-line-utils sql-common scripts \
 			strings mysys dbug extra regex libmysql libmysql_r client unittest storage plugin \
-			vio cdb sql man tests \
+			vio sql man tests \
 			netware libmysqld \
 			mysql-test support-files sql-bench server-tools \
 			win \
