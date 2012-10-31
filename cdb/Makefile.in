@@ -83,7 +83,8 @@ LIBRARIES = $(pkglib_LIBRARIES)
 libcdb_a_AR = $(AR) $(ARFLAGS)
 libcdb_a_LIBADD =
 am_libcdb_a_OBJECTS = cdb.$(OBJEXT) cdb_shm_mgr.$(OBJEXT) tfc_binlog.$(OBJEXT) tfc_md5.$(OBJEXT)\
-	tfc_cache_access.$(OBJEXT) tfc_cache_chunk_alloc.$(OBJEXT) tfc_cache_hash_map.$(OBJEXT) tfc_base_config_file.$(OBJEXT)
+	tfc_cache_access.$(OBJEXT) tfc_cache_chunk_alloc.$(OBJEXT) tfc_cache_hash_map.$(OBJEXT) tfc_base_config_file.$(OBJEXT) \
+	MurmurHash3.$(OBJEXT)
 libcdb_a_OBJECTS = $(am_libcdb_a_OBJECTS)
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)/include
 depcomp = $(SHELL) $(top_srcdir)/depcomp
@@ -97,8 +98,8 @@ CCLD = $(CC)
 LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 	--mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) \
 	$(LDFLAGS) -o $@
-#for cdb: remove -fno-exceptions -fno-rtti
-CXXFLAGS = -g -DSAFE_MUTEX -DSAFEMALLOC -DWITH_CDB
+#for cdb: remove -fno-exceptions -fno-rtti -DSAFE_MUTEX
+CXXFLAGS = -g -DSAFEMALLOC -DWITH_CDB
 CXXCOMPILE = $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
 	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
 LTCXXCOMPILE = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
@@ -426,10 +427,10 @@ pkglib_LIBRARIES = libcdb.a
 # cdb: headers
 noinst_HEADERS = cdb_error.h cdb_shm_mgr.h tfc_cache_access.h tfc_cache_hash_map.h tfc_shm_map.h \
 			cdb.h tfc_binlog.h tfc_cache_chunk_alloc.h tfc_md5.h tfc_spin_lock.h tfc_base_config_file.h \
-			tfc_base_config.h tfc_base_str.h
+			tfc_base_config.h tfc_base_str.h MurmurHash3.h
 # cdb: sources
 libcdb_a_SOURCES = cdb.cpp cdb_shm_mgr.cpp tfc_binlog.cpp tfc_cache_access.cpp tfc_cache_chunk_alloc.cpp \
-			tfc_cache_hash_map.cpp tfc_md5.cpp tfc_base_config_file.cpp
+			tfc_cache_hash_map.cpp tfc_md5.cpp tfc_base_config_file.cpp MurmurHash3.cpp
 
 EXTRA_DIST = CMakeLists.txt
 all: all-am

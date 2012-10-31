@@ -579,6 +579,7 @@ CDBTabDml::reset_stats()
     memset(&_comm_stats[0], 0, sizeof(_comm_stats));
 }
 
+/*
 void
 cdb_tab_dml_add(CDBTabDml& op, int type, unsigned long long int begin_time, unsigned long long int end_time)
 {
@@ -640,4 +641,66 @@ cdb_tab_dml_add(CDBTabDml& op, int type, unsigned long long int begin_time, unsi
     pthread_mutex_unlock(s._lock);
     free(buf);
 }
+*/
 
+void
+cdb_tab_dml_add(CDBTabDml& op, int type, unsigned long long int begin_time, unsigned long long int end_time)
+{
+    if (opt_cdb_stat_table_dml == 0)
+        return;
+
+    if (type <0 || type >= CDB_OP_TYPE_SIZE) {
+        sql_print_error("CDB: cdb_tab_dml_add wrong type %d, skip", type);
+        return;
+    }
+
+    double op_diff = (end_time - begin_time) * 0.000001;
+
+    CDBShm& s = cdb_shm_pair_map["cdb_tab_dml"]->get_current();
+
+    char* md5 = NULL;
+    int buf_size = op.marshal_size();
+    char* buf = (char*)malloc(buf_size);
+
+    pthread_mutex_lock(s._lock);
+
+    // NOTICE: have to do this after lock since the md5 calc function inside marshal_key is not thread safe.
+    op.marshal_key(buf, buf_size, md5);
+
+    unsigned int dl; bool df; long ts;
+    int rv = s._ca->get_key(md5, dl, df, ts);
+    if (rv>0) {
+        // not found
+        op.reset_stats();
+        cdb_comm_stat_add(op._comm_stats[type], op_diff, true);
+        op.marshal_stats(buf, buf_size);
+        int r = s._ca->set(md5, buf, buf_size);
+        if (r>0) {
+            // TOFIX:
+            sql_print_error("CDB: cdb_tab_dml_add insert new item failed %d", r);
+        }
+    }
+    else if (rv==0) {
+        // found, so update
+        int r = s._ca->get(md5, buf, buf_size, dl, df, ts);
+        if (r>0) {
+            // TOFIX:
+            sql_print_error("CDB: cdb_tab_dml_add get item failed %d", r);
+        }
+        op.de_marshal_stats(buf, buf_size);
+        cdb_comm_stat_add(op._comm_stats[type], op_diff);
+        op.marshal_stats(buf, buf_size);
+        r = s._ca->set(md5, buf, buf_size);
+        if (r>0) {
+            // TOFIX: insert failed, then?
+            sql_print_error("CDB: cdb_tab_dml_add update item failed %d", r);
+        }
+    }
+    else {
+        // TOFIX: sth wrong, may be shm map corrupted?
+        sql_print_error("CDB: cdb_tab_dml_add find key failed %d", rv);
+    }
+
+    pthread_mutex_unlock(s._lock);
+    free(buf);
+}

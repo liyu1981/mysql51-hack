@@ -8,7 +8,8 @@ prefix=$(mysql_prefix)/bin/
 exe_comm_obj=cdb_tool_comm.o
 
 all_exe=cdb_shm_dump \
-		cdb_shm_conf_calc
+		cdb_shm_conf_calc \
+		hash_test
 
 all_script=cdb_ins_dml_monitor \
            cdb_ins_conn_monitor \
@@ -26,6 +27,9 @@ cdb_shm_dump: cdb_shm_dump.o $(exe_comm_obj)
 	g++ $(LDFLAG) -o $@ $^ $(LIBCDB_A)
 
 cdb_shm_conf_calc: cdb_shm_conf_calc.o $(exe_comm_obj)
+	g++ $(LDFLAG) -o $@ $^ $(LIBCDB_A)
+
+hash_test: hash_test.o
 	g++ $(LDFLAG) -o $@ $^ $(LIBCDB_A)
 
 .cpp.o:
