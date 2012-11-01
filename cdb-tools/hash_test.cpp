@@ -9,8 +9,8 @@ void
 test_tfc_md5(int cycles, const char* data, int data_size)
 {
     for (int i=0; i<cycles; ++i) {
-        char* md5 = tfc::md5::md5_buf((u_char*)data, data_size);
-        free(md5);
+        char h[16];
+        tfc::md5::md5_buf_safe((u_char*)data, data_size, &h[0]);
     }
 }
 

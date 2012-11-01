@@ -27,7 +27,7 @@
 extern "C" {
 #else
 #define EXTERNC
-#endif /* __cplusplus */ 
+#endif /* __cplusplus */
 
 #if defined(__WIN__)
 typedef CRITICAL_SECTION pthread_mutex_t;
@@ -50,7 +50,7 @@ typedef struct st_pthread_link {
 typedef struct {
   uint32 waiting;
   CRITICAL_SECTION lock_waiting;
- 
+
   enum {
     SIGNAL= 0,
     BROADCAST= 1,
@@ -528,6 +528,40 @@ void safe_mutex_end(FILE *file);
 #define safe_mutex_assert_not_owner(mp)
 #endif /* SAFE_MUTEX */
 
+#ifdef WITH_CDB
+#if !defined(CDB_CORE) && defined(MY_PTHREAD_FASTMUTEX) && !defined(SAFE_MUTEX)
+typedef struct st_my_pthread_fastmutex_t
+{
+  pthread_mutex_t mutex;
+  uint spins;
+  uint rng_state;
+} my_pthread_fastmutex_t;
+void fastmutex_global_init(void);
+
+int my_pthread_fastmutex_init(my_pthread_fastmutex_t *mp,
+                              const pthread_mutexattr_t *attr);
+int my_pthread_fastmutex_lock(my_pthread_fastmutex_t *mp);
+
+#undef pthread_mutex_init
+#undef pthread_mutex_lock
+#undef pthread_mutex_unlock
+#undef pthread_mutex_destroy
+#undef pthread_mutex_wait
+#undef pthread_mutex_timedwait
+#undef pthread_mutex_t
+#undef pthread_cond_wait
+#undef pthread_cond_timedwait
+#undef pthread_mutex_trylock
+#define pthread_mutex_init(A,B) my_pthread_fastmutex_init((A),(B))
+#define pthread_mutex_lock(A) my_pthread_fastmutex_lock(A)
+#define pthread_mutex_unlock(A) pthread_mutex_unlock(&(A)->mutex)
+#define pthread_mutex_destroy(A) pthread_mutex_destroy(&(A)->mutex)
+#define pthread_cond_wait(A,B) pthread_cond_wait((A),&(B)->mutex)
+#define pthread_cond_timedwait(A,B,C) pthread_cond_timedwait((A),&(B)->mutex,(C))
+#define pthread_mutex_trylock(A) pthread_mutex_trylock(&(A)->mutex)
+#define pthread_mutex_t my_pthread_fastmutex_t
+#endif /* !defined(CDB_CORE) && defined(MY_PTHREAD_FASTMUTEX) && !defined(SAFE_MUTEX) */
+#else
 #if defined(MY_PTHREAD_FASTMUTEX) && !defined(SAFE_MUTEX)
 typedef struct st_my_pthread_fastmutex_t
 {
@@ -537,7 +571,7 @@ typedef struct st_my_pthread_fastmutex_t
 } my_pthread_fastmutex_t;
 void fastmutex_global_init(void);
 
-int my_pthread_fastmutex_init(my_pthread_fastmutex_t *mp, 
+int my_pthread_fastmutex_init(my_pthread_fastmutex_t *mp,
                               const pthread_mutexattr_t *attr);
 int my_pthread_fastmutex_lock(my_pthread_fastmutex_t *mp);
 
@@ -560,6 +594,7 @@ int my_pthread_fastmutex_lock(my_pthread_fastmutex_t *mp);
 #define pthread_mutex_trylock(A) pthread_mutex_trylock(&(A)->mutex)
 #define pthread_mutex_t my_pthread_fastmutex_t
 #endif /* defined(MY_PTHREAD_FASTMUTEX) && !defined(SAFE_MUTEX) */
+#endif /* WITH_CDB */
 
 	/* READ-WRITE thread locking */
 
