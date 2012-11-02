@@ -1734,6 +1734,9 @@ void cdb_stat_instance_dml_func(THD *thd)
 {
   DBUG_ENTER("cdb_stat_instance_dml_func");
 
+  if(in_bootstrap)
+    return;
+
   int sql_type = 0;
   ulonglong current_time = thd->current_utime();
 
@@ -1774,7 +1777,7 @@ void cdb_stat_instance_dml_func(THD *thd)
   if(likely(opt_cdb_stat_client_dml))
   {
 	CDBInsClientDml op;
-	if(thd->net.vio->localhost)
+	if(!thd->net.vio || (thd->net.vio && thd->net.vio->localhost))
 	  op._key._ip = inet_addr("127.0.0.1");
 	else
 	  op._key._ip = thd->remote.sin_addr.s_addr;
