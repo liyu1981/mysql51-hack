@@ -1776,12 +1776,14 @@ void cdb_stat_instance_dml_func(THD *thd)
 
   if(likely(opt_cdb_stat_client_dml))
   {
-	CDBInsClientDml op;
-	if(!thd->net.vio || (thd->net.vio && thd->net.vio->localhost))
-	  op._key._ip = inet_addr("127.0.0.1");
-	else
-	  op._key._ip = thd->remote.sin_addr.s_addr;
-	op._key._type = sql_type;
+    CDBInsClientDml op;
+    if(!thd->net.vio)
+        op._key._ip = 0;
+    else if(thd->net.vio && thd->net.vio->localhost)
+      op._key._ip = inet_addr("127.0.0.1");
+    else
+      op._key._ip = thd->remote.sin_addr.s_addr;
+    op._key._type = sql_type;
 
 	cdb_ins_client_dml_add(op, thd->start_utime, current_time);
   }
