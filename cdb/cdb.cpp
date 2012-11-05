@@ -85,7 +85,7 @@ cdb_init_config_file(const string& config_file)
         cfc.Init(config_file);
     }
     catch (conf_load_error ex) {
-        sql_print_error("[cdb_init_config_file] CFileConfig::Init failed: %s, Use default config.", ex.what());
+        sql_print_warning("[cdb_init_config_file] CFileConfig::Init failed: %s, Use default config.", ex.what());
         /*return true, use default config*/
         return true;
     }
